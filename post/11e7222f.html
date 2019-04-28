@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="ffmpeg,">
+  <meta name="keywords" content="redis,">
 
 
 
@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="#av_read_frame() 代码暂时不贴上来,等看懂之后再贴 之前印象笔记做过一点这个的笔记的 ##genpts有什么用? 12const int genpts = s-&amp;gt;flags &amp;amp; AVFMT_FLAG_GENPTS;#define AVFMT_FLAG_GENPTS       0x0001 ///&amp;lt; Generate missing pts even if it">
-<meta name="keywords" content="ffmpeg">
+<meta name="description" content="[TOC] 基于redis-2.8 底层数据结构dict.h.cdict,hash的实现 adlist.h.c通用双向链表? sds.h.c封装了底层的字符串 五种redis对象(基于底层数据结构)t_list.ct_set.ct_string.ct_zset.ct_hash.c网络有关networking.c和anet,ae的关系? anet.h.ca代表什么?封装了底层操作系统的socket">
+<meta name="keywords" content="redis">
 <meta property="og:type" content="article">
-<meta property="og:title" content="ffmpeg-av_read_frame()">
-<meta property="og:url" content="http://mojiajun.github.io/源码阅读/ffmpeg/av_read_frame/index.html">
+<meta property="og:title" content="redis-项目文件概览">
+<meta property="og:url" content="http://mojiajun.github.io/post/11e7222f.html">
 <meta property="og:site_name" content="mojiajun">
-<meta property="og:description" content="#av_read_frame() 代码暂时不贴上来,等看懂之后再贴 之前印象笔记做过一点这个的笔记的 ##genpts有什么用? 12const int genpts = s-&amp;gt;flags &amp;amp; AVFMT_FLAG_GENPTS;#define AVFMT_FLAG_GENPTS       0x0001 ///&amp;lt; Generate missing pts even if it">
+<meta property="og:description" content="[TOC] 基于redis-2.8 底层数据结构dict.h.cdict,hash的实现 adlist.h.c通用双向链表? sds.h.c封装了底层的字符串 五种redis对象(基于底层数据结构)t_list.ct_set.ct_string.ct_zset.ct_hash.c网络有关networking.c和anet,ae的关系? anet.h.ca代表什么?封装了底层操作系统的socket">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-04-28T10:18:26.699Z">
+<meta property="og:updated_time" content="2019-04-28T15:25:36.910Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="ffmpeg-av_read_frame()">
-<meta name="twitter:description" content="#av_read_frame() 代码暂时不贴上来,等看懂之后再贴 之前印象笔记做过一点这个的笔记的 ##genpts有什么用? 12const int genpts = s-&amp;gt;flags &amp;amp; AVFMT_FLAG_GENPTS;#define AVFMT_FLAG_GENPTS       0x0001 ///&amp;lt; Generate missing pts even if it">
+<meta name="twitter:title" content="redis-项目文件概览">
+<meta name="twitter:description" content="[TOC] 基于redis-2.8 底层数据结构dict.h.cdict,hash的实现 adlist.h.c通用双向链表? sds.h.c封装了底层的字符串 五种redis对象(基于底层数据结构)t_list.ct_set.ct_string.ct_zset.ct_hash.c网络有关networking.c和anet,ae的关系? anet.h.ca代表什么?封装了底层操作系统的socket">
 
 
 
@@ -120,13 +120,13 @@
 
 
 
-  <link rel="canonical" href="http://mojiajun.github.io/源码阅读/ffmpeg/av_read_frame/">
+  <link rel="canonical" href="http://mojiajun.github.io/post/11e7222f.html">
 
 
 
 
 
-  <title>ffmpeg-av_read_frame() | mojiajun</title>
+  <title>redis-项目文件概览 | mojiajun</title>
   
 
 
@@ -263,7 +263,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mojiajun.github.io/源码阅读/ffmpeg/av_read_frame/">
+    <link itemprop="mainEntityOfPage" href="http://mojiajun.github.io/post/11e7222f.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="mojiajun">
@@ -280,7 +280,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">ffmpeg-av_read_frame()</h1>
+          <h1 class="post-title" itemprop="name headline">redis-项目文件概览</h1>
         
 
         <div class="post-meta">
@@ -292,8 +292,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-12-27T00:00:00+08:00">
-                2018-12-27
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-28T00:00:00+08:00">
+                2019-04-28
               </time>
             
 
@@ -326,8 +326,8 @@
                 
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/源码阅读/ffmpeg/" itemprop="url" rel="index">
-                    <span itemprop="name">ffmpeg</span>
+                  <a href="/categories/源码阅读/redis/" itemprop="url" rel="index">
+                    <span itemprop="name">redis</span>
                   </a>
                 </span>
 
@@ -363,15 +363,25 @@
       
 
       
-        <p>#av_read_frame()</p>
-<p>代码暂时不贴上来,等看懂之后再贴</p>
-<p>之前印象笔记做过一点这个的笔记的</p>
-<p>##genpts有什么用?</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> genpts = s-&gt;flags &amp; AVFMT_FLAG_GENPTS;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AVFMT_FLAG_GENPTS       0x0001 <span class="comment">///&lt; Generate missing pts even if it requires parsing future frames.</span></span></span><br></pre></td></tr></table></figure>
-<p>然后通过这个判断,如果等于0,就在下面这两个函数中选一个执行.然后goto return_packet</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ff_packet_list_get(&amp;s-&gt;internal-&gt;packet_buffer,</span><br><span class="line">                          &amp;s-&gt;internal-&gt;packet_buffer_end, pkt)</span><br><span class="line">read_frame_internal(s, pkt);</span><br></pre></td></tr></table></figure>
-<h2 id="如果genpts等于1"><a href="#如果genpts等于1" class="headerlink" title="如果genpts等于1."></a>如果genpts等于1.</h2><p>执行后面的大循环</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">int ff_packet_list_get(AVPacketList **pkt_buffer,</span><br><span class="line">                       AVPacketList **pkt_buffer_end,</span><br><span class="line">                       AVPacket      *pkt)</span><br><span class="line">&#123;</span><br><span class="line">    AVPacketList *pktl;</span><br><span class="line">    av_assert0(*pkt_buffer);  //*pkt_buffer必须非空</span><br><span class="line">    pktl        = *pkt_buffer;</span><br><span class="line">    *pkt        = pktl-&gt;pkt;</span><br><span class="line">    *pkt_buffer = pktl-&gt;next;</span><br><span class="line">    if (!pktl-&gt;next)</span><br><span class="line">        *pkt_buffer_end = NULL;</span><br><span class="line">    av_freep(&amp;pktl);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <p>[TOC]</p>
+<p>基于redis-2.8</p>
+<h2 id="底层数据结构"><a href="#底层数据结构" class="headerlink" title="底层数据结构"></a>底层数据结构</h2><h3 id="dict-h-c"><a href="#dict-h-c" class="headerlink" title="dict.h.c"></a>dict.h.c</h3><p>dict,hash的实现</p>
+<h3 id="adlist-h-c"><a href="#adlist-h-c" class="headerlink" title="adlist.h.c"></a>adlist.h.c</h3><p>通用双向链表?</p>
+<h3 id="sds-h-c"><a href="#sds-h-c" class="headerlink" title="sds.h.c"></a>sds.h.c</h3><p>封装了底层的字符串</p>
+<h2 id="五种redis对象-基于底层数据结构"><a href="#五种redis对象-基于底层数据结构" class="headerlink" title="五种redis对象(基于底层数据结构)"></a>五种redis对象(基于底层数据结构)</h2><h3 id="t-list-c"><a href="#t-list-c" class="headerlink" title="t_list.c"></a>t_list.c</h3><h3 id="t-set-c"><a href="#t-set-c" class="headerlink" title="t_set.c"></a>t_set.c</h3><h3 id="t-string-c"><a href="#t-string-c" class="headerlink" title="t_string.c"></a>t_string.c</h3><h3 id="t-zset-c"><a href="#t-zset-c" class="headerlink" title="t_zset.c"></a>t_zset.c</h3><h3 id="t-hash-c"><a href="#t-hash-c" class="headerlink" title="t_hash.c"></a>t_hash.c</h3><h2 id="网络有关"><a href="#网络有关" class="headerlink" title="网络有关"></a>网络有关</h2><h3 id="networking-c"><a href="#networking-c" class="headerlink" title="networking.c"></a>networking.c</h3><p>和anet,ae的关系?</p>
+<h3 id="anet-h-c"><a href="#anet-h-c" class="headerlink" title="anet.h.c"></a>anet.h.c</h3><p>a代表什么?封装了底层操作系统的socket API</p>
+<h3 id="ae-h-c"><a href="#ae-h-c" class="headerlink" title="ae.h.c"></a>ae.h.c</h3><p>简单的事件驱动库,redis的reactor模式的实现</p>
+<h4 id="ae-epoll-c-ae-evport-c-ae-kqueue-c-qe-select-c"><a href="#ae-epoll-c-ae-evport-c-ae-kqueue-c-qe-select-c" class="headerlink" title="ae_epoll.c,ae_evport.c,ae_kqueue.c,qe_select.c"></a>ae_epoll.c,ae_evport.c,ae_kqueue.c,qe_select.c</h4><p>这四个文件统一了不同操作系统提供的I/O event notification.<br>拿linux下的ae_epoll.c举例子,其在底层的epoll上面封了一层.</p>
+<p>ae.h.c会使用这四种操作系统提供的event notification之一,对于ae.h.c来说,API是统一的.</p>
+<h2 id="上层数据库"><a href="#上层数据库" class="headerlink" title="上层数据库"></a>上层数据库</h2><h3 id="redis-h-c"><a href="#redis-h-c" class="headerlink" title="redis.h.c"></a>redis.h.c</h3><p>redisDb是数据库的核心结构体,围绕它有redisClient,redisServer.分配代表客户端和服务器,然后再基于reactor模式,实现了两者之间的通信,典型的C/S架构.</p>
+<p>redis.h里面的很多API函数是在其他的一些.c里实现的,不一定在redis.c里.例如redisDb的API函数就是在db.c里实现的.</p>
+<h2 id="通用"><a href="#通用" class="headerlink" title="通用"></a>通用</h2><h3 id="zmalloc-h-c"><a href="#zmalloc-h-c" class="headerlink" title="zmalloc.h.c"></a>zmalloc.h.c</h3><p>封装了底层的malloc,calloc,remalloc,free四个函数.提供了可以进行内存分配统计的能力.</p>
+<blockquote>
+<p>  可以替换掉glibc的内存分配函数,例如可以用jemalloc库代替.有啥优点?</p>
+</blockquote>
+<h2 id="杂项"><a href="#杂项" class="headerlink" title="杂项"></a>杂项</h2><h3 id="version-h"><a href="#version-h" class="headerlink" title="version.h"></a>version.h</h3><p>版本号</p>
+<h3 id="asciilogo-h"><a href="#asciilogo-h" class="headerlink" title="asciilogo.h"></a>asciilogo.h</h3><p>redis的ascii格式的logo,在服务器启动的时候会显示出来.</p>
+<h3 id="config-c"><a href="#config-c" class="headerlink" title="config.c"></a>config.c</h3><p>解析配置文件的实现函数,API接口在redis.h里</p>
 
       
     </div>
@@ -392,7 +402,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>Post link:</strong>
-    <a href="http://mojiajun.github.io/源码阅读/ffmpeg/av_read_frame/" title="ffmpeg-av_read_frame()">http://mojiajun.github.io/源码阅读/ffmpeg/av_read_frame/</a>
+    <a href="http://mojiajun.github.io/post/11e7222f.html" title="redis-项目文件概览">http://mojiajun.github.io/post/11e7222f.html</a>
   </li>
   <li class="post-copyright-license">
     <strong>Copyright Notice: </strong>
@@ -407,7 +417,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/ffmpeg/" rel="tag"># ffmpeg</a>
+            <a href="/tags/redis/" rel="tag"># redis</a>
           
         </div>
       
@@ -420,8 +430,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/基础知识/基础知识_整型_补码_大小端_字符编码_浮点数/" rel="next" title="基础知识_整型_补码_大小端_字符编码_浮点数">
-                <i class="fa fa-chevron-left"></i> 基础知识_整型_补码_大小端_字符编码_浮点数
+              <a href="/post/18ee0d3.html" rel="next" title="redis-server初始化">
+                <i class="fa fa-chevron-left"></i> redis-server初始化
               </a>
             
           </div>
@@ -429,10 +439,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/源码阅读/redis/redis_服务器初始化/" rel="prev" title="redis-server初始化">
-                redis-server初始化 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -564,7 +570,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#如果genpts等于1"><span class="nav-number">1.</span> <span class="nav-text">如果genpts等于1.</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#底层数据结构"><span class="nav-number">1.</span> <span class="nav-text">底层数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#dict-h-c"><span class="nav-number">1.1.</span> <span class="nav-text">dict.h.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#adlist-h-c"><span class="nav-number">1.2.</span> <span class="nav-text">adlist.h.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sds-h-c"><span class="nav-number">1.3.</span> <span class="nav-text">sds.h.c</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五种redis对象-基于底层数据结构"><span class="nav-number">2.</span> <span class="nav-text">五种redis对象(基于底层数据结构)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#t-list-c"><span class="nav-number">2.1.</span> <span class="nav-text">t_list.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#t-set-c"><span class="nav-number">2.2.</span> <span class="nav-text">t_set.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#t-string-c"><span class="nav-number">2.3.</span> <span class="nav-text">t_string.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#t-zset-c"><span class="nav-number">2.4.</span> <span class="nav-text">t_zset.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#t-hash-c"><span class="nav-number">2.5.</span> <span class="nav-text">t_hash.c</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#网络有关"><span class="nav-number">3.</span> <span class="nav-text">网络有关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#networking-c"><span class="nav-number">3.1.</span> <span class="nav-text">networking.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#anet-h-c"><span class="nav-number">3.2.</span> <span class="nav-text">anet.h.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ae-h-c"><span class="nav-number">3.3.</span> <span class="nav-text">ae.h.c</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ae-epoll-c-ae-evport-c-ae-kqueue-c-qe-select-c"><span class="nav-number">3.3.1.</span> <span class="nav-text">ae_epoll.c,ae_evport.c,ae_kqueue.c,qe_select.c</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#上层数据库"><span class="nav-number">4.</span> <span class="nav-text">上层数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#redis-h-c"><span class="nav-number">4.1.</span> <span class="nav-text">redis.h.c</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通用"><span class="nav-number">5.</span> <span class="nav-text">通用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#zmalloc-h-c"><span class="nav-number">5.1.</span> <span class="nav-text">zmalloc.h.c</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#杂项"><span class="nav-number">6.</span> <span class="nav-text">杂项</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#version-h"><span class="nav-number">6.1.</span> <span class="nav-text">version.h</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#asciilogo-h"><span class="nav-number">6.2.</span> <span class="nav-text">asciilogo.h</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#config-c"><span class="nav-number">6.3.</span> <span class="nav-text">config.c</span></a></li></ol></li></ol></div>
             
 
           </div>
