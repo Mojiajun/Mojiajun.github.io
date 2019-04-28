@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="ffmpeg,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="这次需要调查一下ffmpeg的API接口怎么”最好”的接入GPU编解码,使得与CPU的API处理API尽量统一.   主要分析了两个例子:ffmpeg.c与doc/example/hw_decode.c    本文关于硬件加速,默认CUDA的NVDEC,NVENC  关于硬件加速: ffmpeg内部有这么几个结构体,以及其关系. AVCodec是内部的编解码器,例如有AVCodec ff_h264">
+<meta name="keywords" content="ffmpeg">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研">
+<meta property="og:url" content="http://mojiajun.github.io/2018/12/03/ffmpeg-ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研/index.html">
+<meta property="og:site_name" content="mojiajun">
+<meta property="og:description" content="这次需要调查一下ffmpeg的API接口怎么”最好”的接入GPU编解码,使得与CPU的API处理API尽量统一.   主要分析了两个例子:ffmpeg.c与doc/example/hw_decode.c    本文关于硬件加速,默认CUDA的NVDEC,NVENC  关于硬件加速: ffmpeg内部有这么几个结构体,以及其关系. AVCodec是内部的编解码器,例如有AVCodec ff_h264">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://mojiajun.github.io/2018/12/03/ffmpeg-ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研/ffmpeg_硬件加速_内部结构体关系.png">
+<meta property="og:updated_time" content="2019-04-28T08:00:02.276Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研">
+<meta name="twitter:description" content="这次需要调查一下ffmpeg的API接口怎么”最好”的接入GPU编解码,使得与CPU的API处理API尽量统一.   主要分析了两个例子:ffmpeg.c与doc/example/hw_decode.c    本文关于硬件加速,默认CUDA的NVDEC,NVENC  关于硬件加速: ffmpeg内部有这么几个结构体,以及其关系. AVCodec是内部的编解码器,例如有AVCodec ff_h264">
+<meta name="twitter:image" content="http://mojiajun.github.io/2018/12/03/ffmpeg-ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研/ffmpeg_硬件加速_内部结构体关系.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://mojiajun.github.io/2018/12/03/ffmpeg-ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研/">
+
+
+
+
+
+  <title>ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研 | mojiajun</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mojiajun</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mojiajun.github.io/2018/12/03/ffmpeg-ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-12-03T00:00:00+08:00">
+                2018-12-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ffmpeg/" itemprop="url" rel="index">
+                    <span itemprop="name">ffmpeg</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这次需要调查一下ffmpeg的API接口怎么”最好”的接入GPU编解码,使得与CPU的API处理API尽量统一.</p>
+<blockquote>
+<p> 主要分析了两个例子:ffmpeg.c与doc/example/hw_decode.c</p>
+</blockquote>
+<blockquote>
+<p> 本文关于硬件加速,默认CUDA的NVDEC,NVENC</p>
+</blockquote>
+<h3 id="关于硬件加速"><a href="#关于硬件加速" class="headerlink" title="关于硬件加速:"></a>关于硬件加速:</h3><p><img src="ffmpeg_硬件加速_内部结构体关系.png" alt="ffmpeg_硬件加速_内部结构体关系"></p>
+<p>ffmpeg内部有这么几个结构体,以及其关系.</p>
+<p>AVCodec是内部的编解码器,例如有AVCodec ff_h264_decoder定义在h264dec.c</p>
+<p>这个是h264解码器和ffmpeg的接口</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">h264dec.c</span><br><span class="line">AVCodec ff_h264_decoder = &#123;</span><br><span class="line">    .name                  = <span class="string">"h264"</span>,</span><br><span class="line">    .long_name             = NULL_IF_CONFIG_SMALL(<span class="string">"H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10"</span>),</span><br><span class="line">    .type                  = AVMEDIA_TYPE_VIDEO,</span><br><span class="line">    .id                    = AV_CODEC_ID_H264,</span><br><span class="line">    .priv_data_size        = <span class="keyword">sizeof</span>(H264Context),</span><br><span class="line">    .init                  = h264_decode_init,</span><br><span class="line">    .close                 = h264_decode_end,</span><br><span class="line">    .decode                = h264_decode_frame,</span><br><span class="line">    .capabilities          = <span class="comment">/*AV_CODEC_CAP_DRAW_HORIZ_BAND |*/</span> AV_CODEC_CAP_DR1 |</span><br><span class="line">                             AV_CODEC_CAP_DELAY | AV_CODEC_CAP_SLICE_THREADS |</span><br><span class="line">                             AV_CODEC_CAP_FRAME_THREADS,</span><br><span class="line">    .hw_configs            = (<span class="keyword">const</span> AVCodecHWConfigInternal*[]) &#123;</span><br><span class="line">#<span class="keyword">if</span> CONFIG_H264_DXVA2_HWACCEL</span><br><span class="line">                               HWACCEL_DXVA2(h264),</span><br><span class="line">#endif</span><br><span class="line">#<span class="keyword">if</span> CONFIG_H264_D3D11VA_HWACCEL</span><br><span class="line">                               HWACCEL_D3D11VA(h264),</span><br><span class="line">#endif</span><br><span class="line">#<span class="keyword">if</span> CONFIG_H264_D3D11VA2_HWACCEL</span><br><span class="line">                               HWACCEL_D3D11VA2(h264),</span><br><span class="line">#endif</span><br><span class="line">#<span class="keyword">if</span> CONFIG_H264_NVDEC_HWACCEL</span><br><span class="line">                               HWACCEL_NVDEC(h264),</span><br><span class="line">#endif</span><br><span class="line">#<span class="keyword">if</span> CONFIG_H264_VAAPI_HWACCEL</span><br><span class="line">                               HWACCEL_VAAPI(h264),</span><br><span class="line">#endif</span><br><span class="line">#<span class="keyword">if</span> CONFIG_H264_VDPAU_HWACCEL</span><br><span class="line">                               HWACCEL_VDPAU(h264),</span><br><span class="line">#endif</span><br><span class="line">#<span class="keyword">if</span> CONFIG_H264_VIDEOTOOLBOX_HWACCEL</span><br><span class="line">                               HWACCEL_VIDEOTOOLBOX(h264),</span><br><span class="line">#endif</span><br><span class="line">                               <span class="literal">NULL</span></span><br><span class="line">                           &#125;,</span><br><span class="line">    .caps_internal         = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_EXPORTS_CROPPING,</span><br><span class="line">    .flush                 = flush_dpb,</span><br><span class="line">    .init_thread_copy      = ONLY_IF_THREADS_ENABLED(decode_init_thread_copy),</span><br><span class="line">    .update_thread_context = ONLY_IF_THREADS_ENABLED(ff_h264_update_thread_context),</span><br><span class="line">    .profiles              = NULL_IF_CONFIG_SMALL(ff_h264_profiles),</span><br><span class="line">    .priv_class            = &amp;h264_class,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>可以看到,如果CONFIG_H264_NVDEC_HWACCEL满足,也就是h264需要nvdec硬件加速,那么就会去设置hw_configs,HWACCEL_NVDEC(h264)在hwaccel.h里面,也就是调用</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HW_CONFIG_HWACCEL(<span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, CUDA,         CUDA,         ff_ ## codec ## _nvdec_hwaccel)</span><br></pre></td></tr></table></figure>
+<p>HW_CONFIG_HWACCEL宏定义如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#define HW_CONFIG_HWACCEL(device, frames, ad_hoc, format, device_type_, name) \</span><br><span class="line">    &amp;(const AVCodecHWConfigInternal) &#123; \</span><br><span class="line">        .public          = &#123; \</span><br><span class="line">            .pix_fmt     = AV_PIX_FMT_ ## format, \</span><br><span class="line">            .methods     = (device ? AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX : 0) | \</span><br><span class="line">                           (frames ? AV_CODEC_HW_CONFIG_METHOD_HW_FRAMES_CTX : 0) | \</span><br><span class="line">                           (ad_hoc ? AV_CODEC_HW_CONFIG_METHOD_AD_HOC        : 0),  \</span><br><span class="line">            .device_type = AV_HWDEVICE_TYPE_ ## device_type_, \</span><br><span class="line">        &#125;, \</span><br><span class="line">        .hwaccel         = &amp;name, \</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到,最终要设置两项,public和hwaccel,而.hwaccel=&amp;name,name即是ff_h264_nvdec_hwaccel</p>
+<p>而ff_h264_nvdec_hwaccel定义在nvdec_h264.c中</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> AVHWAccel ff_h264_nvdec_hwaccel = &#123;</span><br><span class="line">    .name                 = <span class="string">"h264_nvdec"</span>,</span><br><span class="line">    .type                 = AVMEDIA_TYPE_VIDEO,</span><br><span class="line">    .id                   = AV_CODEC_ID_H264,</span><br><span class="line">    .pix_fmt              = AV_PIX_FMT_CUDA,</span><br><span class="line">    .start_frame          = nvdec_h264_start_frame,</span><br><span class="line">    .end_frame            = ff_nvdec_end_frame,</span><br><span class="line">    .decode_slice         = nvdec_h264_decode_slice,</span><br><span class="line">    .frame_params         = nvdec_h264_frame_params,</span><br><span class="line">    .init                 = ff_nvdec_decode_init,</span><br><span class="line">    .uninit               = ff_nvdec_decode_uninit,</span><br><span class="line">    .priv_data_size       = <span class="keyword">sizeof</span>(NVDECContext),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>如果要硬件加速,用API来开发的话,好像要进行下面两步,待确认.</p>
+<ul>
+<li><p>主要是要添加得到硬件加速配置的一些步骤,这是在初始化阶段完成的.</p>
+</li>
+<li><p>然后是解码之后对frame-&gt;format判断一下.</p>
+</li>
+</ul>
+<p>比如说,看简单的例子,hw_decode.c.官方的一个简单示例.然后解码正常的API调用即可,但是解码完成后,需要检查输出的frame-&gt;format是不是硬件的格式,如果是硬件的格式,那么需要额外做一步av_hwframe_transfer_data(sw_frame, frame, 0),把frame的转移到sw_frame里</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (frame-&gt;format == hw_pix_fmt) &#123;</span><br><span class="line">    <span class="comment">/* retrieve data from GPU to CPU */</span></span><br><span class="line">    <span class="keyword">if</span> ((ret = av_hwframe_transfer_data(sw_frame, frame, <span class="number">0</span>)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Error transferring the data to system memory\n"</span>);</span><br><span class="line">        <span class="keyword">goto</span> fail;</span><br><span class="line">    &#125;</span><br><span class="line">    tmp_frame = sw_frame;</span><br><span class="line">&#125; <span class="keyword">else</span></span><br><span class="line">    tmp_frame = frame;</span><br></pre></td></tr></table></figure>
+<p>在ffmpeg.c里面:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//ffmpeg.c</span></span><br><span class="line">在decode_video()调用完了decode()之后:</span><br><span class="line">然后会进行一次判断:</span><br><span class="line">ist-&gt;hwaccel_retrieve_data判断这个函数指针有没有,如果有,说明硬件在加速?</span><br><span class="line">然后如果decoded_frame-&gt;format == ist-&gt;hwaccel_pix_fmt,就调用它,</span><br><span class="line">在解码后好像也要进行这样的类似操作.</span><br><span class="line">    </span><br><span class="line">这个指针的初始化操作的定义在ffmpeg_hw.c:</span><br><span class="line">fftools/ffmpeg_hw.c</span><br><span class="line"><span class="keyword">int</span> hwaccel_decode_init(AVCodecContext *avctx)</span><br><span class="line">&#123;</span><br><span class="line">    InputStream *ist = avctx-&gt;opaque;</span><br><span class="line"></span><br><span class="line">    ist-&gt;hwaccel_retrieve_data = &amp;hwaccel_retrieve_data;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line">把编解码器里面的opaque指针(app指定的私有数据)的指针值赋值给ist,然后初始化ist里面的hwaccel_retrieve_data指针</span><br><span class="line">这个函数调用了API里面的av_hwframe_transfer_data.</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_hwframe_transfer_data</span><span class="params">(AVFrame *dst, <span class="keyword">const</span> AVFrame *src, <span class="keyword">int</span> flags)</span></span></span><br></pre></td></tr></table></figure>
+<h3 id="其他的相关的信息"><a href="#其他的相关的信息" class="headerlink" title="其他的相关的信息:"></a>其他的相关的信息:</h3><h4 id="AVHWAccel结构体定义"><a href="#AVHWAccel结构体定义" class="headerlink" title="AVHWAccel结构体定义"></a>AVHWAccel结构体定义</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">在avcodec.h里面</span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">AVHWAccel</span> &#123;</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span> *name;</span><br><span class="line">    <span class="keyword">enum</span> AVMediaType type;</span><br><span class="line">    <span class="keyword">enum</span> AVCodecID id;</span><br><span class="line">    <span class="keyword">enum</span> AVPixelFormat pix_fmt;</span><br><span class="line">    <span class="keyword">int</span> capabilities;</span><br><span class="line">    <span class="keyword">int</span> (*alloc_frame)(AVCodecContext *avctx, AVFrame *frame);</span><br><span class="line">    <span class="keyword">int</span> (*start_frame)(AVCodecContext *avctx, <span class="keyword">const</span> <span class="keyword">uint8_t</span> *buf, <span class="keyword">uint32_t</span> buf_size);</span><br><span class="line">    <span class="keyword">int</span> (*decode_params)(AVCodecContext *avctx, <span class="keyword">int</span> type, <span class="keyword">const</span> <span class="keyword">uint8_t</span> *buf, <span class="keyword">uint32_t</span> buf_size);</span><br><span class="line">    <span class="keyword">int</span> (*decode_slice)(AVCodecContext *avctx, <span class="keyword">const</span> <span class="keyword">uint8_t</span> *buf, <span class="keyword">uint32_t</span> buf_size);</span><br><span class="line">    <span class="keyword">int</span> (*end_frame)(AVCodecContext *avctx);</span><br><span class="line">    <span class="keyword">int</span> frame_priv_data_size;</span><br><span class="line">    <span class="keyword">void</span> (*decode_mb)(struct MpegEncContext *s);</span><br><span class="line">    <span class="keyword">int</span> (*init)(AVCodecContext *avctx);</span><br><span class="line">    <span class="keyword">int</span> (*uninit)(AVCodecContext *avctx);</span><br><span class="line">    <span class="keyword">int</span> priv_data_size;</span><br><span class="line">    <span class="keyword">int</span> caps_internal;</span><br><span class="line">    <span class="keyword">int</span> (*frame_params)(AVCodecContext *avctx, AVBufferRef *hw_frames_ctx);</span><br><span class="line">&#125; AVHWAccel;</span><br><span class="line"></span><br><span class="line">然后在libavcodec/hwaccels.h里面进行了一个汇总.</span><br><span class="line">...</span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">const</span> AVHWAccel ff_h264_nvdec_hwaccel;</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<h4 id="enum-AVHWDeviceType"><a href="#enum-AVHWDeviceType" class="headerlink" title="enum AVHWDeviceType"></a>enum AVHWDeviceType</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">libavutil/hwcontext.h</span><br><span class="line"><span class="keyword">enum</span> AVHWDeviceType &#123;</span><br><span class="line">    AV_HWDEVICE_TYPE_NONE,</span><br><span class="line">    AV_HWDEVICE_TYPE_VDPAU,</span><br><span class="line">    AV_HWDEVICE_TYPE_CUDA,</span><br><span class="line">    AV_HWDEVICE_TYPE_VAAPI,</span><br><span class="line">    AV_HWDEVICE_TYPE_DXVA2,</span><br><span class="line">    AV_HWDEVICE_TYPE_QSV,</span><br><span class="line">    AV_HWDEVICE_TYPE_VIDEOTOOLBOX,</span><br><span class="line">    AV_HWDEVICE_TYPE_D3D11VA,</span><br><span class="line">    AV_HWDEVICE_TYPE_DRM,</span><br><span class="line">    AV_HWDEVICE_TYPE_OPENCL,</span><br><span class="line">    AV_HWDEVICE_TYPE_MEDIACODEC,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="像素格式有关的"><a href="#像素格式有关的" class="headerlink" title="像素格式有关的:"></a>像素格式有关的:</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">pixfmt.h</span><br><span class="line">enum AVPixelFormat &#123;</span><br><span class="line">    AV_PIX_FMT_NONE = -1,</span><br><span class="line">    AV_PIX_FMT_YUV420P,   ///&lt; planar YUV 4:2:0, 12bpp, (1 Cr &amp; Cb sample per 2x2 Y samples)</span><br><span class="line">    AV_PIX_FMT_YUYV422,   ///&lt; packed YUV 4:2:2, 16bpp, Y0 Cb Y1 Cr</span><br><span class="line">    ...</span><br><span class="line">        /**</span><br><span class="line">     * HW acceleration through CUDA. data[i] contain CUdeviceptr pointers</span><br><span class="line">     * exactly as for system memory frames.</span><br><span class="line">     */</span><br><span class="line">    AV_PIX_FMT_CUDA,</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line">//像素格式,不细看了.注意硬件加速的一种-cuda,有一个格式,AV_PIX_FMT_CUDA,然后它上面的注释第二句话是与系统内存帧完全一样?这里貌似会在处理完之后判断是不是这种格式,若是,那么会进行transfer在CPU和GPU内存之间?//z这里还没细看.</span><br></pre></td></tr></table></figure>
+<h4 id="在ffmpeg-c里面发现这么一个回调函数-具体在哪些位置会被调用"><a href="#在ffmpeg-c里面发现这么一个回调函数-具体在哪些位置会被调用" class="headerlink" title="在ffmpeg.c里面发现这么一个回调函数.具体在哪些位置会被调用?"></a>在ffmpeg.c里面发现这么一个回调函数.具体在哪些位置会被调用?</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">get_format()</span><br><span class="line">    |--avcodec_get_hw_config()</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">enum</span> AVPixelFormat <span class="title">get_format</span><span class="params">(AVCodecContext *s, <span class="keyword">const</span> <span class="keyword">enum</span> AVPixelFormat *pix_fmts)</span></span></span><br><span class="line"><span class="function">    </span></span><br><span class="line"><span class="function"><span class="comment">//由编解码上下文获取AVPixelFormat??</span></span></span><br><span class="line"><span class="function"><span class="comment">//有硬件加速的时候,必须调用avcodec_get_hw_config(s-&gt;codec, i);??</span></span></span><br><span class="line">get_format()调用的avcodec_get_hw_config()函数定义如下:</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">const</span> AVCodecHWConfig *<span class="title">avcodec_get_hw_config</span><span class="params">(<span class="keyword">const</span> AVCodec *codec, <span class="keyword">int</span> index)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">if</span> (!codec-&gt;hw_configs || index &lt; <span class="number">0</span>) <span class="comment">//必须codec-&gt;hw_configs这一项有东西,然后index&gt;=0,才不会返回NULL.</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt;= index; i++)</span><br><span class="line">        <span class="keyword">if</span> (!codec-&gt;hw_configs[i])</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">return</span> &amp;codec-&gt;hw_configs[index]-&gt;<span class="keyword">public</span>;</span><br><span class="line">&#125;</span><br><span class="line">然后把这个get_format的函数赋值给:<span class="comment">//ist-&gt;dec_ctx-&gt;get_format = get_format;</span></span><br><span class="line">AVCodecContext-&gt;get_format域.</span><br><span class="line"><span class="comment">//这个AVCodecContext-&gt;get_format回调函数会在哪调用??</span></span><br></pre></td></tr></table></figure>
+<h4 id="typedef-struct-InputStream-ffmpeg-h定义的结构体-不是API的一部分-理解ffmpeg-c需要"><a href="#typedef-struct-InputStream-ffmpeg-h定义的结构体-不是API的一部分-理解ffmpeg-c需要" class="headerlink" title="typedef struct InputStream,ffmpeg.h定义的结构体:不是API的一部分,理解ffmpeg.c需要"></a>typedef struct InputStream,ffmpeg.h定义的结构体:不是API的一部分,理解ffmpeg.c需要</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg.h,这个结构体不是API的结构体,是实现ffmpeg命令行工具时官方自己定义的结构体</span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">InputStream</span> &#123;</span></span><br><span class="line"><span class="comment">/* hwaccel context */</span></span><br><span class="line">    <span class="keyword">void</span>  *hwaccel_ctx;</span><br><span class="line">    <span class="keyword">void</span> (*hwaccel_uninit)(AVCodecContext *s);</span><br><span class="line">    <span class="keyword">int</span>  (*hwaccel_get_buffer)(AVCodecContext *s, AVFrame *frame, <span class="keyword">int</span> flags);</span><br><span class="line">    <span class="keyword">int</span>  (*hwaccel_retrieve_data)(AVCodecContext *s, AVFrame *frame);</span><br><span class="line">    <span class="keyword">enum</span> AVPixelFormat hwaccel_pix_fmt;</span><br><span class="line">    <span class="keyword">enum</span> AVPixelFormat hwaccel_retrieved_pix_fmt;</span><br><span class="line">    AVBufferRef *hw_frames_ctx;</span><br><span class="line">    ...<span class="comment">//其他省略,没贴上来</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="AVCodecContext-这个编解码器上下文里面有这么几项"><a href="#AVCodecContext-这个编解码器上下文里面有这么几项" class="headerlink" title="AVCodecContext;这个编解码器上下文里面有这么几项:"></a>AVCodecContext;这个编解码器上下文里面有这么几项:</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">avcodec.h里面</span><br><span class="line">AVCodecContext;这个编解码器上下文里面有这么几项:</span><br><span class="line">typedef struct AVCodecContext &#123;</span><br><span class="line">	...</span><br><span class="line">    /**</span><br><span class="line">     * Nominal unaccelerated pixel format, see AV_PIX_FMT_xxx.</span><br><span class="line">     * - encoding: unused.</span><br><span class="line">     * - decoding: Set by libavcodec before calling get_format()</span><br><span class="line">     */</span><br><span class="line">    enum AVPixelFormat sw_pix_fmt;</span><br><span class="line">    /**</span><br><span class="line">     * A reference to the AVHWFramesContext describing the input (for encoding)</span><br><span class="line">     * or output (decoding) frames. The reference is set by the caller and</span><br><span class="line">     * afterwards owned (and freed) by libavcodec - it should never be read by</span><br><span class="line">     * the caller after being set.</span><br><span class="line">     *</span><br><span class="line">     * - decoding: This field should be set by the caller from the get_format()</span><br><span class="line">     *             callback. The previous reference (if any) will always be</span><br><span class="line">     *             unreffed by libavcodec before the get_format() call.</span><br><span class="line">     *</span><br><span class="line">     *             If the default get_buffer2() is used with a hwaccel pixel</span><br><span class="line">     *             format, then this AVHWFramesContext will be used for</span><br><span class="line">     *             allocating the frame buffers.</span><br><span class="line">     *</span><br><span class="line">     * - encoding: For hardware encoders configured to use a hwaccel pixel</span><br><span class="line">     *             format, this field should be set by the caller to a reference</span><br><span class="line">     *             to the AVHWFramesContext describing input frames.</span><br><span class="line">     *             AVHWFramesContext.format must be equal to</span><br><span class="line">     *             AVCodecContext.pix_fmt.</span><br><span class="line">     *</span><br><span class="line">     *             This field should be set before avcodec_open2() is called.</span><br><span class="line">     */</span><br><span class="line">    AVBufferRef *hw_device_ctx;</span><br><span class="line">    </span><br><span class="line">    int hwaccel_flags;</span><br><span class="line">    ...</span><br><span class="line">&#125;AVCodecContext;</span><br><span class="line">这个AVCodecContext很大,没仔细看.</span><br></pre></td></tr></table></figure>
+<h4 id="FFmpeg和HEVC解码器之间-ff-hevc-decoder是接口。类似h264"><a href="#FFmpeg和HEVC解码器之间-ff-hevc-decoder是接口。类似h264" class="headerlink" title="FFmpeg和HEVC解码器之间,ff_hevc_decoder是接口。类似h264."></a>FFmpeg和HEVC解码器之间,ff_hevc_decoder是接口。类似h264.</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">hevcdec.c</span><br><span class="line">AVCodec ff_hevc_decoder = &#123;</span><br><span class="line">    .name                  = <span class="string">"hevc"</span>,</span><br><span class="line">    .long_name             = NULL_IF_CONFIG_SMALL(<span class="string">"HEVC (High Efficiency Video Coding)"</span>),</span><br><span class="line">    .type                  = AVMEDIA_TYPE_VIDEO,</span><br><span class="line">    .id                    = AV_CODEC_ID_HEVC,</span><br><span class="line">    .priv_data_size        = <span class="keyword">sizeof</span>(HEVCContext),</span><br><span class="line">    .priv_class            = &amp;hevc_decoder_class,</span><br><span class="line">    .init                  = hevc_decode_init,</span><br><span class="line">    .close                 = hevc_decode_free,</span><br><span class="line">    .decode                = hevc_decode_frame,</span><br><span class="line">    .flush                 = hevc_decode_flush,</span><br><span class="line">    .update_thread_context = ONLY_IF_THREADS_ENABLED(hevc_update_thread_context),</span><br><span class="line">    .init_thread_copy      = ONLY_IF_THREADS_ENABLED(hevc_init_thread_copy),</span><br><span class="line">    .capabilities          = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_DELAY |</span><br><span class="line">                             AV_CODEC_CAP_SLICE_THREADS | AV_CODEC_CAP_FRAME_THREADS,</span><br><span class="line">    .caps_internal         = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_EXPORTS_CROPPING,</span><br><span class="line">    .profiles              = NULL_IF_CONFIG_SMALL(ff_hevc_profiles),</span><br><span class="line">    .hw_configs            = (<span class="keyword">const</span> AVCodecHWConfigInternal*[]) &#123;</span><br><span class="line">#<span class="keyword">if</span> CONFIG_HEVC_DXVA2_HWACCEL</span><br><span class="line">                               HWACCEL_DXVA2(hevc),</span><br><span class="line">#endif</span><br><span class="line">#<span class="keyword">if</span> CONFIG_HEVC_D3D11VA_HWACCEL</span><br><span class="line">                               HWACCEL_D3D11VA(hevc),</span><br><span class="line">#endif</span><br><span class="line">#<span class="keyword">if</span> CONFIG_HEVC_D3D11VA2_HWACCEL</span><br><span class="line">                               HWACCEL_D3D11VA2(hevc),</span><br><span class="line">#endif</span><br><span class="line">#<span class="keyword">if</span> CONFIG_HEVC_NVDEC_HWACCEL</span><br><span class="line">                               HWACCEL_NVDEC(hevc),</span><br><span class="line">#endif</span><br><span class="line">#<span class="keyword">if</span> CONFIG_HEVC_VAAPI_HWACCEL</span><br><span class="line">                               HWACCEL_VAAPI(hevc),</span><br><span class="line">#endif</span><br><span class="line">#<span class="keyword">if</span> CONFIG_HEVC_VDPAU_HWACCEL</span><br><span class="line">                               HWACCEL_VDPAU(hevc),</span><br><span class="line">#endif</span><br><span class="line">#<span class="keyword">if</span> CONFIG_HEVC_VIDEOTOOLBOX_HWACCEL</span><br><span class="line">                               HWACCEL_VIDEOTOOLBOX(hevc),</span><br><span class="line">#endif</span><br><span class="line">                               <span class="literal">NULL</span></span><br><span class="line">                           &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> CONFIG_HEVC_NVDEC_HWACCEL</span></span><br><span class="line">                               HWACCEL_NVDEC(hevc),</span><br><span class="line">hwaccel.h</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> HWACCEL_NVDEC(codec) \</span></span><br><span class="line">HW_CONFIG_HWACCEL(<span class="number">1</span>, <span class="number">1</span>, <span class="number">0</span>, CUDA,         CUDA,         ff_ ## codec ## _nvdec_hwaccel)</span><br><span class="line">然后变成ff_hevc_codec_nvdec_hwaccel</span><br></pre></td></tr></table></figure>
+<h4 id="aac-在aacdec-c里面-没硬件加速"><a href="#aac-在aacdec-c里面-没硬件加速" class="headerlink" title="aac,在aacdec.c里面,没硬件加速"></a>aac,在aacdec.c里面,没硬件加速</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">AVCodec ff_aac_decoder = &#123;</span><br><span class="line">    .name            = <span class="string">"aac"</span>,</span><br><span class="line">    .long_name       = NULL_IF_CONFIG_SMALL(<span class="string">"AAC (Advanced Audio Coding)"</span>),</span><br><span class="line">    .type            = AVMEDIA_TYPE_AUDIO,</span><br><span class="line">    .id              = AV_CODEC_ID_AAC,</span><br><span class="line">    .priv_data_size  = <span class="keyword">sizeof</span>(AACContext),</span><br><span class="line">    .init            = aac_decode_init,</span><br><span class="line">    .close           = aac_decode_close,</span><br><span class="line">    .decode          = aac_decode_frame,</span><br><span class="line">    .sample_fmts     = (<span class="keyword">const</span> <span class="keyword">enum</span> AVSampleFormat[]) &#123;</span><br><span class="line">        AV_SAMPLE_FMT_FLTP, AV_SAMPLE_FMT_NONE</span><br><span class="line">    &#125;,</span><br><span class="line">    .capabilities    = AV_CODEC_CAP_CHANNEL_CONF | AV_CODEC_CAP_DR1,</span><br><span class="line">    .caps_internal   = FF_CODEC_CAP_INIT_THREADSAFE,</span><br><span class="line">    .channel_layouts = aac_channel_layout,</span><br><span class="line">    .flush = flush,</span><br><span class="line">    .priv_class      = &amp;aac_decoder_class,</span><br><span class="line">    .profiles        = NULL_IF_CONFIG_SMALL(ff_aac_profiles),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="API使用时注意的"><a href="#API使用时注意的" class="headerlink" title="API使用时注意的:"></a>API使用时注意的:</h3><h4 id="新的API-ffmpeg大版本号3时就是了-都不算”新”了"><a href="#新的API-ffmpeg大版本号3时就是了-都不算”新”了" class="headerlink" title="新的API,ffmpeg大版本号3时就是了?都不算”新”了?"></a>新的API,ffmpeg大版本号3时就是了?都不算”新”了?</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">avcodec_send_packet()</span><br><span class="line">avcodec_receive_frame()</span><br><span class="line">新的解码API是这对函数.</span><br><span class="line">avcodec_send_frame()</span><br><span class="line">avcodec_receive_packet()</span><br><span class="line">新的编码API是这对函数.</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">avcodec_parameters_to_context()</span><br><span class="line">将AVCodecParameters结构体中码流参数拷贝到AVCodecContext结构体中</span><br><span class="line">http:<span class="comment">//blog.51cto.com/fengyuzaitu/2059121</span></span><br><span class="line">没细看</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">av_find_best_stream（）函数就是要获取音视频对应的stream_index。???</span><br><span class="line"></span><br><span class="line">参考:https:<span class="comment">//blog.csdn.net/wangcong02345/article/details/52441847</span></span><br></pre></td></tr></table></figure>
+<h3 id="硬件加速对编译-链接的影响"><a href="#硬件加速对编译-链接的影响" class="headerlink" title="硬件加速对编译,链接的影响"></a>硬件加速对编译,链接的影响</h3><h4 id="libavcodec-Makefile-libavcodec模块与硬件加速有关的部分"><a href="#libavcodec-Makefile-libavcodec模块与硬件加速有关的部分" class="headerlink" title="libavcodec/Makefile_libavcodec模块与硬件加速有关的部分"></a>libavcodec/Makefile_libavcodec模块与硬件加速有关的部分</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">再具体的细节就不谈了.反正就是如果hevc要nvdec加速,那么就CONFIG_HEVC_NVDEC_HWACCEL,(这个在哪配置的?)然后在libavcodec/Makefile这个子模块的Makefile里面发现这么一行</span><br><span class="line">如果要用nvdec加速,链接的时候会加入nvdec.o cuda_check.o</span><br><span class="line"></span><br><span class="line">OBJS-$(CONFIG_NVDEC)                      += nvdec.o cuda_check.o</span><br><span class="line">OBJS-$(CONFIG_HEVC_NVDEC_HWACCEL)         += nvdec_hevc.o</span><br><span class="line"><span class="comment">//h264的nvdec加速就是这一行</span></span><br><span class="line">OBJS-$(CONFIG_H264_NVDEC_HWACCEL)         += nvdec_h264.o</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">所有能硬件加速的:</span><br><span class="line"># hardware accelerators</span><br><span class="line">OBJS-$(CONFIG_D3D11VA)                    += dxva2.o</span><br><span class="line">OBJS-$(CONFIG_DXVA2)                      += dxva2.o</span><br><span class="line">OBJS-$(CONFIG_NVDEC)                      += nvdec.o cuda_check.o</span><br><span class="line">OBJS-$(CONFIG_VAAPI)                      += vaapi_decode.o</span><br><span class="line">OBJS-$(CONFIG_VIDEOTOOLBOX)               += videotoolbox.o</span><br><span class="line">OBJS-$(CONFIG_VDPAU)                      += vdpau.o</span><br><span class="line"></span><br><span class="line">OBJS-$(CONFIG_H263_VAAPI_HWACCEL)         += vaapi_mpeg4.o</span><br><span class="line">OBJS-$(CONFIG_H263_VIDEOTOOLBOX_HWACCEL)  += videotoolbox.o</span><br><span class="line">OBJS-$(CONFIG_H264_D3D11VA_HWACCEL)       += dxva2_h264.o</span><br><span class="line">OBJS-$(CONFIG_H264_DXVA2_HWACCEL)         += dxva2_h264.o</span><br><span class="line">OBJS-$(CONFIG_H264_NVDEC_HWACCEL)         += nvdec_h264.o</span><br><span class="line">OBJS-$(CONFIG_H264_QSV_HWACCEL)           += qsvdec_h2645.o</span><br><span class="line">OBJS-$(CONFIG_H264_VAAPI_HWACCEL)         += vaapi_h264.o</span><br><span class="line">OBJS-$(CONFIG_H264_VDPAU_HWACCEL)         += vdpau_h264.o</span><br><span class="line">OBJS-$(CONFIG_H264_VIDEOTOOLBOX_HWACCEL)  += videotoolbox.o</span><br><span class="line">OBJS-$(CONFIG_HEVC_D3D11VA_HWACCEL)       += dxva2_hevc.o</span><br><span class="line">OBJS-$(CONFIG_HEVC_DXVA2_HWACCEL)         += dxva2_hevc.o</span><br><span class="line">OBJS-$(CONFIG_HEVC_NVDEC_HWACCEL)         += nvdec_hevc.o</span><br><span class="line">OBJS-$(CONFIG_HEVC_QSV_HWACCEL)           += qsvdec_h2645.o</span><br><span class="line">OBJS-$(CONFIG_HEVC_VAAPI_HWACCEL)         += vaapi_hevc.o</span><br><span class="line">OBJS-$(CONFIG_HEVC_VDPAU_HWACCEL)         += vdpau_hevc.o</span><br><span class="line">OBJS-$(CONFIG_MJPEG_NVDEC_HWACCEL)        += nvdec_mjpeg.o</span><br><span class="line">OBJS-$(CONFIG_MJPEG_VAAPI_HWACCEL)        += vaapi_mjpeg.o</span><br><span class="line">OBJS-$(CONFIG_MPEG1_NVDEC_HWACCEL)        += nvdec_mpeg12.o</span><br><span class="line">OBJS-$(CONFIG_MPEG1_VDPAU_HWACCEL)        += vdpau_mpeg12.o</span><br><span class="line">OBJS-$(CONFIG_MPEG1_VIDEOTOOLBOX_HWACCEL) += videotoolbox.o</span><br><span class="line">OBJS-$(CONFIG_MPEG1_XVMC_HWACCEL)         += mpegvideo_xvmc.o</span><br><span class="line">OBJS-$(CONFIG_MPEG2_D3D11VA_HWACCEL)      += dxva2_mpeg2.o</span><br><span class="line">OBJS-$(CONFIG_MPEG2_DXVA2_HWACCEL)        += dxva2_mpeg2.o</span><br><span class="line">OBJS-$(CONFIG_MPEG2_NVDEC_HWACCEL)        += nvdec_mpeg12.o</span><br><span class="line">OBJS-$(CONFIG_MPEG2_QSV_HWACCEL)          += qsvdec_other.o</span><br><span class="line">OBJS-$(CONFIG_MPEG2_VAAPI_HWACCEL)        += vaapi_mpeg2.o</span><br><span class="line">OBJS-$(CONFIG_MPEG2_VDPAU_HWACCEL)        += vdpau_mpeg12.o</span><br><span class="line">OBJS-$(CONFIG_MPEG2_VIDEOTOOLBOX_HWACCEL) += videotoolbox.o</span><br><span class="line">OBJS-$(CONFIG_MPEG2_XVMC_HWACCEL)         += mpegvideo_xvmc.o</span><br><span class="line">OBJS-$(CONFIG_MPEG4_NVDEC_HWACCEL)        += nvdec_mpeg4.o</span><br><span class="line">OBJS-$(CONFIG_MPEG4_VAAPI_HWACCEL)        += vaapi_mpeg4.o</span><br><span class="line">OBJS-$(CONFIG_MPEG4_VDPAU_HWACCEL)        += vdpau_mpeg4.o</span><br><span class="line">OBJS-$(CONFIG_MPEG4_VIDEOTOOLBOX_HWACCEL) += videotoolbox.o</span><br><span class="line">OBJS-$(CONFIG_VC1_D3D11VA_HWACCEL)        += dxva2_vc1.o</span><br><span class="line">OBJS-$(CONFIG_VC1_DXVA2_HWACCEL)          += dxva2_vc1.o</span><br><span class="line">OBJS-$(CONFIG_VC1_NVDEC_HWACCEL)          += nvdec_vc1.o</span><br><span class="line">OBJS-$(CONFIG_VC1_QSV_HWACCEL)            += qsvdec_other.o</span><br><span class="line">OBJS-$(CONFIG_VC1_VAAPI_HWACCEL)          += vaapi_vc1.o</span><br><span class="line">OBJS-$(CONFIG_VC1_VDPAU_HWACCEL)          += vdpau_vc1.o</span><br><span class="line">OBJS-$(CONFIG_VP8_NVDEC_HWACCEL)          += nvdec_vp8.o</span><br><span class="line">OBJS-$(CONFIG_VP8_VAAPI_HWACCEL)          += vaapi_vp8.o</span><br><span class="line">OBJS-$(CONFIG_VP9_D3D11VA_HWACCEL)        += dxva2_vp9.o</span><br><span class="line">OBJS-$(CONFIG_VP9_DXVA2_HWACCEL)          += dxva2_vp9.o</span><br><span class="line">OBJS-$(CONFIG_VP9_NVDEC_HWACCEL)          += nvdec_vp9.o</span><br><span class="line">OBJS-$(CONFIG_VP9_VAAPI_HWACCEL)          += vaapi_vp9.o</span><br><span class="line">OBJS-$(CONFIG_VP8_QSV_HWACCEL)            += qsvdec_other.o</span><br></pre></td></tr></table></figure>
+<p>如果是硬件加速,直接在编译的时候就确定了?所以会编译出nvdec.o cuda_check.o这样的?所以ffmpeg命令行工具直接选定就行了,然后就会进行加速了.?但是在API开发的时候呢?</p>
+<ul>
+<li><p>这几个加速的预处理标志在哪加入的??</p>
+<p>估计是更高级的Makefile或者configure里面?</p>
+</li>
+<li><p>ffmpeg里面音频没有硬件加速</p>
+</li>
+<li><p>怎么用的?API层面</p>
+</li>
+</ul>
+<p>  底下这个和API怎么用的有点关系:</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">libavutil/hwcontext.h</span><br><span class="line">enum AVHWDeviceType &#123;</span><br><span class="line">    AV_HWDEVICE_TYPE_NONE,</span><br><span class="line">    AV_HWDEVICE_TYPE_VDPAU,</span><br><span class="line">    AV_HWDEVICE_TYPE_CUDA,</span><br><span class="line">    AV_HWDEVICE_TYPE_VAAPI,</span><br><span class="line">    AV_HWDEVICE_TYPE_DXVA2,</span><br><span class="line">    AV_HWDEVICE_TYPE_QSV,</span><br><span class="line">    AV_HWDEVICE_TYPE_VIDEOTOOLBOX,</span><br><span class="line">    AV_HWDEVICE_TYPE_D3D11VA,</span><br><span class="line">    AV_HWDEVICE_TYPE_DRM,</span><br><span class="line">    AV_HWDEVICE_TYPE_OPENCL,</span><br><span class="line">    AV_HWDEVICE_TYPE_MEDIACODEC,</span><br><span class="line">&#125;;</span><br><span class="line">官方的示例:</span><br><span class="line">ret = av_hwdevice_ctx_create(&amp;hw_device_ctx, AV_HWDEVICE_TYPE_VAAPI, NULL, NULL, 0);</span><br><span class="line">要是cuda的话:AV_HWDEVICE_TYPE_CUDA,</span><br></pre></td></tr></table></figure>
+<p>其实GPU和CPU的解码流程大体是查不多的,在使用ffmpeg API的时候,都是那套流程,只不过在使用GPU的时候要额外配置点东西,这些东西具体该怎么配置还没有细看.</p>
+<p>hw_decode.c得好好看,然后就是ffmpeg.c</p>
+<h3 id="重要问题-还没解决"><a href="#重要问题-还没解决" class="headerlink" title="重要问题,还没解决"></a>重要问题,还没解决</h3><p>1.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CONFIG_H264_NVDEC_HWACCEL在哪选定的?也就是在哪配置的?</span><br></pre></td></tr></table></figure>
+<p>在编译ffmpeg的时候选定的,编译之前先运行的configure,中间好像会产生一个中间文件config.mak.</p>
+<p>在这个config.mak里面有CONFIG_H264_NVDEC_HWACCEL=yes.</p>
+<p>config.mak根据第一行的注释信息来看</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#Automatically generated by configure - do not modify!</span></span><br></pre></td></tr></table></figure>
+<p>最终这个问题变成如果在编译ffmpeg的libavcodec库的时候,选定了要cuda,nvdec加速,那么怎么在使用API的时候想加速就加速,想不加速就取消.?</p>
+<p>线索:ffmpeg.c.命令行调用c:v cuvid</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">parse_option(o, &quot;codec:v&quot;, arg, options);</span><br></pre></td></tr></table></figure>
+<p>然后没有后续了….</p>
+<hr>
+<p>换个角度.ctx-&gt;hw_device_ctx,</p>
+<p>在hw_decode.c里面找线索,有初始化,设置了ctx-&gt;hw_device_ctx.然后看</p>
+<p>AVCodecContext,感觉是这个flag在起作用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int hwaccel_flags;</span><br></pre></td></tr></table></figure>
+<p>所以去看官方给的例子,vaapi_transcode.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">avcodec_parameters_to_context(decoder_ctx, video-&gt;codecpar))</span><br><span class="line">看decoder_ctx-&gt;hwaccel_flags怎么设置的</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">注意下面的注释,AVCodeContext结构体里面的两个域</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">     * A reference to the AVHWDeviceContext describing the device which will</span></span><br><span class="line"><span class="comment">     * be used by a hardware encoder/decoder.  The reference is set by the</span></span><br><span class="line"><span class="comment">     * caller and afterwards owned (and freed) by libavcodec.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * This should be used if either the codec device does not require</span></span><br><span class="line"><span class="comment">     * hardware frames or any that are used are to be allocated internally by</span></span><br><span class="line"><span class="comment">     * libavcodec.  If the user wishes to supply any of the frames used as</span></span><br><span class="line"><span class="comment">     * encoder input or decoder output then hw_frames_ctx should be used</span></span><br><span class="line"><span class="comment">     * instead.  When hw_frames_ctx is set in get_format() for a decoder, this</span></span><br><span class="line"><span class="comment">     * field will be ignored while decoding the associated stream segment, but</span></span><br><span class="line"><span class="comment">     * may again be used on a following one after another get_format() call.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * For both encoders and decoders this field should be set before</span></span><br><span class="line"><span class="comment">     * avcodec_open2() is called and must not be written to thereafter.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * Note that some decoders may require this field to be set initially in</span></span><br><span class="line"><span class="comment">     * order to support hw_frames_ctx at all - in that case, all frames</span></span><br><span class="line"><span class="comment">     * contexts used must be created on the same device.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    AVBufferRef *hw_device_ctx;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Bit set of AV_HWACCEL_FLAG_* flags, which affect hardware accelerated</span></span><br><span class="line"><span class="comment">     * decoding (if active).</span></span><br><span class="line"><span class="comment">     * - encoding: unused</span></span><br><span class="line"><span class="comment">     * - decoding: Set by user (either before avcodec_open2(), or in the</span></span><br><span class="line"><span class="comment">     *             AVCodecContext.get_format callback)</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span> hwaccel_flags;</span><br></pre></td></tr></table></figure>
+<p>但是为什么找不到hwaccel_flags的赋值???</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">decoder_ctx-&gt;hw_device_ctx = av_buffer_ref(hw_device_ctx);</span><br><span class="line">如果要进行硬件加速,这一行是必须的.!但是如果我编译好了可以支持硬件加速的libavcodec,我怎么不硬件加速??如果不写就是硬件加速的??默认不加速?哪怕编码器里面配置了,但是因为我初始化这边没设置(默认配置),所以默认就是不加速的?</span><br></pre></td></tr></table></figure>
+<p>参考<a href="http://blog.51cto.com/fengyuzaitu/2059121" target="_blank" rel="noopener">FFmpeg avcodec_parameters_to_context函数剖析</a></p>
+<blockquote>
+<p>历史说明<br>​            以往FFmpeg版本中保存视音频流信息参数是AVStream结构体中的AVCodecContext字段。当前FFmpeg版本是3.4，新的版本已经将AVStream结构体中的AVCodecContext字段定义为废弃属性。因此无法像以前旧的版本直接通过如下的代码获取到AVCodecContext结构体参数：<br>AVCodecContext* pAVCodecContext = avcodec_alloc_context3(NULL);<br>pAVCodecContext = pAVFormatContext-&gt;streams[videoStream]-&gt;codec;<br>​    当前版本保存视音频流信息的结构体AVCodecParameters，FFmpeg提供了函数avcodec_parameters_to_context将音频流信息拷贝到新的AVCodecContext结构体中</p>
+</blockquote>
+<h4 id="AVHWAccel怎么与AVCodec交互的"><a href="#AVHWAccel怎么与AVCodec交互的" class="headerlink" title="AVHWAccel怎么与AVCodec交互的?"></a>AVHWAccel怎么与AVCodec交互的?</h4><p>在API编解码开发时,硬件加速应该是作为了一种”选项”,支持的编解码格式不多,然后可选定,选定之后就需要进行配置相关信息.</p>
+<h3 id="额外问题-感兴趣-还没研究"><a href="#额外问题-感兴趣-还没研究" class="headerlink" title="额外问题,感兴趣,还没研究"></a>额外问题,感兴趣,还没研究</h3><p>1.如何遍历ffmpeg中的解码器信息</p>
+<p>2.AVCodec在哪初始化的?是用ff_thread_once()?不确定是不是这个函数了,猜是全局的一个数据,而且只要初始化一次.</p>
+<p>3.这些结构体在哪初始化的?在哪销毁的?</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ffmpeg/" rel="tag"># ffmpeg</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/06/体系结构-DLX五段流水线基本理解/" rel="next" title="DLX五段流水线基本理解">
+                <i class="fa fa-chevron-left"></i> DLX五段流水线基本理解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/03/ffmpeg-ffmpeg-AVBuffer-AVBufferRef-源码阅读/" rel="prev" title="ffmpeg-AVBuffer-AVBufferRef-源码阅读">
+                ffmpeg-AVBuffer-AVBufferRef-源码阅读 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">mojiajun</p>
+              <p class="site-description motion-element" itemprop="description">莫佳骏学习笔记</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#关于硬件加速"><span class="nav-number">1.</span> <span class="nav-text">关于硬件加速:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他的相关的信息"><span class="nav-number">2.</span> <span class="nav-text">其他的相关的信息:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#AVHWAccel结构体定义"><span class="nav-number">2.1.</span> <span class="nav-text">AVHWAccel结构体定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#enum-AVHWDeviceType"><span class="nav-number">2.2.</span> <span class="nav-text">enum AVHWDeviceType</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#像素格式有关的"><span class="nav-number">2.3.</span> <span class="nav-text">像素格式有关的:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#在ffmpeg-c里面发现这么一个回调函数-具体在哪些位置会被调用"><span class="nav-number">2.4.</span> <span class="nav-text">在ffmpeg.c里面发现这么一个回调函数.具体在哪些位置会被调用?</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#typedef-struct-InputStream-ffmpeg-h定义的结构体-不是API的一部分-理解ffmpeg-c需要"><span class="nav-number">2.5.</span> <span class="nav-text">typedef struct InputStream,ffmpeg.h定义的结构体:不是API的一部分,理解ffmpeg.c需要</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AVCodecContext-这个编解码器上下文里面有这么几项"><span class="nav-number">2.6.</span> <span class="nav-text">AVCodecContext;这个编解码器上下文里面有这么几项:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#FFmpeg和HEVC解码器之间-ff-hevc-decoder是接口。类似h264"><span class="nav-number">2.7.</span> <span class="nav-text">FFmpeg和HEVC解码器之间,ff_hevc_decoder是接口。类似h264.</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#aac-在aacdec-c里面-没硬件加速"><span class="nav-number">2.8.</span> <span class="nav-text">aac,在aacdec.c里面,没硬件加速</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#API使用时注意的"><span class="nav-number">3.</span> <span class="nav-text">API使用时注意的:</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#新的API-ffmpeg大版本号3时就是了-都不算”新”了"><span class="nav-number">3.1.</span> <span class="nav-text">新的API,ffmpeg大版本号3时就是了?都不算”新”了?</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#硬件加速对编译-链接的影响"><span class="nav-number">4.</span> <span class="nav-text">硬件加速对编译,链接的影响</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#libavcodec-Makefile-libavcodec模块与硬件加速有关的部分"><span class="nav-number">4.1.</span> <span class="nav-text">libavcodec/Makefile_libavcodec模块与硬件加速有关的部分</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重要问题-还没解决"><span class="nav-number">5.</span> <span class="nav-text">重要问题,还没解决</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#AVHWAccel怎么与AVCodec交互的"><span class="nav-number">5.1.</span> <span class="nav-text">AVHWAccel怎么与AVCodec交互的?</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#额外问题-感兴趣-还没研究"><span class="nav-number">6.</span> <span class="nav-text">额外问题,感兴趣,还没研究</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">mojiajun</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

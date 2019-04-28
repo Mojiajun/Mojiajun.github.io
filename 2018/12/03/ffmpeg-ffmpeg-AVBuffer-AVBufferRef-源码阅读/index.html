@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="ffmpeg,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="FFMPEG-AVBuffer-AVBufferRef-源码阅读 参考了ffmpeg中AVBuffer的实现分析 下面这个分析的更好.深入理解FFMPEG-AVBuffer/AVBufferRef/AVBufferPool 主要实现文件位于libavutil中的buffer.h、buffer_internal.h、buffer.c三个文件中。其中最主要的是两个结构AVBufferRef和AVBuf">
+<meta name="keywords" content="ffmpeg">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ffmpeg-AVBuffer-AVBufferRef-源码阅读">
+<meta property="og:url" content="http://mojiajun.github.io/2018/12/03/ffmpeg-ffmpeg-AVBuffer-AVBufferRef-源码阅读/index.html">
+<meta property="og:site_name" content="mojiajun">
+<meta property="og:description" content="FFMPEG-AVBuffer-AVBufferRef-源码阅读 参考了ffmpeg中AVBuffer的实现分析 下面这个分析的更好.深入理解FFMPEG-AVBuffer/AVBufferRef/AVBufferPool 主要实现文件位于libavutil中的buffer.h、buffer_internal.h、buffer.c三个文件中。其中最主要的是两个结构AVBufferRef和AVBuf">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-04-28T08:00:02.275Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ffmpeg-AVBuffer-AVBufferRef-源码阅读">
+<meta name="twitter:description" content="FFMPEG-AVBuffer-AVBufferRef-源码阅读 参考了ffmpeg中AVBuffer的实现分析 下面这个分析的更好.深入理解FFMPEG-AVBuffer/AVBufferRef/AVBufferPool 主要实现文件位于libavutil中的buffer.h、buffer_internal.h、buffer.c三个文件中。其中最主要的是两个结构AVBufferRef和AVBuf">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://mojiajun.github.io/2018/12/03/ffmpeg-ffmpeg-AVBuffer-AVBufferRef-源码阅读/">
+
+
+
+
+
+  <title>ffmpeg-AVBuffer-AVBufferRef-源码阅读 | mojiajun</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mojiajun</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mojiajun.github.io/2018/12/03/ffmpeg-ffmpeg-AVBuffer-AVBufferRef-源码阅读/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ffmpeg-AVBuffer-AVBufferRef-源码阅读</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-12-03T00:00:00+08:00">
+                2018-12-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ffmpeg/" itemprop="url" rel="index">
+                    <span itemprop="name">ffmpeg</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ffmpeg/ffmpeg-源码阅读/" itemprop="url" rel="index">
+                    <span itemprop="name">ffmpeg-源码阅读</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>FFMPEG-AVBuffer-AVBufferRef-源码阅读</p>
+<p>参考了<a href="https://www.cnblogs.com/tocy/p/ffmpeg-libavutil-avbuffer-imp.html" target="_blank" rel="noopener">ffmpeg中AVBuffer的实现分析</a></p>
+<p>下面这个分析的更好.<a href="https://blog.csdn.net/muyuyuzhong/article/details/79381152" target="_blank" rel="noopener">深入理解FFMPEG-AVBuffer/AVBufferRef/AVBufferPool</a></p>
+<p>主要实现文件位于libavutil中的buffer.h、buffer_internal.h、buffer.c三个文件中。其中最主要的是两个结构<strong>AVBufferRef</strong>和<strong>AVBuffer</strong>。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">libavutil/buffer_internal.h</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">AVBuffer</span> &#123;</span></span><br><span class="line">    <span class="keyword">uint8_t</span> *data; <span class="comment">/**&lt; data described by this buffer */</span></span><br><span class="line">    <span class="keyword">int</span>      size; <span class="comment">/**&lt; size of data in bytes */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     *  number of existing AVBufferRef instances referring to this buffer</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">atomic_uint</span> refcount;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * a callback for freeing the data</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">void</span> (*<span class="built_in">free</span>)(<span class="keyword">void</span> *opaque, <span class="keyword">uint8_t</span> *data);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * an opaque pointer, to be used by the freeing callback</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">void</span> *opaque;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * A combination of BUFFER_FLAG_*</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span> flags;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">AVBufferRef</span> &#123;</span></span><br><span class="line">    AVBuffer *buffer;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * The data buffer. It is considered writable if and only if</span></span><br><span class="line"><span class="comment">     * this is the only reference to the buffer, in which case</span></span><br><span class="line"><span class="comment">     * av_buffer_is_writable() returns 1.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">uint8_t</span> *data;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Size of data in bytes.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">int</span>      size;</span><br><span class="line">&#125; AVBufferRef;</span><br></pre></td></tr></table></figure>
+<p>外部使用最好是通过AVBufferRef来引用数据.不然就丧失了这个设计的意义.(能保障当引用计数等于0时自动释放指定内存区域.)</p>
+<p>av_buffer_alloc()</p>
+<blockquote>
+<p>调用了av_buffer_create()..把AVBufferRef和AVBuffer的data和size设成了一样的值</p>
+<p>调用完成后返回一个AVBufferRef指针.<br>三次分配内存,1.实际数据存放的data指针,2.AVBufferRef结构体,3.AVBuffer结构体。</p>
+</blockquote>
+<p>av_buffer_allocz()只是在av_buffer_alloc()基础上加了一个把实际的数据域data初始化为0的过程.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">AVBufferRef *<span class="title">av_buffer_ref</span><span class="params">(AVBufferRef *buf)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    AVBufferRef *ret = av_mallocz(<span class="keyword">sizeof</span>(*ret));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!ret)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">    *ret = *buf;</span><br><span class="line"></span><br><span class="line">    atomic_fetch_add_explicit(&amp;buf-&gt;buffer-&gt;refcount, <span class="number">1</span>, memory_order_relaxed);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>av_buffer_ref()给AVBufferRef *buf创建一份AVBufferRef结构体的copy,然后返回这个AVBufferRef.但是没有拷贝底层数据,只是把原来的引用计数用原子操作加一.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">buffer_replace</span><span class="params">(AVBufferRef **dst, AVBufferRef **src)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    AVBuffer *b;</span><br><span class="line"></span><br><span class="line">    b = (*dst)-&gt;buffer;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (src) &#123;</span><br><span class="line">        **dst = **src;</span><br><span class="line">        av_freep(src);</span><br><span class="line">    &#125; <span class="keyword">else</span></span><br><span class="line">        av_freep(dst);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (atomic_fetch_add_explicit(&amp;b-&gt;refcount, <span class="number">-1</span>, memory_order_acq_rel) == <span class="number">1</span>) &#123;</span><br><span class="line">        b-&gt;<span class="built_in">free</span>(b-&gt;opaque, b-&gt;data);</span><br><span class="line">        av_freep(&amp;b);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">	这个buffer_replace是一个实现函数,只能在buffer.c内部使用.(加了<span class="keyword">static</span>)</span><br><span class="line">	功能如其名,让**dst被**src取代,这是结构体本身的直接赋值(覆盖).分两种情况:一,如果src是<span class="literal">NULL</span>,那么直接把AVBufferRef **dst这个结构体释放掉;二,如果src这个二级指针不为空,那么就完成替换操作,同时释放掉src.</span><br><span class="line"> 	不管哪种情况,dst里面管理的AVBuffer里面的refcount都要减一,如果满足合适条件(这个条件没看懂,是减一后判断引用计数是不是等于<span class="number">1</span>?),就释放掉AVBuffer和buf.也就是释放掉AVBufferRef这个类似于智能指针底下管理的数据.</span><br><span class="line">    类似C++的智能指针.但是又有区别,从右到左的赋值没有增加右边的引用计数,反而把右边的释放了,正如replace含义.</span><br><span class="line">PS:</span><br><span class="line"><span class="number">1.</span>查阅文档,发现atomic_fetch_add_explicit()返回的是计算前的值,所以这里==<span class="number">1</span>也就不奇怪了.</span><br><span class="line">The value held previously be the atomic object pointed to by obj.</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">void av_buffer_unref(AVBufferRef **buf)调用了buffer_replace(buf, NULL),也就是把buf直接释放掉了,只要调用buffer_replace()就会把引用计数减一,然后检测底层数据的引用数.如果没有被引用了,就把底层数据释放掉.</span><br><span class="line"></span><br><span class="line">av_buffer_ref()</span><br><span class="line">av_buffer_unref()这两函数操作的都是AVBufferRef,一个创建AVBufferRef,一个销毁AVBufferRef,要不要操作底层数据会根据引用计数自行判断.</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_buffer_is_writable</span><span class="params">(<span class="keyword">const</span> AVBufferRef *buf)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (buf-&gt;buffer-&gt;flags &amp; AV_BUFFER_FLAG_READONLY)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> atomic_load(&amp;buf-&gt;buffer-&gt;refcount) == <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line">buffer要可写必须前提是flags不能是AV_BUFFER_FLAG_READONLY,然后引用计数必须是<span class="number">1.</span>也即是当前只有一个AVBufferRef在引用这块buffer,才处于可写状态.</span><br><span class="line">av_buffer_make_writable(AVBufferRef **pbuf)这个就另外建立了一套新的引用计数系统,当然计数为<span class="number">1.</span>把原来的pbuf里面的引用计数减一.</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">av_buffer_make_writable</span><span class="params">(AVBufferRef **pbuf)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    AVBufferRef *newbuf, *buf = *pbuf;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (av_buffer_is_writable(buf))</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    newbuf = av_buffer_alloc(buf-&gt;size);<span class="comment">//分配三个东西(1.实际数据存放的data指针,2.AVBufferRef结构体,3.AVBuffer结构体。)的内存.创建一套新的引用计数系统.</span></span><br><span class="line">    <span class="keyword">if</span> (!newbuf)</span><br><span class="line">        <span class="keyword">return</span> AVERROR(ENOMEM);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">memcpy</span>(newbuf-&gt;data, buf-&gt;data, buf-&gt;size);<span class="comment">//把原来的buf-&gt;data拷贝到newbuf-&gt;data.</span></span><br><span class="line"></span><br><span class="line">    buffer_replace(pbuf, &amp;newbuf);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line">可以通过av_buffer_make_writable()来让其可写，该函数内部内部自动创建一个新的数据缓冲区，并且原来的AVBuffer引用计数<span class="number">-1.</span></span><br></pre></td></tr></table></figure>
+<p>AVBufferPool还没分析.</p>
+<p>然后这几个函数在哪被用到了还没看</p>
+<p>libavutil/frame.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AVFrame</span><br><span class="line">av_frame_ref()</span><br><span class="line">av_frame_unref()</span><br></pre></td></tr></table></figure>
+<p>libavcodec/avpacket.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AVPacket</span><br><span class="line">av_packet_ref()</span><br><span class="line">av_packet_unref()</span><br></pre></td></tr></table></figure>
+<p>参考文献:<br>1.<a href="https://www.cnblogs.com/tocy/p/ffmpeg-libavutil-avbuffer-imp.html" target="_blank" rel="noopener">ffmpeg中AVBuffer的实现分析</a></p>
+<p>2.<a href="https://blog.csdn.net/muyuyuzhong/article/details/79381152" target="_blank" rel="noopener">深入理解FFMPEG-AVBuffer/AVBufferRef/AVBufferPool</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ffmpeg/" rel="tag"># ffmpeg</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/03/ffmpeg-ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研/" rel="next" title="ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研">
+                <i class="fa fa-chevron-left"></i> ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/08/foundation-基础知识-整型-补码-大小端-字符编码-浮点数/" rel="prev" title="基础知识-整型-补码-大小端-字符编码-浮点数">
+                基础知识-整型-补码-大小端-字符编码-浮点数 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">mojiajun</p>
+              <p class="site-description motion-element" itemprop="description">莫佳骏学习笔记</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">mojiajun</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
