@@ -262,6 +262,177 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mojiajun.github.io/源码阅读/redis/redis_项目文件概览/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/源码阅读/redis/redis_项目文件概览/" itemprop="url">redis-项目文件概览</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-28T00:00:00+08:00">
+                2019-04-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/源码阅读/" itemprop="url" rel="index">
+                    <span itemprop="name">源码阅读</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/源码阅读/redis/" itemprop="url" rel="index">
+                    <span itemprop="name">redis</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>[TOC]</p>
+<p>基于redis-2.8</p>
+<h2 id="底层数据结构"><a href="#底层数据结构" class="headerlink" title="底层数据结构"></a>底层数据结构</h2><h3 id="dict-h-c"><a href="#dict-h-c" class="headerlink" title="dict.h.c"></a>dict.h.c</h3><p>dict,hash的实现</p>
+<h3 id="adlist-h-c"><a href="#adlist-h-c" class="headerlink" title="adlist.h.c"></a>adlist.h.c</h3><p>通用双向链表?</p>
+<h3 id="sds-h-c"><a href="#sds-h-c" class="headerlink" title="sds.h.c"></a>sds.h.c</h3><p>封装了底层的字符串</p>
+<h2 id="五种redis对象-基于底层数据结构"><a href="#五种redis对象-基于底层数据结构" class="headerlink" title="五种redis对象(基于底层数据结构)"></a>五种redis对象(基于底层数据结构)</h2><h3 id="t-list-c"><a href="#t-list-c" class="headerlink" title="t_list.c"></a>t_list.c</h3><h3 id="t-set-c"><a href="#t-set-c" class="headerlink" title="t_set.c"></a>t_set.c</h3><h3 id="t-string-c"><a href="#t-string-c" class="headerlink" title="t_string.c"></a>t_string.c</h3><h3 id="t-zset-c"><a href="#t-zset-c" class="headerlink" title="t_zset.c"></a>t_zset.c</h3><h3 id="t-hash-c"><a href="#t-hash-c" class="headerlink" title="t_hash.c"></a>t_hash.c</h3><h2 id="网络有关"><a href="#网络有关" class="headerlink" title="网络有关"></a>网络有关</h2><h3 id="networking-c"><a href="#networking-c" class="headerlink" title="networking.c"></a>networking.c</h3><p>和anet,ae的关系?</p>
+<h3 id="anet-h-c"><a href="#anet-h-c" class="headerlink" title="anet.h.c"></a>anet.h.c</h3><p>a代表什么?封装了底层操作系统的socket API</p>
+<h3 id="ae-h-c"><a href="#ae-h-c" class="headerlink" title="ae.h.c"></a>ae.h.c</h3><p>简单的事件驱动库,redis的reactor模式的实现</p>
+<h4 id="ae-epoll-c-ae-evport-c-ae-kqueue-c-qe-select-c"><a href="#ae-epoll-c-ae-evport-c-ae-kqueue-c-qe-select-c" class="headerlink" title="ae_epoll.c,ae_evport.c,ae_kqueue.c,qe_select.c"></a>ae_epoll.c,ae_evport.c,ae_kqueue.c,qe_select.c</h4><p>这四个文件统一了不同操作系统提供的I/O event notification.<br>拿linux下的ae_epoll.c举例子,其在底层的epoll上面封了一层.</p>
+<p>ae.h.c会使用这四种操作系统提供的event notification之一,对于ae.h.c来说,API是统一的.</p>
+<h2 id="上层数据库"><a href="#上层数据库" class="headerlink" title="上层数据库"></a>上层数据库</h2><h3 id="redis-h-c"><a href="#redis-h-c" class="headerlink" title="redis.h.c"></a>redis.h.c</h3><p>redisDb是数据库的核心结构体,围绕它有redisClient,redisServer.分配代表客户端和服务器,然后再基于reactor模式,实现了两者之间的通信,典型的C/S架构.</p>
+<p>redis.h里面的很多API函数是在其他的一些.c里实现的,不一定在redis.c里.例如redisDb的API函数就是在db.c里实现的.</p>
+<h2 id="通用"><a href="#通用" class="headerlink" title="通用"></a>通用</h2><h3 id="zmalloc-h-c"><a href="#zmalloc-h-c" class="headerlink" title="zmalloc.h.c"></a>zmalloc.h.c</h3><p>封装了底层的malloc,calloc,remalloc,free四个函数.提供了可以进行内存分配统计的能力.</p>
+<blockquote>
+<p>  可以替换掉glibc的内存分配函数,例如可以用jemalloc库代替.有啥优点?</p>
+</blockquote>
+<h2 id="杂项"><a href="#杂项" class="headerlink" title="杂项"></a>杂项</h2><h3 id="version-h"><a href="#version-h" class="headerlink" title="version.h"></a>version.h</h3><p>版本号</p>
+<h3 id="asciilogo-h"><a href="#asciilogo-h" class="headerlink" title="asciilogo.h"></a>asciilogo.h</h3><p>redis的ascii格式的logo,在服务器启动的时候会显示出来.</p>
+<h3 id="config-c"><a href="#config-c" class="headerlink" title="config.c"></a>config.c</h3><p>解析配置文件的实现函数,API接口在redis.h里</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mojiajun.github.io/源码阅读/redis/redis_服务器初始化/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1000,7 +1171,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
