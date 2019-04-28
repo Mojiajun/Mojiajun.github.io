@@ -83,11 +83,11 @@
 <meta name="keywords" content="ffmpeg">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ffmpeg-AVBuffer-AVBufferRef-源码阅读">
-<meta property="og:url" content="http://mojiajun.github.io/2018/12/03/ffmpeg-ffmpeg-AVBuffer-AVBufferRef-源码阅读/index.html">
+<meta property="og:url" content="http://mojiajun.github.io/2018/12/03/ffmpeg_AVBuffer-AVBufferRef-源码阅读/index.html">
 <meta property="og:site_name" content="mojiajun">
 <meta property="og:description" content="FFMPEG-AVBuffer-AVBufferRef-源码阅读 参考了ffmpeg中AVBuffer的实现分析 下面这个分析的更好.深入理解FFMPEG-AVBuffer/AVBufferRef/AVBufferPool 主要实现文件位于libavutil中的buffer.h、buffer_internal.h、buffer.c三个文件中。其中最主要的是两个结构AVBufferRef和AVBuf">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-04-28T08:00:02.275Z">
+<meta property="og:updated_time" content="2019-04-28T10:17:15.374Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ffmpeg-AVBuffer-AVBufferRef-源码阅读">
 <meta name="twitter:description" content="FFMPEG-AVBuffer-AVBufferRef-源码阅读 参考了ffmpeg中AVBuffer的实现分析 下面这个分析的更好.深入理解FFMPEG-AVBuffer/AVBufferRef/AVBufferPool 主要实现文件位于libavutil中的buffer.h、buffer_internal.h、buffer.c三个文件中。其中最主要的是两个结构AVBufferRef和AVBuf">
@@ -120,7 +120,7 @@
 
 
 
-  <link rel="canonical" href="http://mojiajun.github.io/2018/12/03/ffmpeg-ffmpeg-AVBuffer-AVBufferRef-源码阅读/">
+  <link rel="canonical" href="http://mojiajun.github.io/2018/12/03/ffmpeg_AVBuffer-AVBufferRef-源码阅读/">
 
 
 
@@ -191,12 +191,12 @@
         </li>
       
         
-        <li class="menu-item menu-item-about">
-          <a href="/about/" rel="section">
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
             
-              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
             
-            About
+            Categories
           </a>
         </li>
       
@@ -211,22 +211,22 @@
         </li>
       
         
-        <li class="menu-item menu-item-categories">
-          <a href="/categories/" rel="section">
-            
-              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
-            
-            Categories
-          </a>
-        </li>
-      
-        
         <li class="menu-item menu-item-archives">
           <a href="/archives/" rel="section">
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
             
             Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
           </a>
         </li>
       
@@ -263,7 +263,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mojiajun.github.io/2018/12/03/ffmpeg-ffmpeg-AVBuffer-AVBufferRef-源码阅读/">
+    <link itemprop="mainEntityOfPage" href="http://mojiajun.github.io/2018/12/03/ffmpeg_AVBuffer-AVBufferRef-源码阅读/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="mojiajun">
@@ -315,8 +315,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/ffmpeg/" itemprop="url" rel="index">
-                    <span itemprop="name">ffmpeg</span>
+                  <a href="/categories/源码阅读/" itemprop="url" rel="index">
+                    <span itemprop="name">源码阅读</span>
                   </a>
                 </span>
 
@@ -326,8 +326,8 @@
                 
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/ffmpeg/ffmpeg-源码阅读/" itemprop="url" rel="index">
-                    <span itemprop="name">ffmpeg-源码阅读</span>
+                  <a href="/categories/源码阅读/ffmpeg/" itemprop="url" rel="index">
+                    <span itemprop="name">ffmpeg</span>
                   </a>
                 </span>
 
@@ -401,6 +401,24 @@
     
 
     
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>Post author:</strong>
+    mojiajun
+  </li>
+  <li class="post-copyright-link">
+    <strong>Post link:</strong>
+    <a href="http://mojiajun.github.io/2018/12/03/ffmpeg_AVBuffer-AVBufferRef-源码阅读/" title="ffmpeg-AVBuffer-AVBufferRef-源码阅读">http://mojiajun.github.io/2018/12/03/ffmpeg_AVBuffer-AVBufferRef-源码阅读/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice: </strong>
+    All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> unless stating additionally.
+  </li>
+</ul>
+
+      </div>
+    
 
     <footer class="post-footer">
       
@@ -419,18 +437,14 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/12/03/ffmpeg-ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研/" rel="next" title="ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研">
-                <i class="fa fa-chevron-left"></i> ffmpeg-API-GPU-CPU-统一接口-解加封装-编解码调研
-              </a>
-            
           </div>
 
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2018/12/08/foundation-基础知识-整型-补码-大小端-字符编码-浮点数/" rel="prev" title="基础知识-整型-补码-大小端-字符编码-浮点数">
-                基础知识-整型-补码-大小端-字符编码-浮点数 <i class="fa fa-chevron-right"></i>
+              <a href="/2018/12/08/基础知识_整型_补码_大小端_字符编码_浮点数/" rel="prev" title="基础知识_整型_补码_大小端_字符编码_浮点数">
+                基础知识_整型_补码_大小端_字符编码_浮点数 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -499,7 +513,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -510,7 +524,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -521,7 +535,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
@@ -572,11 +586,7 @@
 
 
 
-  <span class="post-meta-divider">|</span>
 
-
-
-  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
 
 
 
