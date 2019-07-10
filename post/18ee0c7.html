@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="redis,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="[TOC] inline assembly入门:【Linux学习笔记】Linux C中内联汇编的语法格式及使用方法（Inline Assembly in Linux C）这个讲的比较好了.更全面的得查类似GCC-Inline-Assembly-HOWTO这种 inline assembly感觉细节好多…下次看估计又忘了…  用1对双引号将多行命令括起来 加”;”分号?clobbered regis">
+<meta name="keywords" content="redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mit6828-内联汇编-xv6-xchg-spinlock">
+<meta property="og:url" content="https://mojiajun.github.io/post/18ee0c7.html">
+<meta property="og:site_name" content="mojiajun">
+<meta property="og:description" content="[TOC] inline assembly入门:【Linux学习笔记】Linux C中内联汇编的语法格式及使用方法（Inline Assembly in Linux C）这个讲的比较好了.更全面的得查类似GCC-Inline-Assembly-HOWTO这种 inline assembly感觉细节好多…下次看估计又忘了…  用1对双引号将多行命令括起来 加”;”分号?clobbered regis">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-07-10T09:44:29.185Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mit6828-内联汇编-xv6-xchg-spinlock">
+<meta name="twitter:description" content="[TOC] inline assembly入门:【Linux学习笔记】Linux C中内联汇编的语法格式及使用方法（Inline Assembly in Linux C）这个讲的比较好了.更全面的得查类似GCC-Inline-Assembly-HOWTO这种 inline assembly感觉细节好多…下次看估计又忘了…  用1对双引号将多行命令括起来 加”;”分号?clobbered regis">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://mojiajun.github.io/post/18ee0c7.html">
+
+
+
+
+
+  <title>mit6828-内联汇编-xv6-xchg-spinlock | mojiajun</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mojiajun</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/18ee0c7.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">mit6828-内联汇编-xv6-xchg-spinlock</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-07-10T00:00:00+08:00">
+                2019-07-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/源码阅读/" itemprop="url" rel="index">
+                    <span itemprop="name">源码阅读</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/源码阅读/redis/" itemprop="url" rel="index">
+                    <span itemprop="name">redis</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>[TOC]</p>
+<h2 id="inline-assembly"><a href="#inline-assembly" class="headerlink" title="inline assembly"></a>inline assembly</h2><p>入门:<a href="https://blog.csdn.net/slvher/article/details/8864996" target="_blank" rel="noopener">【Linux学习笔记】Linux C中内联汇编的语法格式及使用方法（Inline Assembly in Linux C）</a>这个讲的比较好了.更全面的得查类似<a href="http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html#ss5.1" target="_blank" rel="noopener">GCC-Inline-Assembly-HOWTO</a>这种</p>
+<p>inline assembly感觉细节好多…下次看估计又忘了…</p>
+<hr>
+<p>用1对双引号将多行命令括起来 加”;”分号?<br>clobbered register修饰寄存器?修饰?<br><a href="https://en.wikipedia.org/wiki/Inline_assembler" target="_blank" rel="noopener">Inline assembler</a>里面有个用汇编求tan(x)的例子,待看,感觉挺有趣.</p>
+<hr>
+<p>当我们不想通过寄存器中转，而是直接操作内存时，可以用”m”来约束。例如：<br>asm volatile ( “lock; decl %0” : “=m” (counter) : “m” (counter));<br>该指令实现原子减一操作，输入、输出操作数均直接来自内存（<strong>也正因如此，才能保证操作的原子性</strong>）。 </p>
+<blockquote>
+<p>  也正因如此，才能保证操作的原子性,更底层细节?这是是保证原子性的关键吗?结合后面的xv6的xchg函数实现.<br>  3个东西.1是lock前缀,2是+代表read-modify-write,3是”m”直接操作内存</p>
+</blockquote>
+<p>“=的意思” output operand应该有个”=”,1.说明这个是输出操作数,2.write-only</p>
+<ul>
+<li>“r” is a constraint on the operands. We’ll see constraints in detail later. For the time being, “r” says to GCC to use any register for storing the operands. output operand constraint should have a constraint modifier “=”. And this modifier says that it is the output operand and is write-only.</li>
+</ul>
+<p>“cc”的意思</p>
+<p>If our instruction can alter the condition code register, we have to add “cc” to the list of clobbered registers.s</p>
+<hr>
+<h2 id="xv6的xchg函数"><a href="#xv6的xchg函数" class="headerlink" title="xv6的xchg函数"></a>xv6的xchg函数</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//交换*addr和newval,然后把*addr的原先的值作为result返回!!!这只是从C层面可以这么从逻辑上理解.实际编译器干的有些区别,但是最终结果一致.</span></span><br><span class="line"><span class="comment">//范例:见后面</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> uint</span><br><span class="line">xchg(<span class="keyword">volatile</span> uint *addr, uint newval)</span><br><span class="line">&#123;</span><br><span class="line">  uint result;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// The + in "+m" denotes a read-modify-write operand.</span></span><br><span class="line">  <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"lock; xchgl %0, %1"</span> :</span></span></span><br><span class="line"><span class="function"><span class="params">               <span class="string">"+m"</span> (*addr), <span class="string">"=a"</span> (result) :</span></span></span><br><span class="line"><span class="function"><span class="params">               <span class="string">"1"</span> (newval) :</span></span></span><br><span class="line"><span class="function"><span class="params">               <span class="string">"cc"</span>)</span></span>;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 这个"1"感觉是代表对应前面的%1,指定位置的作用?没仔细查...猜的</span></span><br><span class="line">kernel.<span class="keyword">asm</span>:</span><br><span class="line"> <span class="number">8515</span>   <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"lock; xchgl %0, %1"</span> :</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8516</span> <span class="number">80104373</span>:       ba <span class="number">01</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>          mov    $<span class="number">0x1</span>,%edx</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8517</span> <span class="number">80104378</span>:       eb <span class="number">09</span>                   jmp    <span class="number">80104383</span> &lt;acquire+<span class="number">0x33</span>&gt;</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8518</span> <span class="number">8010437</span>a:       <span class="number">8</span>d b6 <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>       lea    <span class="number">0x0</span>(%esi),%esi</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8519</span> <span class="number">80104380</span>:       <span class="number">8b</span> <span class="number">5</span>d <span class="number">08</span>                mov    <span class="number">0x8</span>(%ebp),%ebx</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8520</span> <span class="number">80104383</span>:       <span class="number">89</span> d0                   mov    %edx,%eax</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8521</span> <span class="number">80104385</span>:       f0 <span class="number">87</span> <span class="number">03</span>                lock xchg %eax,(%ebx)</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8522</span>   <span class="keyword">while</span>(xchg(&amp;lk-&gt;locked, <span class="number">1</span>) != <span class="number">0</span>)</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8523</span> <span class="number">80104388</span>:       <span class="number">85</span> c0                   test   %eax,%eax</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8524</span> <span class="number">8010438</span>a:       <span class="number">75</span> f4                   jne    <span class="number">80104380</span> &lt;acquire+<span class="number">0x30</span>&gt;</span></span></span><br><span class="line"><span class="function"><span class="params">在实际运行的汇编代码里面为什么顺序又变了?前后的顺序?</span></span></span><br><span class="line"><span class="function"><span class="params">猜测:这部分代码还是得根据实际运行的情况来看,test   %eax,%eax,即测试的是eax,而且<span class="string">"=a"</span> (result) :</span></span></span><br><span class="line"><span class="function"><span class="params">所以eax存的是交换之后的值,那么在交换之前,存在是newval</span></span></span><br><span class="line"><span class="function"><span class="params">根据lock; xchgl (*addr), newval字面来套是这样的.因为eax得存交换后的值,所以eax交换前存的是newval</span></span></span><br><span class="line"><span class="function"><span class="params">所以lock; xchgl (*addr), eax,然后就和实际运行看到的相反了...这个过程是编译器给做的.并不太清楚编译器寄存器分配的规则...</span></span></span><br><span class="line"><span class="function"><span class="params">                     </span></span></span><br><span class="line"><span class="function"><span class="params">                     </span></span></span><br><span class="line"><span class="function"><span class="params">附上前后的其他东西,便于数那个&lt;acquire+<span class="number">0x30</span>&gt;的位置十进制数偏移<span class="number">48</span>,jne    <span class="number">80104380</span> &lt;acquire+<span class="number">0x30</span>&gt;跳转到lea    <span class="number">0x0</span>(%esi),%esi</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8498</span> <span class="number">80104350</span> &lt;acquire&gt;:</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8499</span> &#123;</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8500</span> <span class="number">80104350</span>:       <span class="number">55</span>                      push   %ebp</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8501</span> <span class="number">80104351</span>:       <span class="number">89</span> e5                   mov    %esp,%ebp</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8502</span> <span class="number">80104353</span>:       <span class="number">56</span>                      push   %esi</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8503</span> <span class="number">80104354</span>:       <span class="number">53</span>                      push   %ebx</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8504</span>   pushcli(); <span class="comment">// disable interrupts to avoid deadlock.</span></span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8505</span> <span class="number">80104355</span>:       e8 <span class="number">26</span> ff ff ff          call   <span class="number">80104280</span> &lt;pushcli&gt;</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8506</span>   <span class="keyword">if</span>(holding(lk))</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8507</span> <span class="number">8010435</span>a:       <span class="number">8b</span> <span class="number">5</span>d <span class="number">08</span>                mov    <span class="number">0x8</span>(%ebp),%ebx</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8508</span> <span class="number">8010435</span>d:       <span class="number">83</span> ec <span class="number">0</span>c                sub    $<span class="number">0xc</span>,%esp</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8509</span> <span class="number">80104360</span>:       <span class="number">53</span>                      push   %ebx</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8510</span> <span class="number">80104361</span>:       e8 ba ff ff ff          call   <span class="number">80104320</span> &lt;holding&gt;</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8511</span> <span class="number">80104366</span>:       <span class="number">83</span> c4 <span class="number">10</span>                add    $<span class="number">0x10</span>,%esp</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8512</span> <span class="number">80104369</span>:       <span class="number">85</span> c0                   test   %eax,%eax</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8513</span> <span class="number">8010436b</span>:       <span class="number">0f</span> <span class="number">85</span> <span class="number">83</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>       jne    <span class="number">801043f</span>4 &lt;acquire+<span class="number">0xa4</span>&gt;</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8514</span> <span class="number">80104371</span>:       <span class="number">89</span> c6                   mov    %eax,%esi</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8515</span>   <span class="keyword">asm</span> <span class="keyword">volatile</span>(<span class="string">"lock; xchgl %0, %1"</span> :   </span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8516</span> <span class="number">80104373</span>:       ba <span class="number">01</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>          mov    $<span class="number">0x1</span>,%edx</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8517</span> <span class="number">80104378</span>:       eb <span class="number">09</span>                   jmp    <span class="number">80104383</span> &lt;acquire+<span class="number">0x33</span>&gt;</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8518</span> <span class="number">8010437</span>a:       <span class="number">8</span>d b6 <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>       lea    <span class="number">0x0</span>(%esi),%esi</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8519</span> <span class="number">80104380</span>:       <span class="number">8b</span> <span class="number">5</span>d <span class="number">08</span>                mov    <span class="number">0x8</span>(%ebp),%ebx</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8520</span> <span class="number">80104383</span>:       <span class="number">89</span> d0                   mov    %edx,%eax</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8521</span> <span class="number">80104385</span>:       f0 <span class="number">87</span> <span class="number">03</span>                lock xchg %eax,(%ebx)</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8522</span>   <span class="keyword">while</span>(xchg(&amp;lk-&gt;locked, <span class="number">1</span>) != <span class="number">0</span>)      </span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8523</span> <span class="number">80104388</span>:       <span class="number">85</span> c0                   test   %eax,%eax</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8524</span> <span class="number">8010438</span>a:       <span class="number">75</span> f4                   jne    <span class="number">80104380</span> &lt;acquire+<span class="number">0x30</span>&gt;</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8525</span>   __sync_synchronize();</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8526</span> <span class="number">8010438</span>c:       f0 <span class="number">83</span> <span class="number">0</span>c <span class="number">24</span> <span class="number">00</span>          lock orl $<span class="number">0x0</span>,(%esp)</span></span></span><br></pre></td></tr></table></figure>
+<h2 id="xchg-使用案例-xv6的spinlock的acquire和release"><a href="#xchg-使用案例-xv6的spinlock的acquire和release" class="headerlink" title="xchg()使用案例,xv6的spinlock的acquire和release"></a>xchg()使用案例,xv6的spinlock的acquire和release</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">acquire(struct spinlock *lk)</span><br><span class="line">&#123;</span><br><span class="line">  pushcli(); <span class="comment">// disable interrupts to avoid deadlock.</span></span><br><span class="line">  <span class="keyword">if</span>(holding(lk))</span><br><span class="line">    panic(<span class="string">"acquire"</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// The xchg is atomic.</span></span><br><span class="line">  <span class="keyword">while</span>(xchg(&amp;lk-&gt;locked, <span class="number">1</span>) != <span class="number">0</span>)</span><br><span class="line">    ;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Tell the C compiler and the processor to not move loads or stores</span></span><br><span class="line">  <span class="comment">// past this point, to ensure that the critical section's memory</span></span><br><span class="line">  <span class="comment">// references happen after the lock is acquired.</span></span><br><span class="line">  __sync_synchronize();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Record info about lock acquisition for debugging.</span></span><br><span class="line">  lk-&gt;cpu = mycpu();</span><br><span class="line">  getcallerpcs(&amp;lk, lk-&gt;pcs);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Release the lock.</span></span><br><span class="line"><span class="keyword">void</span></span><br><span class="line">release(struct spinlock *lk)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span>(!holding(lk))</span><br><span class="line">    panic(<span class="string">"release"</span>);</span><br><span class="line"></span><br><span class="line">  lk-&gt;pcs[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">  lk-&gt;cpu = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Tell the C compiler and the processor to not move loads or stores</span></span><br><span class="line">  <span class="comment">// past this point, to ensure that all the stores in the critical</span></span><br><span class="line">  <span class="comment">// section are visible to other cores before the lock is released.</span></span><br><span class="line">  <span class="comment">// Both the C compiler and the hardware may re-order loads and</span></span><br><span class="line">  <span class="comment">// stores; __sync_synchronize() tells them both not to.</span></span><br><span class="line">  __sync_synchronize();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Release the lock, equivalent to lk-&gt;locked = 0.</span></span><br><span class="line">  <span class="comment">// This code can't use a C assignment, since it might</span></span><br><span class="line">  <span class="comment">// not be atomic. A real OS would use C atomics here.</span></span><br><span class="line">  <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"movl $0, %0"</span> : <span class="string">"+m"</span> (lk-&gt;locked) : )</span></span>;</span><br><span class="line"></span><br><span class="line">  popcli();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"> <span class="number">8516</span> <span class="number">80104373</span>:       ba <span class="number">01</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>          mov    $<span class="number">0x1</span>,%edx</span><br><span class="line"> <span class="number">8517</span> <span class="number">80104378</span>:       eb <span class="number">09</span>                   jmp    <span class="number">80104383</span> &lt;acquire+<span class="number">0x33</span>&gt;</span><br><span class="line"> <span class="number">8518</span> <span class="number">8010437</span>a:       <span class="number">8</span>d b6 <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>       lea    <span class="number">0x0</span>(%esi),%esi</span><br><span class="line"> <span class="number">8519</span> <span class="number">80104380</span>:       <span class="number">8b</span> <span class="number">5</span>d <span class="number">08</span>                mov    <span class="number">0x8</span>(%ebp),%ebx</span><br><span class="line"> <span class="number">8520</span> <span class="number">80104383</span>:       <span class="number">89</span> d0                   mov    %edx,%eax</span><br><span class="line"> <span class="number">8521</span> <span class="number">80104385</span>:       f0 <span class="number">87</span> <span class="number">03</span>                lock xchg %eax,(%ebx)</span><br><span class="line"> <span class="number">8523</span> <span class="number">80104388</span>:       <span class="number">85</span> c0                   test   %eax,%eax</span><br><span class="line"> <span class="number">8524</span> <span class="number">8010438</span>a:       <span class="number">75</span> f4                   jne    <span class="number">80104380</span> &lt;acquire+<span class="number">0x30</span>&gt;</span><br><span class="line"><span class="comment">// 这八行汇编是底下的这个while循环被编译器编译后处理的结果,在kernel.asm拿到的.详细的见前面的分析.jne    80104380 &lt;acquire+0x30&gt;跳到lea    0x0(%esi),%esi</span></span><br><span class="line">  <span class="keyword">while</span>(xchg(&amp;lk-&gt;locked, <span class="number">1</span>) != <span class="number">0</span>)</span><br><span class="line">    ;</span><br><span class="line">没拿到锁的时候,lk-&gt;locked存的是<span class="number">0</span>,拿到锁后存的是<span class="number">1.</span></span><br><span class="line">    </span><br><span class="line">情况A:假设lk这把spinlock的locked原来的状态是<span class="number">0</span>,代表当前这把锁还没有被拿到过,然后进入acquire(),xchg()换lk-&gt;locked和<span class="number">1</span>,交换后lk-&gt;locked存的变成<span class="number">1</span>了,代表锁上了.然后从C层面看的话,xchg()返回的结果是lk-&gt;locked()交换之前的值.也就是<span class="number">0</span>,所以<span class="keyword">while</span>(<span class="number">0</span> != <span class="number">0</span>)条件不满足,<span class="literal">false</span>,<span class="keyword">while</span>(<span class="literal">false</span>),那么不执行循环语句,在这里是空语句(;).然后执行__sync_synchronize();.代表拿到锁了.</span><br><span class="line">    </span><br><span class="line">情况B:假设lk这把spinlock的locked原来的状态是<span class="number">1</span>,代表当前这把锁已经被拿过了,然后进入acquire(),xchg()换lk-&gt;locked和<span class="number">1</span>,交换后lk-&gt;locked存的仍然是<span class="number">1</span>(<span class="number">1</span>和<span class="number">1</span>交换).然后从C层面看的话,xchg()返回的结果是lk-&gt;locked()交换之前的值.也就是<span class="number">1</span>,所以<span class="keyword">while</span>(<span class="number">1</span> != <span class="number">0</span>)条件满足,<span class="literal">true</span>,<span class="keyword">while</span>(<span class="literal">true</span>),那么执行循环语句,在这里是空语句(;)然后再次执行xchg()...还是<span class="number">1</span>和<span class="number">1</span>交换.然后再次执行xchg()...这个就是spinlock的本质!在汇编层面实际执行的循环是,这个就是操作系统教材里面爱提的概念busy wait???</span><br><span class="line"> <span class="number">8518</span> <span class="number">8010437</span>a:       <span class="number">8</span>d b6 <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>       lea    <span class="number">0x0</span>(%esi),%esi</span><br><span class="line"> <span class="number">8519</span> <span class="number">80104380</span>:       <span class="number">8b</span> <span class="number">5</span>d <span class="number">08</span>                mov    <span class="number">0x8</span>(%ebp),%ebx</span><br><span class="line"> <span class="number">8520</span> <span class="number">80104383</span>:       <span class="number">89</span> d0                   mov    %edx,%eax</span><br><span class="line"> <span class="number">8521</span> <span class="number">80104385</span>:       f0 <span class="number">87</span> <span class="number">03</span>                lock xchg %eax,(%ebx)</span><br><span class="line"> <span class="number">8523</span> <span class="number">80104388</span>:       <span class="number">85</span> c0                   test   %eax,%eax</span><br><span class="line"> <span class="number">8524</span> <span class="number">8010438</span>a:       <span class="number">75</span> f4                   jne    <span class="number">80104380</span> &lt;acquire+<span class="number">0x30</span>&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="额外"><a href="#额外" class="headerlink" title="额外"></a>额外</h2><p>1.read-modify-write??</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The + in "+m" denotes a read-modify-write operand.</span></span><br><span class="line">+号在GCC-Inline-Assembly-HOWTO还没找着(没仔细找),还有这个read-modify-write operand,是原子操作的关键所在???!!!</span><br></pre></td></tr></table></figure>
+<p>2.研究下busy wait和sleep<br><a href="https://stackoverflow.com/questions/1107593/what-are-trade-offs-for-busy-wait-vs-sleep" target="_blank" rel="noopener">What are trade offs for “busy wait” vs “sleep”?</a>还没看,但是待看…<br>感觉busy wait消耗cpu资源,sleep并没有消耗cpu资源(只是粗略的讲)</p>
+<p>3.实际调试下,打断点.在acquire()上</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>Post author:</strong>
+    mojiajun
+  </li>
+  <li class="post-copyright-link">
+    <strong>Post link:</strong>
+    <a href="https://mojiajun.github.io/post/18ee0c7.html" title="mit6828-内联汇编-xv6-xchg-spinlock">https://mojiajun.github.io/post/18ee0c7.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice: </strong>
+    All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> unless stating additionally.
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/redis/" rel="tag"># redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/post/11e7222f.html" rel="next" title="redis-项目文件概览">
+                <i class="fa fa-chevron-left"></i> redis-项目文件概览
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">mojiajun</p>
+              <p class="site-description motion-element" itemprop="description">莫佳骏学习笔记</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#inline-assembly"><span class="nav-number">1.</span> <span class="nav-text">inline assembly</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xv6的xchg函数"><span class="nav-number">2.</span> <span class="nav-text">xv6的xchg函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xchg-使用案例-xv6的spinlock的acquire和release"><span class="nav-number">3.</span> <span class="nav-text">xchg()使用案例,xv6的spinlock的acquire和release</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#额外"><span class="nav-number">4.</span> <span class="nav-text">额外</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">mojiajun</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
