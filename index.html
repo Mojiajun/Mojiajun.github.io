@@ -774,167 +774,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/ad18bfc1.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="mojiajun">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mojiajun">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/post/ad18bfc1.html" itemprop="url">ffmpeg-av_read_frame()</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-12-27T00:00:00+08:00">
-                2018-12-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/源码阅读/" itemprop="url" rel="index">
-                    <span itemprop="name">源码阅读</span>
-                  </a>
-                </span>
-
-                
-                
-                  , 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/源码阅读/ffmpeg/" itemprop="url" rel="index">
-                    <span itemprop="name">ffmpeg</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>#av_read_frame()</p>
-<p>代码暂时不贴上来,等看懂之后再贴</p>
-<p>之前印象笔记做过一点这个的笔记的</p>
-<p>##genpts有什么用?</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> genpts = s-&gt;flags &amp; AVFMT_FLAG_GENPTS;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> AVFMT_FLAG_GENPTS       0x0001 <span class="comment">///&lt; Generate missing pts even if it requires parsing future frames.</span></span></span><br></pre></td></tr></table></figure>
-<p>然后通过这个判断,如果等于0,就在下面这两个函数中选一个执行.然后goto return_packet</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ff_packet_list_get(&amp;s-&gt;internal-&gt;packet_buffer,</span><br><span class="line">                          &amp;s-&gt;internal-&gt;packet_buffer_end, pkt)</span><br><span class="line">read_frame_internal(s, pkt);</span><br></pre></td></tr></table></figure>
-<h2 id="如果genpts等于1"><a href="#如果genpts等于1" class="headerlink" title="如果genpts等于1."></a>如果genpts等于1.</h2><p>执行后面的大循环</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">int ff_packet_list_get(AVPacketList **pkt_buffer,</span><br><span class="line">                       AVPacketList **pkt_buffer_end,</span><br><span class="line">                       AVPacket      *pkt)</span><br><span class="line">&#123;</span><br><span class="line">    AVPacketList *pktl;</span><br><span class="line">    av_assert0(*pkt_buffer);  //*pkt_buffer必须非空</span><br><span class="line">    pktl        = *pkt_buffer;</span><br><span class="line">    *pkt        = pktl-&gt;pkt;</span><br><span class="line">    *pkt_buffer = pktl-&gt;next;</span><br><span class="line">    if (!pktl-&gt;next)</span><br><span class="line">        *pkt_buffer_end = NULL;</span><br><span class="line">    av_freep(&amp;pktl);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/83a7b206.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -989,8 +828,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/基础知识/" itemprop="url" rel="index">
-                    <span itemprop="name">基础知识</span>
+                  <a href="/categories/OS/" itemprop="url" rel="index">
+                    <span itemprop="name">OS</span>
                   </a>
                 </span>
 
@@ -1353,7 +1192,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1364,7 +1203,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
