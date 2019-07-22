@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="这篇是虚函数表vtbl和虚表指针vptr的基础.基本认知,采用的是调试器反汇编看底层的方式.额外提了下空类. 测试环境:x86-64Ubuntu 18.04.2 LTScat /proc/version 1Linux version 4.15.0-48-generic (buildd@lgw01-amd64-036) (gcc version 7.3.0 (Ubuntu 7.3.0-16ubunt">
+<meta name="description" content="[TOC] 这篇是虚函数表vtbl和虚表指针vptr的基础.基本认知,采用的是调试器反汇编看底层的方式.额外提了下空类. 测试环境:x86-64Ubuntu 18.04.2 LTScat /proc/version 1Linux version 4.15.0-48-generic (buildd@lgw01-amd64-036) (gcc version 7.3.0 (Ubuntu 7.3.0-1">
 <meta name="keywords" content="C++">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++-虚函数机制-01">
 <meta property="og:url" content="https://mojiajun.github.io/post/3b45df5e.html">
 <meta property="og:site_name" content="mojiajun">
-<meta property="og:description" content="这篇是虚函数表vtbl和虚表指针vptr的基础.基本认知,采用的是调试器反汇编看底层的方式.额外提了下空类. 测试环境:x86-64Ubuntu 18.04.2 LTScat /proc/version 1Linux version 4.15.0-48-generic (buildd@lgw01-amd64-036) (gcc version 7.3.0 (Ubuntu 7.3.0-16ubunt">
+<meta property="og:description" content="[TOC] 这篇是虚函数表vtbl和虚表指针vptr的基础.基本认知,采用的是调试器反汇编看底层的方式.额外提了下空类. 测试环境:x86-64Ubuntu 18.04.2 LTScat /proc/version 1Linux version 4.15.0-48-generic (buildd@lgw01-amd64-036) (gcc version 7.3.0 (Ubuntu 7.3.0-1">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-07-22T14:37:36.125Z">
+<meta property="og:updated_time" content="2019-07-22T14:47:32.539Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="C++-虚函数机制-01">
-<meta name="twitter:description" content="这篇是虚函数表vtbl和虚表指针vptr的基础.基本认知,采用的是调试器反汇编看底层的方式.额外提了下空类. 测试环境:x86-64Ubuntu 18.04.2 LTScat /proc/version 1Linux version 4.15.0-48-generic (buildd@lgw01-amd64-036) (gcc version 7.3.0 (Ubuntu 7.3.0-16ubunt">
+<meta name="twitter:description" content="[TOC] 这篇是虚函数表vtbl和虚表指针vptr的基础.基本认知,采用的是调试器反汇编看底层的方式.额外提了下空类. 测试环境:x86-64Ubuntu 18.04.2 LTScat /proc/version 1Linux version 4.15.0-48-generic (buildd@lgw01-amd64-036) (gcc version 7.3.0 (Ubuntu 7.3.0-1">
 
 
 
@@ -352,7 +352,8 @@
       
 
       
-        <p>这篇是虚函数表vtbl和虚表指针vptr的基础.基本认知,采用的是调试器反汇编看底层的方式.额外提了下空类.</p>
+        <p>[TOC]</p>
+<p>这篇是虚函数表vtbl和虚表指针vptr的基础.基本认知,采用的是调试器反汇编看底层的方式.额外提了下空类.</p>
 <p>测试环境:<br>x86-64<br>Ubuntu 18.04.2 LTS<br>cat /proc/version</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Linux version 4.15.0-48-generic (buildd@lgw01-amd64-036) (gcc version 7.3.0 (Ubuntu 7.3.0-16ubuntu3)) <span class="comment">#51-Ubuntu SMP Wed Apr 3 08:28:49 UTC 2019</span></span><br></pre></td></tr></table></figure>
 <h3 id="虚函数表"><a href="#虚函数表" class="headerlink" title="虚函数表"></a>虚函数表</h3><p>虚函数机制(没分析继承)</p>
