@@ -6,7 +6,7 @@
 
 
 <html class="theme-next muse use-motion" lang>
-<head><meta name="generator" content="Hexo 3.8.0">
+<head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -1157,213 +1157,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/83a7b206.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="mojiajun">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mojiajun">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/post/83a7b206.html" itemprop="url">基础知识_整型_补码_大小端_字符编码_浮点数</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-12-08T00:00:00+08:00">
-                2018-12-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/OS/" itemprop="url" rel="index">
-                    <span itemprop="name">OS</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>[TOC]</p>
-<h2 id="基础知识-整型-补码-大小端-字符编码-浮点数"><a href="#基础知识-整型-补码-大小端-字符编码-浮点数" class="headerlink" title="基础知识-整型-补码-大小端-字符编码-浮点数"></a>基础知识-整型-补码-大小端-字符编码-浮点数</h2><h3 id="整型-补码-大小端-以int型为例-进行观察"><a href="#整型-补码-大小端-以int型为例-进行观察" class="headerlink" title="整型-补码-大小端-以int型为例,进行观察."></a>整型-补码-大小端-以int型为例,进行观察.</h3><p>首先,我们先形成一个二进制文件.</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span> </span>&#123;</span><br><span class="line">    FILE *fp_out;</span><br><span class="line">    <span class="keyword">int</span> *int_buffer;</span><br><span class="line"></span><br><span class="line">    int_buffer = (<span class="keyword">int</span> *)<span class="built_in">malloc</span>(<span class="number">4</span> * <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">    <span class="built_in">memset</span>(int_buffer, <span class="number">0</span>, <span class="number">4</span> * <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> int_spacial = <span class="number">0x01234567</span>;</span><br><span class="line">    <span class="keyword">int</span> int_a = <span class="number">12345</span>;</span><br><span class="line">    <span class="keyword">int</span> int_b = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">int</span> int_c = <span class="number">-12345</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> *p_int_spacial = &amp;int_spacial;</span><br><span class="line">    <span class="keyword">int</span> *p_int_a = &amp;int_a;</span><br><span class="line">    <span class="keyword">int</span> *p_int_b = &amp;int_b;</span><br><span class="line">    <span class="keyword">int</span> *p_int_c = &amp;int_c;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">memcpy</span>(int_buffer, p_int_spacial, <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">    <span class="built_in">memcpy</span>(int_buffer + <span class="number">1</span>, p_int_a, <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">    <span class="built_in">memcpy</span>(int_buffer + <span class="number">2</span>, p_int_b, <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">    <span class="built_in">memcpy</span>(int_buffer + <span class="number">3</span>, p_int_c, <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sizeof(int) is :%lu\n"</span>, <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line"></span><br><span class="line">    fp_out = fopen(argv[<span class="number">1</span>], <span class="string">"wb+"</span>);</span><br><span class="line">    <span class="keyword">if</span> (!fp_out) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Open outputfile error\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    fwrite(int_buffer, <span class="keyword">sizeof</span>(<span class="keyword">int</span>), <span class="number">4</span>, fp_out);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">free</span>(int_buffer);</span><br><span class="line">    fclose(fp_out);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">clang -g generate_value_file.c -o generate_value_file</span><br><span class="line">gcc 一样的</span><br></pre></td></tr></table></figure>
-<p>然后是形成二进制文件:</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./generate_value_file value_file</span><br></pre></td></tr></table></figure>
-<p>其实用vim -b value_file,然后%!xxd.或者xxd value_file都能看</p>
-<p>再用下面这段代码来观察这个二进制文件.</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">~feof_understand.c</span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span> </span>&#123;</span><br><span class="line">    FILE *fp_in;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> *buffer;</span><br><span class="line">    <span class="keyword">int</span> pos = <span class="number">0</span>;</span><br><span class="line">    buffer = (<span class="keyword">unsigned</span> <span class="keyword">char</span> *)<span class="built_in">malloc</span>(<span class="number">4</span> * <span class="keyword">sizeof</span>(<span class="keyword">int</span>) + <span class="number">2</span>);</span><br><span class="line">    <span class="built_in">memset</span>(buffer, <span class="number">0</span>, <span class="number">4</span> * <span class="keyword">sizeof</span>(<span class="keyword">int</span>) + <span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">    fp_in = fopen(argv[<span class="number">1</span>], <span class="string">"rb+"</span>);</span><br><span class="line">    <span class="keyword">if</span> (!fp_in) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Open inputfile error\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>(!feof(fp_in)) &#123;</span><br><span class="line">        buffer[pos++] = fgetc(fp_in);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">free</span>(buffer);</span><br><span class="line">    fclose(fp_in);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clang -g feof_understand.c -o feof_understand</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./feof_understand value_file</span><br></pre></td></tr></table></figure>
-<p>用ls -l 查看一下大小,16个字节.</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-rw-r--r-- ** **  16 Dec  8 22:10 value_file</span><br></pre></td></tr></table></figure>
-<p>然后就是用lldb调试,单步运行观察了.查看内存(虚拟地址)的内容</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">memory <span class="built_in">read</span> --size 1 --format x --count 18 address</span><br></pre></td></tr></table></figure>
-<p>用GDB的话在这个例子里面就是</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x /<span class="number">18</span>xb address</span><br><span class="line"><span class="number">18</span>个单元 按<span class="number">16</span>进制格式显示 单元大小是b表示单字节</span><br></pre></td></tr></table></figure>
-<p>在address地址开始,一个单元是1个字节(size),格式是16进制输出(x),输出18个单元(count)</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0x100400000</span>: <span class="number">0x67</span> <span class="number">0x45</span> <span class="number">0x23</span> <span class="number">0x01</span> <span class="number">0x39</span> <span class="number">0x30</span> <span class="number">0x00</span> <span class="number">0x00</span></span><br><span class="line"><span class="number">0x100400008</span>: <span class="number">0xff</span> <span class="number">0xff</span> <span class="number">0xff</span> <span class="number">0xff</span> <span class="number">0xc7</span> <span class="number">0xcf</span> <span class="number">0xff</span> <span class="number">0xff</span></span><br><span class="line"><span class="number">0x100400010</span>: <span class="number">0xff</span> <span class="number">0x00</span></span><br><span class="line">........   </span><br><span class="line">注意feof到最后还没停,会多读一次.为什么?</span><br></pre></td></tr></table></figure>
-<p>总结:可以很清楚的明白大小端(这里是小端存储的),补码存储,feof作为二进制流会多读一个等问题.(这里和feof在一起分析是因为最近刚好碰到这个的一段代码,貌似多读了一位,想验证下,其实它和其他几个概念没什么关系.)</p>
-<p>小端存储,低地址存的是最低有效位!如果低地址存的是最高有效位,那就是大端,0x01234567,这个数,最低有效位是67,因为它存储在低地址,所以是小端存储</p>
-<h3 id="字符编码-汉字怎么存储的"><a href="#字符编码-汉字怎么存储的" class="headerlink" title="字符编码-汉字怎么存储的?"></a>字符编码-汉字怎么存储的?</h3><p>普通的ASCII字符这里就不提了.</p>
-<p>下面换一种思路分析,尽量简单,不写入文件,直接调试器去内存查看.分析汉字是怎么存储的.</p>
-<p>思考一个问题char *string_a = “你好”;这一个”你好”在栈内存区,那么它在字节形式是怎么表示的?</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> *string_a = <span class="string">"你好"</span>;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"string_a lenth is %lu\n"</span>, <span class="built_in">strlen</span>(string_a));</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line">编译</span><br><span class="line">clang -g utf8_understand.c -o utf8_understand</span><br><span class="line">运行</span><br><span class="line">./utf8_understand</span><br><span class="line">输出</span><br><span class="line">string_a lenth is <span class="number">6</span></span><br><span class="line">因为<span class="built_in">strlen</span>()求的是实际长度,会把C风格的字符串最后一个<span class="string">'\0'</span>不计算在内</span><br><span class="line">也就是说,这两个汉字你好,占了<span class="number">6</span>个字节,为什么?</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>查”你”字的unicode编码 4F60</p>
-<p>查”好”字的unicode编码 597D</p>
-</blockquote>
-<p>然后用UTF8编码一下.查阅编码规则(参考<a href="https://en.wikipedia.org/wiki/UTF-8" target="_blank" rel="noopener">wiki</a>).(从第一种情况即能看出,为什么UTF8兼容ASCII)</p>
-<p><img src="http://pqnp708fx.bkt.clouddn.com/2019-04-28-unicode_utf8.png" alt></p>
-<p>两个字都属于第三种情况:1110xxxx-10xxxxxx-10xxxxxx</p>
-<blockquote>
-<p>4F60 – 0100-1111-0110-0000<br>597D – 0101-1001-0111-1101</p>
-</blockquote>
-<p>然后就是简单的填充了..</p>
-<p>0100-1111-0110-0000 –&gt; <strong>1110</strong> 0100 -<strong>10</strong>11 1101- <strong>10</strong>10 0000 (e4bda0)</p>
-<p>0101-1001-0111-1101 –&gt; <strong>1110</strong> 0101 -<strong>10</strong>10 0101- <strong>10</strong>11 1101 (e5a5bd)</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(lldb) memory <span class="built_in">read</span> -s 1 -f x -c 7 string_a</span><br><span class="line">0x100000f90: 0xe4 0xbd 0xa0 0xe5 0xa5 0xbd 0x00</span><br></pre></td></tr></table></figure>
-<p>问题来了,为什么UTF8没有字节序了?</p>
-<blockquote>
-<p>​    得思考一下字节序这个问题的由来,举个例子,十进制数1234,为什么人类就知道是一千二百三十四.而不是四千三百二十一,还不是因为历史原因,约定俗成了.计算机也一样.你得告诉它,怎么解读[参考CSAPP,2.1.3寻址与字节顺序].</p>
-</blockquote>
-<p>计算机面临的字节序问题:</p>
-<p><img src="http://pqnp708fx.bkt.clouddn.com/2019-04-28-%E5%AD%97%E8%8A%82%E5%BA%8F.png" alt></p>
-<p>所以整型,浮点(float, double)都有大小端问题.</p>
-<blockquote>
-<p>为什么UTF8没有字节序了?<strong>猜测</strong>应该是1110 10 10 这三个加粗的前缀码导致的,一个汉字”好”,0xe4,读到这个字节,因为开头是1110,三个1,所以整个”好”就三个字节,然后系统就知道怎么处理了.</p>
-</blockquote>
-<p>具体点的话:在UTF8里面,”好”是e4bda0,注意它的二进制编码是<strong>1110</strong> 0100 -<strong>10</strong>11 1101- <strong>10</strong>10 0000</p>
-<p>注意(1110)(10)(10),这三个前缀码在UTF8里面是有特殊含义的!读到一个字节开头如果是1110,那么代表整个字符包括”三”个字节,而10开头的字节肯定不会是一个字符的开头.如果读到第一个字节里面开头是11110,那么代表这个字符里面有”四”个字节.而这种前缀码的特性在整型,浮点(float, double)里面没有,所以它们肯定会存在字节序的问题.而UTF8有前缀码,就不需要了.(这里最好是能去找到计算机系统内部解析UTF8的程序,然后拿来看一下…)</p>
-<p>而UTF16为什么有字节序问题?UTF16没有这种前缀码.</p>
-<p>看下UTF16的编码方案.参考了<a href="https://juejin.im/post/5ace27c96fb9a028dc416195" target="_blank" rel="noopener">Unicode中UTF-8与UTF-16编码详解</a>的图</p>
-<p><img src="http://pqnp708fx.bkt.clouddn.com/2019-04-28-UTF16.png" alt></p>
-<p>可以看到2字节存储一个汉字的情况下,没有前缀码,从哪个方向读,都是”合理的”,所以必须指明.和整型,浮点型一个道理.</p>
-<blockquote>
-<p>注意Unicode是字符集,UTF8和UTF16是字符编码,它们是基于Unicode的关系.</p>
-</blockquote>
-<p><img src="http://pqnp708fx.bkt.clouddn.com/2019-04-28-unicode.png" alt></p>
-<h3 id="浮点数-float-double型"><a href="#浮点数-float-double型" class="headerlink" title="浮点数-float,double型"></a>浮点数-float,double型</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span> </span>&#123;</span><br><span class="line">    FILE *fp_out;</span><br><span class="line">    <span class="keyword">float</span> *float_buffer;</span><br><span class="line">    <span class="keyword">double</span> *double_buffer;</span><br><span class="line"></span><br><span class="line">    float_buffer = (<span class="keyword">float</span> *)<span class="built_in">malloc</span>(<span class="number">1</span> * <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">    <span class="built_in">memset</span>(float_buffer, <span class="number">0</span>, <span class="number">1</span> * <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line"></span><br><span class="line">    double_buffer = (<span class="keyword">double</span> *)<span class="built_in">malloc</span>(<span class="number">1</span> * <span class="keyword">sizeof</span>(<span class="keyword">double</span>));</span><br><span class="line">    <span class="built_in">memset</span>(double_buffer, <span class="number">0</span>, <span class="number">1</span> * <span class="keyword">sizeof</span>(<span class="keyword">double</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> float_a = <span class="number">12345.0</span>;</span><br><span class="line">    <span class="keyword">double</span> double_a = <span class="number">12345.0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">float</span> *p_float_a = &amp;float_a;</span><br><span class="line">    <span class="keyword">double</span> *p_double_a = &amp;double_a;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">memcpy</span>(float_buffer, p_float_a, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">    <span class="built_in">memcpy</span>(double_buffer, p_double_a, <span class="keyword">sizeof</span>(<span class="keyword">double</span>));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sizeof(float) is :%lu\n"</span>, <span class="keyword">sizeof</span>(<span class="keyword">float</span>));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sizeof(double) is :%lu\n"</span>, <span class="keyword">sizeof</span>(<span class="keyword">double</span>));</span><br><span class="line"></span><br><span class="line">    fp_out = fopen(argv[<span class="number">1</span>], <span class="string">"wb+"</span>);</span><br><span class="line">    <span class="keyword">if</span> (!fp_out) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Open outputfile error\n"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    fwrite(float_buffer, <span class="keyword">sizeof</span>(<span class="keyword">float</span>), <span class="number">1</span>, fp_out);</span><br><span class="line">    fwrite(double_buffer, <span class="keyword">sizeof</span>(<span class="keyword">double</span>), <span class="number">1</span>, fp_out);</span><br><span class="line">    <span class="built_in">free</span>(float_buffer);</span><br><span class="line">    <span class="built_in">free</span>(double_buffer);</span><br><span class="line">    fclose(fp_out);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>放栈区,放动态内存区对这个例子没有什么影响.</p>
-<p>直接lldb分析.</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(lldb) memory read -s <span class="number">1</span> -f x -c <span class="number">4</span> &amp;float_a</span><br><span class="line"><span class="number">0x7ffeefbff914</span>: <span class="number">0x00</span> <span class="number">0xe4</span> <span class="number">0x40</span> <span class="number">0x46</span></span><br><span class="line">(lldb) memory read -s <span class="number">1</span> -f x -c <span class="number">8</span> &amp;double_a</span><br><span class="line"><span class="number">0x7ffeefbff908</span>: <span class="number">0x00</span> <span class="number">0x00</span> <span class="number">0x00</span> <span class="number">0x00</span> <span class="number">0x80</span> <span class="number">0x1c</span> <span class="number">0xc8</span> <span class="number">0x40</span></span><br></pre></td></tr></table></figure>
-<p>说明是小端存储,浮点数的细节参考[IEEE754],[CSAPP]</p>
-<p>下面这幅图来自于CSAPP,可以发现在整型和浮点数之间是有点关系的…</p>
-<p><img src="http://pqnp708fx.bkt.clouddn.com/2019-04-28-%E6%B5%AE%E7%82%B9%E6%95%B0.png" alt></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/22230d9.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1575,7 +1368,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1597,7 +1390,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
