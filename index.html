@@ -262,6 +262,188 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/d800d427.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/post/d800d427.html" itemprop="url">Leecode-BinaryTree前序中序后序(非递归+stack)和(MorrisTraversal)</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-08T00:00:00+08:00">
+                2019-08-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Leecode/" itemprop="url" rel="index">
+                    <span itemprop="name">Leecode</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>分别是Leecode94-144-145三道题,这里不讨论递归调用(很简单).</p>
+<h2 id="非递归-stack"><a href="#非递归-stack" class="headerlink" title="非递归+stack"></a>非递归+stack</h2><p>时间复杂度O(n),空间复杂度O(h),h是树的高度</p>
+<p>中序前序代码结构差不多,后序在它们的基础上稍微改改.(后序稍微麻烦点)</p>
+<h3 id="中序"><a href="#中序" class="headerlink" title="中序"></a>中序</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; inorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        <span class="built_in">stack</span>&lt;TreeNode*&gt; bufstack;</span><br><span class="line">        TreeNode *cur = root;</span><br><span class="line">        <span class="keyword">while</span> (!bufstack.empty() || cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur) &#123;</span><br><span class="line">                bufstack.push(cur);</span><br><span class="line">                cur = cur-&gt;left;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                cur = bufstack.top();</span><br><span class="line">                result.push_back(cur-&gt;val);</span><br><span class="line">                bufstack.pop();</span><br><span class="line">                cur = cur-&gt;right;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="前序"><a href="#前序" class="headerlink" title="前序"></a>前序</h3><p>和中序遍历只差一行.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; preorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        <span class="built_in">stack</span>&lt;TreeNode*&gt; bufstack;</span><br><span class="line">        TreeNode *cur = root;</span><br><span class="line">        <span class="keyword">while</span> (!bufstack.empty() || cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur) &#123;</span><br><span class="line">                bufstack.push(cur);</span><br><span class="line">                result.push_back(cur-&gt;val);</span><br><span class="line">                cur = cur-&gt;left;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                cur = bufstack.top();</span><br><span class="line">                bufstack.pop();</span><br><span class="line">                cur = cur-&gt;right;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="后序"><a href="#后序" class="headerlink" title="后序"></a>后序</h3><p>这次的写法还是与前序中序的写法有些接近的.好记点.在前序中序的基础上稍微改改.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; postorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        <span class="built_in">stack</span>&lt;TreeNode*&gt; bufstack;</span><br><span class="line">        TreeNode *cur = root;</span><br><span class="line">        TreeNode *lastcur;  <span class="comment">// 记住cur的上一个位置</span></span><br><span class="line">        <span class="keyword">while</span> (!bufstack.empty() || cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur) &#123;</span><br><span class="line">                bufstack.push(cur);</span><br><span class="line">                cur = cur-&gt;left;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;  </span><br><span class="line">                cur = bufstack.top();</span><br><span class="line">                bufstack.pop();</span><br><span class="line">                <span class="keyword">if</span> (!cur-&gt;right || cur-&gt;right == lastcur) &#123;</span><br><span class="line">                    result.push_back(cur-&gt;val);  </span><br><span class="line">                    <span class="comment">//如果上一次访问的是右节点,或者右节点为空,才可以访问这个节点. </span></span><br><span class="line">                    lastcur = cur;</span><br><span class="line">                    cur = <span class="literal">NULL</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    bufstack.push(cur);  </span><br><span class="line">                    <span class="comment">//如果是这种情况,右节点存在且还没访问右节点,那么根节点要再次入栈.// 两次进栈</span></span><br><span class="line">                    cur = cur-&gt;right;     </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;   </span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>针对二次进栈的优化.见下面👇</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; postorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        <span class="built_in">stack</span>&lt;TreeNode*&gt; bufstack;</span><br><span class="line">        TreeNode *cur = root;</span><br><span class="line">        TreeNode *lastcur;  <span class="comment">// 记住cur的上一个位置</span></span><br><span class="line">        <span class="keyword">while</span> (!bufstack.empty() || cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur) &#123;</span><br><span class="line">                bufstack.push(cur);</span><br><span class="line">                cur = cur-&gt;left;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;  </span><br><span class="line">                cur = bufstack.top();</span><br><span class="line">                <span class="keyword">if</span> (!cur-&gt;right || cur-&gt;right == lastcur) &#123;</span><br><span class="line">                    result.push_back(cur-&gt;val);  <span class="comment">//如果上一次访问的是右节点,或者右节点为空,才可以访问这个节点. </span></span><br><span class="line">                    lastcur = cur;</span><br><span class="line">                    cur = <span class="literal">NULL</span>;</span><br><span class="line">                    bufstack.pop();</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    cur = cur-&gt;right;     </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;   </span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="MorrisTraversal"><a href="#MorrisTraversal" class="headerlink" title="MorrisTraversal"></a>MorrisTraversal</h2><p>时间复杂度O(n),空间复杂度O(1)</p>
+<p>这个算法里面蕴含的思想就是利用leaf-&gt;left和leaf-&gt;right实现”线索化”,不利用栈从而找到相应的父节点.在这三种Morris遍历里面,都只用了leaf-&gt;right,充分利用已有的资源!降低了空间复杂度,变成O(1),很厉害!</p>
+<ul>
+<li>三种MorrisTraversal实现(前序中序后序)都只用了leaf-&gt;right</li>
+<li>利用leaf的右孩子作为线索,指向在这个leaf之后的父节点的位置,和本科数据结构书(比如严蔚敏数据结构)讲的那种线索二叉树类似,但是!MorrisTraversal这里的节点是下面这样定义的,并没有多出ltag和rtag,而严蔚敏数据结构的节点定义有这两个,所以这个MorrisTraversal方法是真的厉害.本质思想差不多,都是”线索化”.</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">TreeNode</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> val;</span><br><span class="line">    TreeNode *left;</span><br><span class="line">    TreeNode *right;</span><br><span class="line">    TreeNode(<span class="keyword">int</span> x) : val(x), left(<span class="literal">NULL</span>), right(<span class="literal">NULL</span>) &#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>这种方法[前序中序后序代码实现的基本结构差不多]是在Leecode这样的TreeNode定义的基础上,在遍历过程中,对leaf-&gt;right添加父节点位置,然后在第二次cur又回来的时候,用pre-&gt;right = NULL;进行还原,所以只在遍历的过程中会使得这棵树的leaf-&gt;right产生些许变化.遍历完了又恢复过来.[会导致树在遍历过程中被改变.这是和递归解法,非递归-stack解法不同的一点.]</p>
+</li>
+<li><p>这种方法最大的优点是空间复杂度是O(1),constant级的空间复杂度</p>
+</li>
+</ul>
+<h3 id="中序-Morris-inorder-traversal"><a href="#中序-Morris-inorder-traversal" class="headerlink" title="中序-Morris inorder traversal"></a>中序-Morris inorder traversal</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; inorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        TreeNode *cur, *pre;</span><br><span class="line">        cur = root;</span><br><span class="line">        <span class="keyword">while</span>(cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur-&gt;left) &#123;</span><br><span class="line">                pre = cur-&gt;left;</span><br><span class="line">                <span class="keyword">while</span> (pre-&gt;right &amp;&amp; pre-&gt;right != cur) pre = pre-&gt;right;</span><br><span class="line">                <span class="keyword">if</span> (!pre-&gt;right) &#123;</span><br><span class="line">                    pre-&gt;right = cur;</span><br><span class="line">                    cur = cur-&gt;left;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;  <span class="comment">// pre-&gt;right不为空,代表被第一次到这时填充过了,然后去掉它(还原)</span></span><br><span class="line">                    pre-&gt;right = <span class="literal">NULL</span>;</span><br><span class="line">                    result.push_back(cur-&gt;val);</span><br><span class="line">                    cur = cur-&gt;right;</span><br><span class="line">                &#125;   </span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                result.push_back(cur-&gt;val);</span><br><span class="line">                cur = cur-&gt;right;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>实现及理解trick:例如在纸上画一颗这样的树:[1,2,3,4,5,6,null]-(类似leecode里的题那么表示树),然后思考cur和pre的位置变化情况,结合输出结果,[425163]最好形象理解.想象这颗树底下还有很多节点也是一样的.代码都是起作用的,然后多写几遍就明白了…重点是对整个过程在脑海中形象理解.然后体会cur和pre节点的作用</p>
+<h3 id="前序-Morris-preorder-traversal"><a href="#前序-Morris-preorder-traversal" class="headerlink" title="前序-Morris preorder traversal"></a>前序-Morris preorder traversal</h3><p>从前序版本的Morris traversal代码改过来的,代码只差了一行</p>
+<p>彻底理解上面中序的过程后,然后思考下,把result.push_back(cur-&gt;val);这样的代码删除,改成前序的关键就是把result.push_back(cur-&gt;val);的位置变到cur第一次碰到(!pre-&gt;right)的时候那里.</p>
+<p>也就是</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; preorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        TreeNode *cur, *pre;</span><br><span class="line">        cur = root;</span><br><span class="line">        <span class="keyword">while</span>(cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur-&gt;left) &#123;</span><br><span class="line">                pre = cur-&gt;left;</span><br><span class="line">                <span class="keyword">while</span> (pre-&gt;right &amp;&amp; pre-&gt;right != cur) pre = pre-&gt;right;</span><br><span class="line">                <span class="keyword">if</span> (!pre-&gt;right) &#123;</span><br><span class="line">                    result.push_back(cur-&gt;val);</span><br><span class="line">                    pre-&gt;right = cur;</span><br><span class="line">                    cur = cur-&gt;left;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;  <span class="comment">// pre-&gt;right不为空,代表被第一次到这时填充过了,然后去掉它(还原)</span></span><br><span class="line">                    pre-&gt;right = <span class="literal">NULL</span>;</span><br><span class="line">                    cur = cur-&gt;right;</span><br><span class="line">                &#125;   </span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                result.push_back(cur-&gt;val);</span><br><span class="line">                cur = cur-&gt;right;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>只有一行代码不同.剩下的result.push_back(cur-&gt;val);思考下为什么不用改变位置?<br>这种cur节点不存在cur到这里两次,只到这里一次,所以在前序中序都是在这里result.push_back(cur-&gt;val);<br>这种节点就是树:[1,2,3,4,5,6,null]里的节点4这样的节点.</p>
+<p>这种节点有什么特点?cur-&gt;left为NULL!</p>
+<h3 id="后序-Morris-postorder-traversal"><a href="#后序-Morris-postorder-traversal" class="headerlink" title="后序-Morris postorder traversal"></a>后序-Morris postorder traversal</h3><p>Morris postorder traversal实现比前序中序麻烦在多了个reverseAddNodes()和一个dummy节点</p>
+<p>程序主体和Morris in-order traversal,Morris pre-order traversal差不多.多了个reverseAddNodes(cur-&gt;left, pre, result);这里最好结合图来看…下面👇这位朋友后序的图画的不错,可以作为Morris postorder traversal理解的参考</p>
+<p><a href="https://www.cnblogs.com/AnnieKim/archive/2013/06/15/MorrisTraversal.html" target="_blank" rel="noopener">Annie Kim’s Blog-Morris Traversal方法遍历二叉树（非递归，不用栈，O(1)空间）</a></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; postorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        <span class="function">TreeNode <span class="title">dummy</span><span class="params">(<span class="number">0</span>)</span></span>;</span><br><span class="line">        dummy.left = root;</span><br><span class="line">        TreeNode *cur = &amp;dummy, *pre;</span><br><span class="line">        <span class="keyword">while</span>(cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur-&gt;left) &#123;</span><br><span class="line">                pre = cur-&gt;left;</span><br><span class="line">                <span class="keyword">while</span> (pre-&gt;right &amp;&amp; pre-&gt;right != cur) pre = pre-&gt;right;</span><br><span class="line">                <span class="keyword">if</span> (!pre-&gt;right) &#123;</span><br><span class="line">                    pre-&gt;right = cur;</span><br><span class="line">                    cur = cur-&gt;left;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;  <span class="comment">// pre-&gt;right不为空,代表被第一次到这时填充过了,然后去掉它(还原)</span></span><br><span class="line">                    reverseAddNodes(cur-&gt;left, pre, result);</span><br><span class="line">                    pre-&gt;right = <span class="literal">NULL</span>;</span><br><span class="line">                    cur = cur-&gt;right;</span><br><span class="line">                &#125;   </span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                cur = cur-&gt;right;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">reverseNodes</span><span class="params">(TreeNode* start, TreeNode* end)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (start == end) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        TreeNode* x = start;</span><br><span class="line">        TreeNode* y = start-&gt;right;</span><br><span class="line">        TreeNode* z;</span><br><span class="line">        <span class="keyword">while</span> (x != end) &#123;</span><br><span class="line">            z = y-&gt;right;</span><br><span class="line">            y-&gt;right = x;</span><br><span class="line">            x = y;</span><br><span class="line">            y = z;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">reverseAddNodes</span><span class="params">(TreeNode* start, TreeNode* end, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&amp; result)</span> </span>&#123;</span><br><span class="line">        reverseNodes(start, end);</span><br><span class="line">        TreeNode* node = end;</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">            result.push_back(node-&gt;val);</span><br><span class="line">            <span class="keyword">if</span> (node == start) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            node = node-&gt;right;</span><br><span class="line">        &#125;</span><br><span class="line">        reverseNodes(end, start);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>reverseAddNodes()这个过程,可以不reverse吗???</p>
+<p>修改成用一个临时vector代替reverseNodes函数</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; postorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        <span class="function">TreeNode <span class="title">dummy</span><span class="params">(<span class="number">0</span>)</span></span>;</span><br><span class="line">        dummy.left = root;</span><br><span class="line">        TreeNode *cur = &amp;dummy, *pre;</span><br><span class="line">        <span class="keyword">while</span>(cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur-&gt;left) &#123;</span><br><span class="line">                pre = cur-&gt;left;</span><br><span class="line">                <span class="keyword">while</span> (pre-&gt;right &amp;&amp; pre-&gt;right != cur) pre = pre-&gt;right;</span><br><span class="line">                <span class="keyword">if</span> (!pre-&gt;right) &#123;</span><br><span class="line">                    pre-&gt;right = cur;</span><br><span class="line">                    cur = cur-&gt;left;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;  <span class="comment">// pre-&gt;right不为空,代表被第一次到这时填充过了,然后去掉它(还原)</span></span><br><span class="line">                    reverseAddNodes(cur-&gt;left, pre, result);</span><br><span class="line">                    pre-&gt;right = <span class="literal">NULL</span>;</span><br><span class="line">                    cur = cur-&gt;right;</span><br><span class="line">                &#125;   </span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                cur = cur-&gt;right;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">reverseAddNodes</span><span class="params">(TreeNode* start, TreeNode* end, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&amp; result)</span> </span>&#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; temp;</span><br><span class="line">        TreeNode* node = start;</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">            temp.push_back(node-&gt;val);</span><br><span class="line">            <span class="keyword">if</span> (node == end) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            node = node-&gt;right;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">auto</span> iter = temp.rbegin(); iter != temp.rend(); ++iter) &#123;</span><br><span class="line">            result.push_back(*iter);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<hr>
+<p>morris是谁?</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/3b45df5e.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1368,7 +1550,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1379,7 +1561,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -1390,7 +1572,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
