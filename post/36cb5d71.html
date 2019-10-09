@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="mit6824,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="[TOC] lab1-Part-I-Map/Reduce input and output-part-IVMapReduce makes this relatively easy because workers don’t have persistent state.什么是persistent state? Two invocations of a map or reduce function a">
+<meta name="keywords" content="mit6824">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mit6824-lab1-part-IV">
+<meta property="og:url" content="https://mojiajun.github.io/post/36cb5d71.html">
+<meta property="og:site_name" content="mojiajun">
+<meta property="og:description" content="[TOC] lab1-Part-I-Map/Reduce input and output-part-IVMapReduce makes this relatively easy because workers don’t have persistent state.什么是persistent state? Two invocations of a map or reduce function a">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-10-09T08:12:09.558Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mit6824-lab1-part-IV">
+<meta name="twitter:description" content="[TOC] lab1-Part-I-Map/Reduce input and output-part-IVMapReduce makes this relatively easy because workers don’t have persistent state.什么是persistent state? Two invocations of a map or reduce function a">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://mojiajun.github.io/post/36cb5d71.html">
+
+
+
+
+
+  <title>mit6824-lab1-part-IV | mojiajun</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mojiajun</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/36cb5d71.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">mit6824-lab1-part-IV</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-09T00:00:00+08:00">
+                2019-10-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/分布式/" itemprop="url" rel="index">
+                    <span itemprop="name">分布式</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/分布式/mit6824/" itemprop="url" rel="index">
+                    <span itemprop="name">mit6824</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>[TOC]</p>
+<h2 id="lab1-Part-I-Map-Reduce-input-and-output-part-IV"><a href="#lab1-Part-I-Map-Reduce-input-and-output-part-IV" class="headerlink" title="lab1-Part-I-Map/Reduce input and output-part-IV"></a>lab1-Part-I-Map/Reduce input and output-part-IV</h2><p>MapReduce makes this relatively easy because workers don’t have persistent state.<br>什么是persistent state?</p>
+<p>Two invocations of a map or reduce function are required to generate the same output for a given input (i.e. the map and reduce functions are “functional”)[这里应该指的是只要输入一样,也就是给的task一样,不同map,reduce函数的输出是完全一样的.输出即输出文件.], so there won’t be inconsistencies[不一致] if subsequent processing sometimes reads one output and sometimes the other(读的时候不就是读同一个文件吗???). In addition, the MapReduce framework ensures that map and reduce function output appears atomically: the output file will either not exist, or will contain the entire output of a single execution of the map or reduce function (the lab code doesn’t actually implement this[这个实验里确实没实现这个], but instead only fails workers at the end of a task, so there aren’t concurrent executions of a task[一个task并发执行???不行吧.一个task只能被分配给一个worker]).???啥意思?</p>
+<p>1.某个worker失效后,也就是没有在进行监听了,那么master怎么知晓这件事?然后接下来的任务就跳过它.在后续可能还会把任务分配给这个worker,但是在call()的内部rpc.Dial()时,会timeout.然后检测到错误.</p>
+<p>2.worker可能是中途由于不明原因终止的.这也要能处理好.这种情况虽然官方给的测试用例里面对这种情况没测,但是应该也是可以的,因为那样最终还是会导致call()rpc调用的时候timeout.那样的话输出文件如果已经创建了怎么办?直接覆盖吧.</p>
+<p>3.多个worker可能会执行相同的task.所以会出现什么问题?如果是两个worker往同一个文件里面写入呢?这种情况还是可能出现的吧?甚至3个,4个…worker往同一个输出文件里面写入,假设在备用的第2个worker又执行那个失败任务的时候这个备用的worker也故障了(可能超时之后第2个worker调用的rpc还是正在执行),那么就会出现第3个worker来执行这个任务.就有可能出现同时3个worker它们对应的rpc都在执行同一个task.以此类推4个,5个…<br>因为假设worker在写入,但是rpc timeout了,此时master端直接返回了,然后就会把任务分配给其他worker了.此时其他worker就可能在工作了.但是应该没啥影响吧?往同一个文件里写.因为它们的文件偏移不一样.后面的这个会覆盖前面的那个的写入.<strong>而假设两个worker如果假设都正确写入的话,他们写入的结果应该是完全一样的.</strong>所以哪怕前一个正在写入,后一个worker又进行工作了,也在写入,也不会出问题.??是这么回事吗?</p>
+<p>只在lab1-part-III的基础上稍微改了一点点.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">schedule</span><span class="params">(jobName <span class="keyword">string</span>, mapFiles []<span class="keyword">string</span>, nReduce <span class="keyword">int</span>, phase jobPhase, registerChan <span class="keyword">chan</span> <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> ntasks <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">var</span> n_other <span class="keyword">int</span> <span class="comment">// number of inputs (for reduce) or outputs (for map)</span></span><br><span class="line">	<span class="keyword">switch</span> phase &#123;</span><br><span class="line">	<span class="keyword">case</span> mapPhase:</span><br><span class="line">		ntasks = <span class="built_in">len</span>(mapFiles)</span><br><span class="line">		n_other = nReduce</span><br><span class="line">	<span class="keyword">case</span> reducePhase:</span><br><span class="line">		ntasks = nReduce</span><br><span class="line">		n_other = <span class="built_in">len</span>(mapFiles)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	fmt.Printf(<span class="string">"Schedule: %v %v tasks (%d I/Os)\n"</span>, ntasks, phase, n_other)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// All ntasks tasks have to be scheduled on workers. Once all tasks</span></span><br><span class="line">	<span class="comment">// have completed successfully, schedule() should return.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// Your code here (Part III, Part IV).</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// worker设成工作池模式.模仿Go-by-example的worker-pools例子[https://gobyexample.com/worker-pools]</span></span><br><span class="line">	<span class="comment">// 新来的worker怎么办? 使用另外一个协程阻塞在registerChan这个channel上面,一旦有新来的worker,再启动一个新的协程来进行同步rpc调用</span></span><br><span class="line">	<span class="comment">// 最终目标是把ntasks个任务分配给若干个worker,在schedule()的尾部,需要等待所有任务处理完.</span></span><br><span class="line"></span><br><span class="line">	taskPool := <span class="built_in">make</span>(<span class="keyword">chan</span> DoTaskArgs, ntasks)</span><br><span class="line">	<span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 不开一个新的协程去负责接收registerChan里面的worker好像不行,因为不知道会有多少个worker会来,以及多久来.而registerChan</span></span><br><span class="line">	<span class="comment">// 又是unbuffer的,接收不到就会阻塞</span></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="comment">// 这个for循环一定要有,否则!!!后面的代码执行一次之后就退出了,也就是会导致只会创建出一个worker协程,这不是我们想要的结果.</span></span><br><span class="line">		<span class="keyword">for</span> &#123;</span><br><span class="line">			<span class="comment">// 从forwardRegistration收到一个worker的地址</span></span><br><span class="line">			worker := &lt;-registerChan</span><br><span class="line">			<span class="comment">//fmt.Println("launch a new worker goroutine", worker)</span></span><br><span class="line">			<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">				<span class="keyword">for</span> taskArgs := <span class="keyword">range</span> taskPool &#123; <span class="comment">// 参考Go-by-example的worker-pools例子[https://gobyexample.com/worker-pools]</span></span><br><span class="line">					boolval := call(worker, <span class="string">"Worker.DoTask"</span>, taskArgs, <span class="literal">nil</span>)</span><br><span class="line">					<span class="keyword">if</span> boolval == <span class="literal">false</span> &#123;</span><br><span class="line">						<span class="comment">// 没做完这个task,直接退出,不用调用wg.Done(),因为它没完成指定任务</span></span><br><span class="line">						<span class="comment">// 然后得把任务重新加入任务池</span></span><br><span class="line">						taskPool &lt;- taskArgs</span><br><span class="line">						<span class="keyword">break</span></span><br><span class="line">					&#125;</span><br><span class="line">					wg.Done()</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;()</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 创建每个任务对应的DoTaskArgs结构体,然后放入taskPool</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; ntasks; i++ &#123;</span><br><span class="line">		<span class="keyword">var</span> doTaskArgs DoTaskArgs;</span><br><span class="line">		doTaskArgs.JobName = jobName</span><br><span class="line">		doTaskArgs.TaskNumber = i</span><br><span class="line">		doTaskArgs.NumOtherPhase = n_other</span><br><span class="line">		<span class="keyword">switch</span> phase &#123;</span><br><span class="line">		<span class="keyword">case</span> mapPhase:</span><br><span class="line">			doTaskArgs.Phase = mapPhase</span><br><span class="line">			doTaskArgs.File = mapFiles[i]</span><br><span class="line">		<span class="keyword">case</span> reducePhase:</span><br><span class="line">			doTaskArgs.Phase = reducePhase</span><br><span class="line">		&#125;</span><br><span class="line">		taskPool &lt;- doTaskArgs</span><br><span class="line">		wg.Add(<span class="number">1</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	wg.Wait()</span><br><span class="line"></span><br><span class="line">	fmt.Printf(<span class="string">"Schedule: %v done\n"</span>, phase)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>RunWorker协程启动后就一直在监听.(会检测当前做的task数目是否已经达到阈值,达到之后则这个协程退出.不再监听.)<br>如果是在监听状态,当有任务到来,比如master的schedule()发起rpc调用call(worker, “Worker.DoTask”, taskArgs, nil),RunWorker协程会go rpcs.ServeConn(conn)</p>
+<p>测试用例里面用的是设定nRPC的值,然后做完指定数量的后.在RunWorker中会把wk.nRPC减到0,然后go rpcs.ServeConn(conn)处理最后一次task.当RunWorker协程再次循环的时候即退出.此时,下一次task来的时候,若分配给了这个退出的worker.然后这个RunWorker协程调用call().估计在rpc.Dial()失败?所以不会继续,timeout,然后检测失败.</p>
+<blockquote>
+<p>???<br><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;c, errx := rpc.Dial(<span class="string">"unix"</span>, srv)</span><br><span class="line">&gt;<span class="comment">// 在lab2的最后,换用localhost 7777这样的tcp连接去这么调用也可以?</span></span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>Post author:</strong>
+    mojiajun
+  </li>
+  <li class="post-copyright-link">
+    <strong>Post link:</strong>
+    <a href="https://mojiajun.github.io/post/36cb5d71.html" title="mit6824-lab1-part-IV">https://mojiajun.github.io/post/36cb5d71.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice: </strong>
+    All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> unless stating additionally.
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/mit6824/" rel="tag"># mit6824</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/post/376c92d0.html" rel="next" title="mit6824-lab1-part-III">
+                <i class="fa fa-chevron-left"></i> mit6824-lab1-part-III
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">mojiajun</p>
+              <p class="site-description motion-element" itemprop="description">莫佳骏学习笔记</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#lab1-Part-I-Map-Reduce-input-and-output-part-IV"><span class="nav-number">1.</span> <span class="nav-text">lab1-Part-I-Map/Reduce input and output-part-IV</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">mojiajun</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

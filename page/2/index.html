@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="ffmpeg,">
+  <meta name="keywords" content="Hexo, NexT">
 
 
 
@@ -79,18 +79,16 @@
 
 
 
-<meta name="description" content="FFMPEG-AVBuffer-AVBufferRef-源码阅读 参考了ffmpeg中AVBuffer的实现分析 下面这个分析的更好.深入理解FFMPEG-AVBuffer/AVBufferRef/AVBufferPool 主要实现文件位于libavutil中的buffer.h、buffer_internal.h、buffer.c三个文件中。其中最主要的是两个结构AVBufferRef和AVBuf">
-<meta name="keywords" content="ffmpeg">
-<meta property="og:type" content="article">
-<meta property="og:title" content="ffmpeg-AVBuffer-AVBufferRef-源码阅读">
-<meta property="og:url" content="https://mojiajun.github.io/post/22230d9.html">
+<meta name="description" content="莫佳骏学习笔记">
+<meta property="og:type" content="website">
+<meta property="og:title" content="mojiajun">
+<meta property="og:url" content="https://mojiajun.github.io/page/2/index.html">
 <meta property="og:site_name" content="mojiajun">
-<meta property="og:description" content="FFMPEG-AVBuffer-AVBufferRef-源码阅读 参考了ffmpeg中AVBuffer的实现分析 下面这个分析的更好.深入理解FFMPEG-AVBuffer/AVBufferRef/AVBufferPool 主要实现文件位于libavutil中的buffer.h、buffer_internal.h、buffer.c三个文件中。其中最主要的是两个结构AVBufferRef和AVBuf">
+<meta property="og:description" content="莫佳骏学习笔记">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-04-28T15:40:29.915Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="ffmpeg-AVBuffer-AVBufferRef-源码阅读">
-<meta name="twitter:description" content="FFMPEG-AVBuffer-AVBufferRef-源码阅读 参考了ffmpeg中AVBuffer的实现分析 下面这个分析的更好.深入理解FFMPEG-AVBuffer/AVBufferRef/AVBufferPool 主要实现文件位于libavutil中的buffer.h、buffer_internal.h、buffer.c三个文件中。其中最主要的是两个结构AVBufferRef和AVBuf">
+<meta name="twitter:title" content="mojiajun">
+<meta name="twitter:description" content="莫佳骏学习笔记">
 
 
 
@@ -120,13 +118,13 @@
 
 
 
-  <link rel="canonical" href="https://mojiajun.github.io/post/22230d9.html">
+  <link rel="canonical" href="https://mojiajun.github.io/page/2/">
 
 
 
 
 
-  <title>ffmpeg-AVBuffer-AVBufferRef-源码阅读 | mojiajun</title>
+  <title>mojiajun</title>
   
 
 
@@ -145,7 +143,8 @@
     
   
 
-  <div class="container sidebar-position-left page-post-detail">
+  <div class="container sidebar-position-left 
+  page-home">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -248,9 +247,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-
-  <div id="posts" class="posts-expand">
+  <section id="posts" class="posts-expand">
     
+      
 
   
 
@@ -280,7 +279,9 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">ffmpeg-AVBuffer-AVBufferRef-源码阅读</h1>
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/post/22230d9.html" itemprop="url">ffmpeg-AVBuffer-AVBufferRef-源码阅读</a></h1>
         
 
         <div class="post-meta">
@@ -363,7 +364,9 @@
       
 
       
-        <p>FFMPEG-AVBuffer-AVBufferRef-源码阅读</p>
+        
+          
+            <p>FFMPEG-AVBuffer-AVBufferRef-源码阅读</p>
 <p>参考了<a href="https://www.cnblogs.com/tocy/p/ffmpeg-libavutil-avbuffer-imp.html" target="_blank" rel="noopener">ffmpeg中AVBuffer的实现分析</a></p>
 <p>下面这个分析的更好.<a href="https://blog.csdn.net/muyuyuzhong/article/details/79381152" target="_blank" rel="noopener">深入理解FFMPEG-AVBuffer/AVBufferRef/AVBufferPool</a></p>
 <p>主要实现文件位于libavutil中的buffer.h、buffer_internal.h、buffer.c三个文件中。其中最主要的是两个结构<strong>AVBufferRef</strong>和<strong>AVBuffer</strong>。</p>
@@ -390,6 +393,8 @@
 <p>参考文献:<br>1.<a href="https://www.cnblogs.com/tocy/p/ffmpeg-libavutil-avbuffer-imp.html" target="_blank" rel="noopener">ffmpeg中AVBuffer的实现分析</a></p>
 <p>2.<a href="https://blog.csdn.net/muyuyuzhong/article/details/79381152" target="_blank" rel="noopener">深入理解FFMPEG-AVBuffer/AVBufferRef/AVBufferPool</a></p>
 
+          
+        
       
     </div>
     
@@ -401,57 +406,17 @@
     
 
     
-      <div>
-        <ul class="post-copyright">
-  <li class="post-copyright-author">
-    <strong>Post author:</strong>
-    mojiajun
-  </li>
-  <li class="post-copyright-link">
-    <strong>Post link:</strong>
-    <a href="https://mojiajun.github.io/post/22230d9.html" title="ffmpeg-AVBuffer-AVBufferRef-源码阅读">https://mojiajun.github.io/post/22230d9.html</a>
-  </li>
-  <li class="post-copyright-license">
-    <strong>Copyright Notice: </strong>
-    All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> unless stating additionally.
-  </li>
-</ul>
-
-      </div>
-    
 
     <footer class="post-footer">
       
-        <div class="post-tags">
-          
-            <a href="/tags/ffmpeg/" rel="tag"># ffmpeg</a>
-          
-        </div>
+
+      
+
       
 
       
       
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-          </div>
-
-          <span class="post-nav-divider"></span>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/post/18ee0d3.html" rel="prev" title="redis-server初始化">
-                redis-server初始化 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
+        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -461,11 +426,14 @@
   </article>
 
 
+    
+  </section>
 
-    <div class="post-spread">
-      
-    </div>
-  </div>
+  
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+  </nav>
+
 
 
           </div>
@@ -473,10 +441,6 @@
 
 
           
-
-  
-
-
 
         </div>
         
@@ -687,10 +651,6 @@
   
 
   
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
-
-
 
   
 

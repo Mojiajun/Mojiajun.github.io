@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="mit6824,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="[TOC] lab1-Part-I-Map/Reduce input and output-part-II实现mapF和reduceF有一个坑.在mapF里面 12345678910111213141516171819202122func mapF(filename string, contents string) []mapreduce.KeyValue &amp;#123;	// Your code">
+<meta name="keywords" content="mit6824">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mit6824-lab1-part-II">
+<meta property="og:url" content="https://mojiajun.github.io/post/bbc35084.html">
+<meta property="og:site_name" content="mojiajun">
+<meta property="og:description" content="[TOC] lab1-Part-I-Map/Reduce input and output-part-II实现mapF和reduceF有一个坑.在mapF里面 12345678910111213141516171819202122func mapF(filename string, contents string) []mapreduce.KeyValue &amp;#123;	// Your code">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-10-09T08:10:56.493Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mit6824-lab1-part-II">
+<meta name="twitter:description" content="[TOC] lab1-Part-I-Map/Reduce input and output-part-II实现mapF和reduceF有一个坑.在mapF里面 12345678910111213141516171819202122func mapF(filename string, contents string) []mapreduce.KeyValue &amp;#123;	// Your code">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://mojiajun.github.io/post/bbc35084.html">
+
+
+
+
+
+  <title>mit6824-lab1-part-II | mojiajun</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mojiajun</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/bbc35084.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">mit6824-lab1-part-II</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-09-27T00:00:00+08:00">
+                2019-09-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/分布式/" itemprop="url" rel="index">
+                    <span itemprop="name">分布式</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/分布式/mit6824/" itemprop="url" rel="index">
+                    <span itemprop="name">mit6824</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>[TOC]</p>
+<h2 id="lab1-Part-I-Map-Reduce-input-and-output-part-II"><a href="#lab1-Part-I-Map-Reduce-input-and-output-part-II" class="headerlink" title="lab1-Part-I-Map/Reduce input and output-part-II"></a>lab1-Part-I-Map/Reduce input and output-part-II</h2><h3 id="实现mapF和reduceF"><a href="#实现mapF和reduceF" class="headerlink" title="实现mapF和reduceF"></a>实现mapF和reduceF</h3><p>有一个坑.在mapF里面</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mapF</span><span class="params">(filename <span class="keyword">string</span>, contents <span class="keyword">string</span>)</span> []<span class="title">mapreduce</span>.<span class="title">KeyValue</span></span> &#123;</span><br><span class="line">	<span class="comment">// Your code here (Part II).</span></span><br><span class="line">	<span class="comment">// 划分词</span></span><br><span class="line">	<span class="comment">// 划分词这里得搞明白...</span></span><br><span class="line">	<span class="comment">// words := strings.Fields(contents)  // 不行.为什么待研究.</span></span><br><span class="line">	words := strings.FieldsFunc(contents, <span class="function"><span class="keyword">func</span><span class="params">(c <span class="keyword">rune</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> !unicode.IsLetter(c)</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 先构造一个map</span></span><br><span class="line">	mapping := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>) <span class="comment">// 有溢出的风险</span></span><br><span class="line">	<span class="keyword">for</span> _, w := <span class="keyword">range</span> words &#123;</span><br><span class="line">		mapping[w]++</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//把map的数据写入res</span></span><br><span class="line">	<span class="keyword">var</span> res []mapreduce.KeyValue</span><br><span class="line">	<span class="keyword">for</span> key, val := <span class="keyword">range</span> mapping &#123;</span><br><span class="line">		res = <span class="built_in">append</span>(res, mapreduce.KeyValue&#123;Key: key, Value: strconv.Itoa(val)&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> res</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">reduceF</span><span class="params">(key <span class="keyword">string</span>, values []<span class="keyword">string</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="comment">// Your code here (Part II).</span></span><br><span class="line">	<span class="keyword">var</span> valInt <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">for</span> _, val := <span class="keyword">range</span> values &#123;</span><br><span class="line">		valIntTemp, err := strconv.Atoi(val);</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Fatal(<span class="string">"reduceF() fail "</span>, err)</span><br><span class="line">		&#125;</span><br><span class="line">		valInt += valIntTemp</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> strconv.Itoa(valInt) <span class="comment">// 这么写的话也可能溢出.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="存疑的"><a href="#存疑的" class="headerlink" title="存疑的"></a>存疑的</h3><p>1.merge阶段的merge() {}并不能解决重复key的问题.写了个测试这个merge()可能会出问题的代码.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"bufio"</span></span><br><span class="line">	<span class="string">"encoding/json"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"os"</span></span><br><span class="line">	<span class="string">"sort"</span></span><br><span class="line">	<span class="string">"strconv"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> nReduceTest = <span class="number">3</span></span><br><span class="line"><span class="keyword">const</span> jobName = <span class="string">"wcseq"</span>  <span class="comment">// 根据实际测试情况修改.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> KeyValue <span class="keyword">struct</span> &#123;</span><br><span class="line">	Key   <span class="keyword">string</span></span><br><span class="line">	Value <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> prefix = <span class="string">"$填入你的路径/6.824/src/main/"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mergeName</span><span class="params">(jobName <span class="keyword">string</span>, reduceTask <span class="keyword">int</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> prefix + <span class="string">"mrtmp."</span> + jobName + <span class="string">"-res-"</span> + strconv.Itoa(reduceTask)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mergeTestFuntion</span><span class="params">()</span></span> &#123;</span><br><span class="line">	kvs := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">string</span>)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; nReduceTest; i++ &#123;</span><br><span class="line">		p := mergeName(jobName, i)</span><br><span class="line">		fmt.Printf(<span class="string">"Merge: read %s\n"</span>, p)</span><br><span class="line">		file, err := os.Open(p)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Fatal(<span class="string">"Merge: "</span>, err)</span><br><span class="line">		&#125;</span><br><span class="line">		dec := json.NewDecoder(file)</span><br><span class="line">		<span class="keyword">for</span> &#123;</span><br><span class="line">			<span class="keyword">var</span> kv KeyValue</span><br><span class="line">			err = dec.Decode(&amp;kv)</span><br><span class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="keyword">break</span></span><br><span class="line">			&#125;</span><br><span class="line">			kvs[kv.Key] = kv.Value</span><br><span class="line">		&#125;</span><br><span class="line">		file.Close()</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">var</span> keys []<span class="keyword">string</span></span><br><span class="line">	<span class="keyword">for</span> k := <span class="keyword">range</span> kvs &#123;</span><br><span class="line">		keys = <span class="built_in">append</span>(keys, k)</span><br><span class="line">	&#125;</span><br><span class="line">	sort.Strings(keys)</span><br><span class="line"></span><br><span class="line">	file, err := os.Create(prefix + <span class="string">"mrtmp."</span> + jobName + <span class="string">"-MergeTest"</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(<span class="string">"Merge: create "</span>, err)</span><br><span class="line">	&#125;</span><br><span class="line">	w := bufio.NewWriter(file)</span><br><span class="line">	<span class="keyword">for</span> _, k := <span class="keyword">range</span> keys &#123;</span><br><span class="line">		fmt.Fprintf(w, <span class="string">"%s: %s\n"</span>, k, kvs[k])</span><br><span class="line">	&#125;</span><br><span class="line">	w.Flush()</span><br><span class="line">	file.Close()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	mergeTestFuntion()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后把mrtmp.wcseq-res-0,mrtmp.wcseq-res-1,mrtmp.wcseq-res-2这些文件里面故意设的至少有两个key一样的情况.因为kvs[kv.Key] = kv.Value这一行代码,所以结果会出问题.统计出来的数字不对.</p>
+<p>但是为什么统计词数是正确的呢???</p>
+<p>原因在于doMap()阶段的ihash(kv.Key)%nReduce.</p>
+<blockquote>
+<p>反证法:要想在merge()阶段出现&gt;=2个相同的key.必须在至少两个不同的mrtmp.xxx-res-…,mrtmp.wcseq-res-…文件里面出现出现重复的key.而假设这两个文件分别是mrtmp.xxx-res-X,mrtmp.xxx-res-Y,<br>而来自于<br>mrtmp.test-0-X<br>mrtmp.test-1-X<br>mrtmp.test-2-X<br>…</p>
+<p>mrtmp.xxx-res-Y来自于<br>mrtmp.test-0-Y<br>mrtmp.test-1-Y<br>mrtmp.test-2-Y<br>…</p>
+<p>所以重复的key来自于mrtmp.test-0-X,mrtmp.test-1-Y这种情况.所以在reduce这个维度的索引的X!=Y.<br>而重复的key必定ihash(kv.Key)%nReduce一样,也就是会放置到同一个[reduce这个维度的索引].出现矛盾!!!</p>
+<p>所以哪怕用mit-6824里master_splitmerge.go里的merge()阶段的代码,在比如word count这样的问题里也不会出现问题.而用户可以传入的函数只有mapF和reduceF.分别对应map阶段和reduce阶段,用户对merge阶段无控制权.</p>
+</blockquote>
+<p>2.strings.FieldsFunc和strings.Fields的区别</p>
+<p>FieldsFunc额外要传入一个函数.为什么用Fields会出问题?</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//  words := strings.Fields(contents)  // 不行.为什么待研究.</span></span><br><span class="line">	words := strings.FieldsFunc(contents, <span class="function"><span class="keyword">func</span><span class="params">(c <span class="keyword">rune</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> !unicode.IsLetter(c)</span><br><span class="line">	&#125;)</span><br></pre></td></tr></table></figure>
+<p>3.sort -n -k2 mrtmp.wcseq-MergeTest | diff - mrtmp.wcseq.sort &gt; diff.out</p>
+<p>sort命令学习一下.</p>
+<h3 id="master-worker分布式运行-做完part-III之后再回来看这里"><a href="#master-worker分布式运行-做完part-III之后再回来看这里" class="headerlink" title="master-worker分布式运行(做完part-III之后再回来看这里)"></a>master-worker分布式运行(做完part-III之后再回来看这里)</h3><p>2) Master (e.g., go run wc.go master localhost:7777 x1.txt .. xN.txt)</p>
+<p>这种方式只是启动了server端.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Can be run in 3 ways:</span></span><br><span class="line"><span class="comment">// 1) Sequential (e.g., go run wc.go master sequential x1.txt .. xN.txt)</span></span><br><span class="line"><span class="comment">// 2) Master (e.g., go run wc.go master localhost:7777 x1.txt .. xN.txt)</span></span><br><span class="line"><span class="comment">// 3) Worker (e.g., go run wc.go worker localhost:7777 localhost:7778 &amp;)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(os.Args) &lt; <span class="number">4</span> &#123;</span><br><span class="line">		fmt.Printf(<span class="string">"%s: see usage comments in file\n"</span>, os.Args[<span class="number">0</span>])</span><br><span class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> os.Args[<span class="number">1</span>] == <span class="string">"master"</span> &#123;</span><br><span class="line">		<span class="keyword">var</span> mr *mapreduce.Master</span><br><span class="line">		<span class="keyword">if</span> os.Args[<span class="number">2</span>] == <span class="string">"sequential"</span> &#123;</span><br><span class="line">			mr = mapreduce.Sequential(<span class="string">"wcseq"</span>, os.Args[<span class="number">3</span>:], <span class="number">3</span>, mapF, reduceF)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			mr = mapreduce.Distributed(<span class="string">"wcseq"</span>, os.Args[<span class="number">3</span>:], <span class="number">3</span>, os.Args[<span class="number">2</span>])</span><br><span class="line">		&#125;</span><br><span class="line">		mr.Wait()</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		mapreduce.RunWorker(os.Args[<span class="number">2</span>], os.Args[<span class="number">3</span>], mapF, reduceF, <span class="number">100</span>, <span class="literal">nil</span>)</span><br><span class="line">		<span class="comment">// 第一个参数是master address. 第二个参数是worker address</span></span><br><span class="line">		<span class="comment">// 第一个参数谁给它?单独启动?试试</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>启动master,用一个shell</p>
+<p>GOPATH=/Users/***/go/src/6824-course-project/6.824 go run wc.go master localhost:7777 pg-wc-testfile-custom.txt pg-wc-testfile-custom-02.txt</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">mr = mapreduce.Distributed(<span class="string">"wcseq"</span>, os.Args[<span class="number">3</span>:], <span class="number">3</span>, os.Args[<span class="number">2</span>])</span><br><span class="line"><span class="comment">// 第二个参数,即输入文件列表</span></span><br><span class="line"><span class="comment">// 第三个参数,reduce-3个reduce task</span></span><br><span class="line"><span class="comment">// 第四个参数指定了,master监听的地址.</span></span><br><span class="line"></span><br><span class="line">Args[*]对应的参数:</span><br><span class="line"><span class="keyword">go</span> run wc.<span class="keyword">go</span> /<span class="keyword">var</span>/tmp/<span class="number">824</span><span class="number">-501</span>/mr90843-master</span><br><span class="line"></span><br><span class="line">Args[<span class="number">0</span>]:</span><br><span class="line">/<span class="keyword">var</span>/folders/vh/hz32rv8x2fzfdsqc7xpqq2640000gn/T/<span class="keyword">go</span>-build105600263/b001/exe/wc</span><br><span class="line">Args[<span class="number">1</span>]:</span><br><span class="line">/<span class="keyword">var</span>/tmp/<span class="number">824</span><span class="number">-501</span>/mr90843-master</span><br><span class="line">然后以此类推</span><br><span class="line"></span><br><span class="line">在test_test.<span class="keyword">go</span>里面的使用范例:</span><br><span class="line">	master := port(<span class="string">"master"</span>)</span><br><span class="line">	mr := Distributed(<span class="string">"test"</span>, files, nReduce, master)</span><br></pre></td></tr></table></figure>
+<p>启动worker.用另外一个shell</p>
+<p>GOPATH=/Users/***/go/src/6824-course-project/6.824 go run wc.go worker localhost:7777 localhost:7778</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mapreduce.RunWorker(os.Args[<span class="number">2</span>], os.Args[<span class="number">3</span>], mapF, reduceF, <span class="number">100</span>, <span class="literal">nil</span>)</span><br><span class="line"><span class="comment">// 第一个参数是master的监听地址</span></span><br><span class="line"><span class="comment">// 第二个参数是worker自己即将监听的地址</span></span><br><span class="line"><span class="comment">// 100代表这个worker只能做100个task</span></span><br><span class="line"></span><br><span class="line">在test_test.<span class="keyword">go</span>里面的使用范例:</span><br><span class="line">		<span class="keyword">go</span> RunWorker(mr.address, port(<span class="string">"worker"</span>+strconv.Itoa(i)),</span><br><span class="line">			MapFunc, ReduceFunc, <span class="number">-1</span>, <span class="literal">nil</span>)</span><br></pre></td></tr></table></figure>
+<p>为什么测试源里面有数字不行???没统计是和划分有关系吗,估计是,反正是map阶段有问题</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>Post author:</strong>
+    mojiajun
+  </li>
+  <li class="post-copyright-link">
+    <strong>Post link:</strong>
+    <a href="https://mojiajun.github.io/post/bbc35084.html" title="mit6824-lab1-part-II">https://mojiajun.github.io/post/bbc35084.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice: </strong>
+    All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> unless stating additionally.
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/mit6824/" rel="tag"># mit6824</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/post/c77df7da.html" rel="next" title="mit6824-lab1-part-I">
+                <i class="fa fa-chevron-left"></i> mit6824-lab1-part-I
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/post/376c92d0.html" rel="prev" title="mit6824-lab1-part-III">
+                mit6824-lab1-part-III <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">mojiajun</p>
+              <p class="site-description motion-element" itemprop="description">莫佳骏学习笔记</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#lab1-Part-I-Map-Reduce-input-and-output-part-II"><span class="nav-number">1.</span> <span class="nav-text">lab1-Part-I-Map/Reduce input and output-part-II</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#实现mapF和reduceF"><span class="nav-number">1.1.</span> <span class="nav-text">实现mapF和reduceF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存疑的"><span class="nav-number">1.2.</span> <span class="nav-text">存疑的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#master-worker分布式运行-做完part-III之后再回来看这里"><span class="nav-number">1.3.</span> <span class="nav-text">master-worker分布式运行(做完part-III之后再回来看这里)</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">mojiajun</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
