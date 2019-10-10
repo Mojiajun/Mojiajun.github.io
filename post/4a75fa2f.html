@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="mojiajun">
 <meta property="og:description" content="[TOC] lab1-Part V Inverted index generationInverted index倒排索引.从关键词到url的索引.(文件名也可以看做一种url吧.) 那就是在word count的基础上加点东西?和word count还是不同的.看后面的代码即知. 不仅统计词数,还要附带出现的url位置. 这个partV不难,还是挺有意思的. 先用go run ii.go mas">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-10-10T07:53:11.957Z">
+<meta property="og:updated_time" content="2019-10-10T08:07:13.779Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="mit6824-lab1-part-V">
 <meta name="twitter:description" content="[TOC] lab1-Part V Inverted index generationInverted index倒排索引.从关键词到url的索引.(文件名也可以看做一种url吧.) 那就是在word count的基础上加点东西?和word count还是不同的.看后面的代码即知. 不仅统计词数,还要附带出现的url位置. 这个partV不难,还是挺有意思的. 先用go run ii.go mas">
@@ -379,6 +379,11 @@
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   mr := mapreduce.Distributed(<span class="string">"iiseq"</span>, os.Args[<span class="number">1</span>:], <span class="number">3</span>, <span class="string">"localhost:7700"</span>)</span><br><span class="line">   <span class="comment">// Start 2 workers that fail after 10 tasks</span></span><br><span class="line">   <span class="keyword">go</span> mapreduce.RunWorker(<span class="string">"localhost:7700"</span>, <span class="string">"localhost:7701"</span>,</span><br><span class="line">      mapF, reduceF, <span class="number">2</span>, <span class="literal">nil</span>)</span><br><span class="line">   <span class="keyword">go</span> mapreduce.RunWorker(<span class="string">"localhost:7700"</span>, <span class="string">"localhost:7702"</span>,</span><br><span class="line">      mapF, reduceF, <span class="number">-1</span>, <span class="literal">nil</span>)</span><br><span class="line">   <span class="keyword">go</span> mapreduce.RunWorker(<span class="string">"localhost:7700"</span>, <span class="string">"localhost:7703"</span>,</span><br><span class="line">      mapF, reduceF, <span class="number">3</span>, <span class="literal">nil</span>)</span><br><span class="line">   <span class="keyword">go</span> mapreduce.RunWorker(<span class="string">"localhost:7700"</span>, <span class="string">"localhost:7704"</span>,</span><br><span class="line">      mapF, reduceF, <span class="number">-1</span>, <span class="literal">nil</span>)</span><br><span class="line">   mr.Wait()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p> sequential.mrtmp.iiseq为 sequential模式下的最后输出mrtmp.iiseq,用来进行对比.结果发现是一样的.doMap()不管怎么执行,hash进哪个文件都是确定的.然后doReduce()会对key进行排序后写入输出文件.所以是一样的.等效的.</p>
 <p>go run ii.go pg-*.txt<br>diff mrtmp.iiseq sequential.mrtmp.iiseq</p>
+<h3 id="最后总结-完成lab1的part-I至V-5个part之后"><a href="#最后总结-完成lab1的part-I至V-5个part之后" class="headerlink" title="最后总结(完成lab1的part-I至V,5个part之后)"></a>最后总结(完成lab1的part-I至V,5个part之后)</h3><p>part-I,实现doMap()和doReduce().</p>
+<p>part-II,实现mapF和reduceF(这个相当于是mapreduce框架提供给用户业务代码的接口).lab2有word count任务.<br>lab5有Inverted index任务,在理解清楚真个mapreduce框架的流程后,并不难.</p>
+<p>part-III,实现schedule().这一部分应该是最难的一个part了…把序列式的执行改成基于rpc的分布式执行.这一部分需要仔细理解清楚整个流程中的每个细节.</p>
+<p>part-IV,在part-III的基础上增加worker崩了也没事的容错机制.</p>
+<p>part-V.针对Inverted index任务写业务代码</p>
 
       
     </div>
@@ -567,7 +572,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#lab1-Part-V-Inverted-index-generation"><span class="nav-number">1.</span> <span class="nav-text">lab1-Part V Inverted index generation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mapF"><span class="nav-number">1.1.</span> <span class="nav-text">mapF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reduceF"><span class="nav-number">1.2.</span> <span class="nav-text">reduceF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#master-worker分布式模式来运行"><span class="nav-number">1.3.</span> <span class="nav-text">master-worker分布式模式来运行</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#lab1-Part-V-Inverted-index-generation"><span class="nav-number">1.</span> <span class="nav-text">lab1-Part V Inverted index generation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mapF"><span class="nav-number">1.1.</span> <span class="nav-text">mapF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reduceF"><span class="nav-number">1.2.</span> <span class="nav-text">reduceF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#master-worker分布式模式来运行"><span class="nav-number">1.3.</span> <span class="nav-text">master-worker分布式模式来运行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#最后总结-完成lab1的part-I至V-5个part之后"><span class="nav-number">1.4.</span> <span class="nav-text">最后总结(完成lab1的part-I至V,5个part之后)</span></a></li></ol></li></ol></div>
             
 
           </div>
