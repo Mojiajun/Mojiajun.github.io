@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="mit6824,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="[TOC] lab1-Part V Inverted index generationInverted index倒排索引.从关键词到url的索引.(文件名也可以看做一种url吧.) 那就是在word count的基础上加点东西?和word count还是不同的.看后面的代码即知. 不仅统计词数,还要附带出现的url位置. 这个partV不难,还是挺有意思的. 先用go run ii.go mas">
+<meta name="keywords" content="mit6824">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mit6824-lab1-part-V">
+<meta property="og:url" content="https://mojiajun.github.io/post/4a75fa2f.html">
+<meta property="og:site_name" content="mojiajun">
+<meta property="og:description" content="[TOC] lab1-Part V Inverted index generationInverted index倒排索引.从关键词到url的索引.(文件名也可以看做一种url吧.) 那就是在word count的基础上加点东西?和word count还是不同的.看后面的代码即知. 不仅统计词数,还要附带出现的url位置. 这个partV不难,还是挺有意思的. 先用go run ii.go mas">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-10-10T07:53:11.957Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mit6824-lab1-part-V">
+<meta name="twitter:description" content="[TOC] lab1-Part V Inverted index generationInverted index倒排索引.从关键词到url的索引.(文件名也可以看做一种url吧.) 那就是在word count的基础上加点东西?和word count还是不同的.看后面的代码即知. 不仅统计词数,还要附带出现的url位置. 这个partV不难,还是挺有意思的. 先用go run ii.go mas">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://mojiajun.github.io/post/4a75fa2f.html">
+
+
+
+
+
+  <title>mit6824-lab1-part-V | mojiajun</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mojiajun</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/4a75fa2f.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">mit6824-lab1-part-V</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-10T00:00:00+08:00">
+                2019-10-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/分布式/" itemprop="url" rel="index">
+                    <span itemprop="name">分布式</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/分布式/mit6824/" itemprop="url" rel="index">
+                    <span itemprop="name">mit6824</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>[TOC]</p>
+<h2 id="lab1-Part-V-Inverted-index-generation"><a href="#lab1-Part-V-Inverted-index-generation" class="headerlink" title="lab1-Part V Inverted index generation"></a>lab1-Part V Inverted index generation</h2><p>Inverted index倒排索引.从关键词到url的索引.(文件名也可以看做一种url吧.)</p>
+<p>那就是在word count的基础上加点东西?和word count还是不同的.看后面的代码即知.</p>
+<p>不仅统计词数,还要附带出现的url位置.</p>
+<p>这个partV不难,还是挺有意思的.</p>
+<p>先用go run ii.go master sequential pg-*.txt测试.</p>
+<h3 id="mapF"><a href="#mapF" class="headerlink" title="mapF"></a>mapF</h3><p>感觉mapF函数几乎和lab2-wc.go里面的mapF差不多啊</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mapF</span><span class="params">(document <span class="keyword">string</span>, value <span class="keyword">string</span>)</span> <span class="params">(res []mapreduce.KeyValue)</span></span> &#123;</span><br><span class="line">	<span class="comment">// Your code here (Part V).</span></span><br><span class="line">	<span class="comment">// 划分词</span></span><br><span class="line">	<span class="comment">// 划分词这里得搞明白...</span></span><br><span class="line">	<span class="comment">// words := strings.Fields(contents)</span></span><br><span class="line">	words := strings.FieldsFunc(contents, <span class="function"><span class="keyword">func</span><span class="params">(c <span class="keyword">rune</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> !unicode.IsLetter(c)</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 先构造一个map</span></span><br><span class="line">	mapping := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>) <span class="comment">// 有溢出的风险</span></span><br><span class="line">	<span class="keyword">for</span> _, w := <span class="keyword">range</span> words &#123;</span><br><span class="line">		mapping[w]++</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//把map的数据写入res</span></span><br><span class="line">	<span class="keyword">var</span> res []mapreduce.KeyValue</span><br><span class="line">	<span class="keyword">for</span> key, val := <span class="keyword">range</span> mapping &#123;</span><br><span class="line">		res = <span class="built_in">append</span>(res, mapreduce.KeyValue&#123;Key: key, Value: strconv.Itoa(val) + document&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> res</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="reduceF"><a href="#reduceF" class="headerlink" title="reduceF"></a>reduceF</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">reduceF</span><span class="params">(key <span class="keyword">string</span>, values []<span class="keyword">string</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="comment">// Your code here (Part V).</span></span><br><span class="line">	<span class="keyword">var</span> valInt <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">var</span> invertedIndex <span class="keyword">string</span></span><br><span class="line">	<span class="keyword">for</span> _, val := <span class="keyword">range</span> values &#123;</span><br><span class="line">		<span class="comment">// fmt.Println(val)</span></span><br><span class="line">		splitRes := strings.FieldsFunc(val, <span class="function"><span class="keyword">func</span><span class="params">(c <span class="keyword">rune</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">			<span class="keyword">return</span> unicode.IsSpace(c)  <span class="comment">// 为true则删除,而且会作为界限，在这里即是空格space</span></span><br><span class="line">		&#125;)</span><br><span class="line">		<span class="comment">// fmt.Println(splitRes)</span></span><br><span class="line">		valIntTemp, err := strconv.Atoi(splitRes[<span class="number">0</span>]);</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Fatal(<span class="string">"reduceF() fail "</span>, err)</span><br><span class="line">		&#125;</span><br><span class="line">		valInt += valIntTemp</span><br><span class="line">		<span class="keyword">if</span> invertedIndex != <span class="string">""</span> &#123;</span><br><span class="line">			invertedIndex += <span class="string">","</span></span><br><span class="line">		&#125;</span><br><span class="line">		invertedIndex += splitRes[<span class="number">1</span>]</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> strconv.Itoa(valInt) + <span class="string">" "</span> + invertedIndex <span class="comment">// 这么写的话也可能溢出.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样的话前面的那个数字会把所有出现的次数都算进来了.等于是wc count了…?<br>但是应该不是这样的.改成下面这就好了,因为要在mapF阶段去重.所以这么写</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mapF</span><span class="params">(document <span class="keyword">string</span>, value <span class="keyword">string</span>)</span> []<span class="title">mapreduce</span>.<span class="title">KeyValue</span></span> &#123;</span><br><span class="line">	<span class="comment">// Your code here (Part V).</span></span><br><span class="line">	<span class="comment">// 划分词</span></span><br><span class="line">	<span class="comment">// 划分词这里得搞明白...</span></span><br><span class="line">	<span class="comment">// words := strings.Fields(contents)</span></span><br><span class="line">	words := strings.FieldsFunc(value, <span class="function"><span class="keyword">func</span><span class="params">(c <span class="keyword">rune</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> !unicode.IsLetter(c)  <span class="comment">// 不是字母的地方得删除,而且会作为界限</span></span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 先构造一个map</span></span><br><span class="line">	mapping := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>) <span class="comment">// 有溢出的风险</span></span><br><span class="line">	<span class="keyword">for</span> _, w := <span class="keyword">range</span> words &#123;</span><br><span class="line">		mapping[w]++</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//把map的数据写入res</span></span><br><span class="line">	<span class="keyword">var</span> res []mapreduce.KeyValue</span><br><span class="line">	<span class="keyword">for</span> key, _ := <span class="keyword">range</span> mapping &#123;</span><br><span class="line">		res = <span class="built_in">append</span>(res, mapreduce.KeyValue&#123;Key: key, Value: strconv.Itoa(<span class="number">1</span>) + <span class="string">" "</span> + document&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> res</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="master-worker分布式模式来运行"><a href="#master-worker分布式模式来运行" class="headerlink" title="master-worker分布式模式来运行"></a>master-worker分布式模式来运行</h3><p>类似lab1-part-II那样太麻烦了…</p>
+<p>直接改代码吧,改成test-test.go里面的那样.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   mr := mapreduce.Distributed(<span class="string">"iiseq"</span>, os.Args[<span class="number">1</span>:], <span class="number">3</span>, <span class="string">"localhost:7700"</span>)</span><br><span class="line">   <span class="comment">// Start 2 workers that fail after 10 tasks</span></span><br><span class="line">   <span class="keyword">go</span> mapreduce.RunWorker(<span class="string">"localhost:7700"</span>, <span class="string">"localhost:7701"</span>,</span><br><span class="line">      mapF, reduceF, <span class="number">2</span>, <span class="literal">nil</span>)</span><br><span class="line">   <span class="keyword">go</span> mapreduce.RunWorker(<span class="string">"localhost:7700"</span>, <span class="string">"localhost:7702"</span>,</span><br><span class="line">      mapF, reduceF, <span class="number">-1</span>, <span class="literal">nil</span>)</span><br><span class="line">   <span class="keyword">go</span> mapreduce.RunWorker(<span class="string">"localhost:7700"</span>, <span class="string">"localhost:7703"</span>,</span><br><span class="line">      mapF, reduceF, <span class="number">3</span>, <span class="literal">nil</span>)</span><br><span class="line">   <span class="keyword">go</span> mapreduce.RunWorker(<span class="string">"localhost:7700"</span>, <span class="string">"localhost:7704"</span>,</span><br><span class="line">      mapF, reduceF, <span class="number">-1</span>, <span class="literal">nil</span>)</span><br><span class="line">   mr.Wait()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> sequential.mrtmp.iiseq为 sequential模式下的最后输出mrtmp.iiseq,用来进行对比.结果发现是一样的.doMap()不管怎么执行,hash进哪个文件都是确定的.然后doReduce()会对key进行排序后写入输出文件.所以是一样的.等效的.</p>
+<p>go run ii.go pg-*.txt<br>diff mrtmp.iiseq sequential.mrtmp.iiseq</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>Post author:</strong>
+    mojiajun
+  </li>
+  <li class="post-copyright-link">
+    <strong>Post link:</strong>
+    <a href="https://mojiajun.github.io/post/4a75fa2f.html" title="mit6824-lab1-part-V">https://mojiajun.github.io/post/4a75fa2f.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice: </strong>
+    All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> unless stating additionally.
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/mit6824/" rel="tag"># mit6824</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/post/36cb5d71.html" rel="next" title="mit6824-lab1-part-IV">
+                <i class="fa fa-chevron-left"></i> mit6824-lab1-part-IV
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">mojiajun</p>
+              <p class="site-description motion-element" itemprop="description">莫佳骏学习笔记</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#lab1-Part-V-Inverted-index-generation"><span class="nav-number">1.</span> <span class="nav-text">lab1-Part V Inverted index generation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mapF"><span class="nav-number">1.1.</span> <span class="nav-text">mapF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reduceF"><span class="nav-number">1.2.</span> <span class="nav-text">reduceF</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#master-worker分布式模式来运行"><span class="nav-number">1.3.</span> <span class="nav-text">master-worker分布式模式来运行</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">mojiajun</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

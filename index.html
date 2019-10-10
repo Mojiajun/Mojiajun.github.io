@@ -262,6 +262,174 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/4a75fa2f.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/post/4a75fa2f.html" itemprop="url">mit6824-lab1-part-V</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-10T00:00:00+08:00">
+                2019-10-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/分布式/" itemprop="url" rel="index">
+                    <span itemprop="name">分布式</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/分布式/mit6824/" itemprop="url" rel="index">
+                    <span itemprop="name">mit6824</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>[TOC]</p>
+<h2 id="lab1-Part-V-Inverted-index-generation"><a href="#lab1-Part-V-Inverted-index-generation" class="headerlink" title="lab1-Part V Inverted index generation"></a>lab1-Part V Inverted index generation</h2><p>Inverted index倒排索引.从关键词到url的索引.(文件名也可以看做一种url吧.)</p>
+<p>那就是在word count的基础上加点东西?和word count还是不同的.看后面的代码即知.</p>
+<p>不仅统计词数,还要附带出现的url位置.</p>
+<p>这个partV不难,还是挺有意思的.</p>
+<p>先用go run ii.go master sequential pg-*.txt测试.</p>
+<h3 id="mapF"><a href="#mapF" class="headerlink" title="mapF"></a>mapF</h3><p>感觉mapF函数几乎和lab2-wc.go里面的mapF差不多啊</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mapF</span><span class="params">(document <span class="keyword">string</span>, value <span class="keyword">string</span>)</span> <span class="params">(res []mapreduce.KeyValue)</span></span> &#123;</span><br><span class="line">	<span class="comment">// Your code here (Part V).</span></span><br><span class="line">	<span class="comment">// 划分词</span></span><br><span class="line">	<span class="comment">// 划分词这里得搞明白...</span></span><br><span class="line">	<span class="comment">// words := strings.Fields(contents)</span></span><br><span class="line">	words := strings.FieldsFunc(contents, <span class="function"><span class="keyword">func</span><span class="params">(c <span class="keyword">rune</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> !unicode.IsLetter(c)</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 先构造一个map</span></span><br><span class="line">	mapping := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>) <span class="comment">// 有溢出的风险</span></span><br><span class="line">	<span class="keyword">for</span> _, w := <span class="keyword">range</span> words &#123;</span><br><span class="line">		mapping[w]++</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//把map的数据写入res</span></span><br><span class="line">	<span class="keyword">var</span> res []mapreduce.KeyValue</span><br><span class="line">	<span class="keyword">for</span> key, val := <span class="keyword">range</span> mapping &#123;</span><br><span class="line">		res = <span class="built_in">append</span>(res, mapreduce.KeyValue&#123;Key: key, Value: strconv.Itoa(val) + document&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> res</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="reduceF"><a href="#reduceF" class="headerlink" title="reduceF"></a>reduceF</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">reduceF</span><span class="params">(key <span class="keyword">string</span>, values []<span class="keyword">string</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="comment">// Your code here (Part V).</span></span><br><span class="line">	<span class="keyword">var</span> valInt <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">var</span> invertedIndex <span class="keyword">string</span></span><br><span class="line">	<span class="keyword">for</span> _, val := <span class="keyword">range</span> values &#123;</span><br><span class="line">		<span class="comment">// fmt.Println(val)</span></span><br><span class="line">		splitRes := strings.FieldsFunc(val, <span class="function"><span class="keyword">func</span><span class="params">(c <span class="keyword">rune</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">			<span class="keyword">return</span> unicode.IsSpace(c)  <span class="comment">// 为true则删除,而且会作为界限，在这里即是空格space</span></span><br><span class="line">		&#125;)</span><br><span class="line">		<span class="comment">// fmt.Println(splitRes)</span></span><br><span class="line">		valIntTemp, err := strconv.Atoi(splitRes[<span class="number">0</span>]);</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Fatal(<span class="string">"reduceF() fail "</span>, err)</span><br><span class="line">		&#125;</span><br><span class="line">		valInt += valIntTemp</span><br><span class="line">		<span class="keyword">if</span> invertedIndex != <span class="string">""</span> &#123;</span><br><span class="line">			invertedIndex += <span class="string">","</span></span><br><span class="line">		&#125;</span><br><span class="line">		invertedIndex += splitRes[<span class="number">1</span>]</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> strconv.Itoa(valInt) + <span class="string">" "</span> + invertedIndex <span class="comment">// 这么写的话也可能溢出.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样的话前面的那个数字会把所有出现的次数都算进来了.等于是wc count了…?<br>但是应该不是这样的.改成下面这就好了,因为要在mapF阶段去重.所以这么写</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mapF</span><span class="params">(document <span class="keyword">string</span>, value <span class="keyword">string</span>)</span> []<span class="title">mapreduce</span>.<span class="title">KeyValue</span></span> &#123;</span><br><span class="line">	<span class="comment">// Your code here (Part V).</span></span><br><span class="line">	<span class="comment">// 划分词</span></span><br><span class="line">	<span class="comment">// 划分词这里得搞明白...</span></span><br><span class="line">	<span class="comment">// words := strings.Fields(contents)</span></span><br><span class="line">	words := strings.FieldsFunc(value, <span class="function"><span class="keyword">func</span><span class="params">(c <span class="keyword">rune</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> !unicode.IsLetter(c)  <span class="comment">// 不是字母的地方得删除,而且会作为界限</span></span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 先构造一个map</span></span><br><span class="line">	mapping := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>) <span class="comment">// 有溢出的风险</span></span><br><span class="line">	<span class="keyword">for</span> _, w := <span class="keyword">range</span> words &#123;</span><br><span class="line">		mapping[w]++</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//把map的数据写入res</span></span><br><span class="line">	<span class="keyword">var</span> res []mapreduce.KeyValue</span><br><span class="line">	<span class="keyword">for</span> key, _ := <span class="keyword">range</span> mapping &#123;</span><br><span class="line">		res = <span class="built_in">append</span>(res, mapreduce.KeyValue&#123;Key: key, Value: strconv.Itoa(<span class="number">1</span>) + <span class="string">" "</span> + document&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> res</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="master-worker分布式模式来运行"><a href="#master-worker分布式模式来运行" class="headerlink" title="master-worker分布式模式来运行"></a>master-worker分布式模式来运行</h3><p>类似lab1-part-II那样太麻烦了…</p>
+<p>直接改代码吧,改成test-test.go里面的那样.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">   mr := mapreduce.Distributed(<span class="string">"iiseq"</span>, os.Args[<span class="number">1</span>:], <span class="number">3</span>, <span class="string">"localhost:7700"</span>)</span><br><span class="line">   <span class="comment">// Start 2 workers that fail after 10 tasks</span></span><br><span class="line">   <span class="keyword">go</span> mapreduce.RunWorker(<span class="string">"localhost:7700"</span>, <span class="string">"localhost:7701"</span>,</span><br><span class="line">      mapF, reduceF, <span class="number">2</span>, <span class="literal">nil</span>)</span><br><span class="line">   <span class="keyword">go</span> mapreduce.RunWorker(<span class="string">"localhost:7700"</span>, <span class="string">"localhost:7702"</span>,</span><br><span class="line">      mapF, reduceF, <span class="number">-1</span>, <span class="literal">nil</span>)</span><br><span class="line">   <span class="keyword">go</span> mapreduce.RunWorker(<span class="string">"localhost:7700"</span>, <span class="string">"localhost:7703"</span>,</span><br><span class="line">      mapF, reduceF, <span class="number">3</span>, <span class="literal">nil</span>)</span><br><span class="line">   <span class="keyword">go</span> mapreduce.RunWorker(<span class="string">"localhost:7700"</span>, <span class="string">"localhost:7704"</span>,</span><br><span class="line">      mapF, reduceF, <span class="number">-1</span>, <span class="literal">nil</span>)</span><br><span class="line">   mr.Wait()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> sequential.mrtmp.iiseq为 sequential模式下的最后输出mrtmp.iiseq,用来进行对比.结果发现是一样的.doMap()不管怎么执行,hash进哪个文件都是确定的.然后doReduce()会对key进行排序后写入输出文件.所以是一样的.等效的.</p>
+<p>go run ii.go pg-*.txt<br>diff mrtmp.iiseq sequential.mrtmp.iiseq</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/36cb5d71.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1903,165 +2071,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/18ee0d3.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="mojiajun">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mojiajun">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/post/18ee0d3.html" itemprop="url">redis-server初始化</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-27T00:00:00+08:00">
-                2019-04-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/源码阅读/" itemprop="url" rel="index">
-                    <span itemprop="name">源码阅读</span>
-                  </a>
-                </span>
-
-                
-                
-                  , 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/源码阅读/redis/" itemprop="url" rel="index">
-                    <span itemprop="name">redis</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="initServerConfig"><a href="#initServerConfig" class="headerlink" title="initServerConfig()"></a>initServerConfig()</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">initServerConfig</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> j;</span><br><span class="line"></span><br><span class="line">    getRandomHexChars(server.runid,REDIS_RUN_ID_SIZE);</span><br><span class="line">    server.configfile = <span class="literal">NULL</span>;</span><br><span class="line">    server.hz = REDIS_DEFAULT_HZ;</span><br><span class="line">    server.runid[REDIS_RUN_ID_SIZE] = <span class="string">'\0'</span>;</span><br><span class="line">    server.arch_bits = (<span class="keyword">sizeof</span>(<span class="keyword">long</span>) == <span class="number">8</span>) ? <span class="number">64</span> : <span class="number">32</span>;</span><br><span class="line">    server.port = REDIS_SERVERPORT;</span><br><span class="line">    server.bindaddr_count = <span class="number">0</span>;</span><br><span class="line">    server.unixsocket = <span class="literal">NULL</span>;</span><br><span class="line">    server.unixsocketperm = REDIS_DEFAULT_UNIX_SOCKET_PERM;</span><br><span class="line">    server.ipfd_count = <span class="number">0</span>;</span><br><span class="line">    server.sofd = <span class="number">-1</span>;</span><br><span class="line">    server.dbnum = REDIS_DEFAULT_DBNUM;</span><br><span class="line">    server.verbosity = REDIS_DEFAULT_VERBOSITY;</span><br><span class="line">    server.maxidletime = REDIS_MAXIDLETIME;</span><br><span class="line">    server.tcpkeepalive = REDIS_DEFAULT_TCP_KEEPALIVE;</span><br><span class="line">    server.active_expire_enabled = <span class="number">1</span>;</span><br><span class="line">    server.client_max_querybuf_len = REDIS_MAX_QUERYBUF_LEN;</span><br><span class="line">    server.saveparams = <span class="literal">NULL</span>;</span><br><span class="line">    server.loading = <span class="number">0</span>;</span><br><span class="line">    server.logfile = zstrdup(REDIS_DEFAULT_LOGFILE);</span><br><span class="line">    server.syslog_enabled = REDIS_DEFAULT_SYSLOG_ENABLED;</span><br><span class="line">    server.syslog_ident = zstrdup(REDIS_DEFAULT_SYSLOG_IDENT);</span><br><span class="line">    server.syslog_facility = LOG_LOCAL0;</span><br><span class="line">    server.daemonize = REDIS_DEFAULT_DAEMONIZE;</span><br><span class="line">    server.aof_state = REDIS_AOF_OFF;</span><br><span class="line">    server.aof_fsync = REDIS_DEFAULT_AOF_FSYNC;</span><br><span class="line">    server.aof_no_fsync_on_rewrite = REDIS_DEFAULT_AOF_NO_FSYNC_ON_REWRITE;</span><br><span class="line">    server.aof_rewrite_perc = REDIS_AOF_REWRITE_PERC;</span><br><span class="line">    server.aof_rewrite_min_size = REDIS_AOF_REWRITE_MIN_SIZE;</span><br><span class="line">    server.aof_rewrite_base_size = <span class="number">0</span>;</span><br><span class="line">    server.aof_rewrite_scheduled = <span class="number">0</span>;</span><br><span class="line">    server.aof_last_fsync = time(<span class="literal">NULL</span>);</span><br><span class="line">    server.aof_rewrite_time_last = <span class="number">-1</span>;</span><br><span class="line">    server.aof_rewrite_time_start = <span class="number">-1</span>;</span><br><span class="line">    server.aof_lastbgrewrite_status = REDIS_OK;</span><br><span class="line">    server.aof_delayed_fsync = <span class="number">0</span>;</span><br><span class="line">    server.aof_fd = <span class="number">-1</span>;</span><br><span class="line">    server.aof_selected_db = <span class="number">-1</span>; <span class="comment">/* Make sure the first time will not match */</span></span><br><span class="line">    server.aof_flush_postponed_start = <span class="number">0</span>;</span><br><span class="line">    server.aof_rewrite_incremental_fsync = REDIS_DEFAULT_AOF_REWRITE_INCREMENTAL_FSYNC;</span><br><span class="line">    server.pidfile = zstrdup(REDIS_DEFAULT_PID_FILE);</span><br><span class="line">    server.rdb_filename = zstrdup(REDIS_DEFAULT_RDB_FILENAME);</span><br><span class="line">    server.aof_filename = zstrdup(<span class="string">"appendonly.aof"</span>);</span><br><span class="line">    server.requirepass = <span class="literal">NULL</span>;</span><br><span class="line">    server.rdb_compression = REDIS_DEFAULT_RDB_COMPRESSION;</span><br><span class="line">    server.rdb_checksum = REDIS_DEFAULT_RDB_CHECKSUM;</span><br><span class="line">    server.stop_writes_on_bgsave_err = REDIS_DEFAULT_STOP_WRITES_ON_BGSAVE_ERROR;</span><br><span class="line">    server.activerehashing = REDIS_DEFAULT_ACTIVE_REHASHING;</span><br><span class="line">    server.notify_keyspace_events = <span class="number">0</span>;</span><br><span class="line">    server.maxclients = REDIS_MAX_CLIENTS;</span><br><span class="line">    server.bpop_blocked_clients = <span class="number">0</span>;</span><br><span class="line">    server.maxmemory = REDIS_DEFAULT_MAXMEMORY;</span><br><span class="line">    server.maxmemory_policy = REDIS_DEFAULT_MAXMEMORY_POLICY;</span><br><span class="line">    server.maxmemory_samples = REDIS_DEFAULT_MAXMEMORY_SAMPLES;</span><br><span class="line">    server.hash_max_ziplist_entries = REDIS_HASH_MAX_ZIPLIST_ENTRIES;</span><br><span class="line">    server.hash_max_ziplist_value = REDIS_HASH_MAX_ZIPLIST_VALUE;</span><br><span class="line">    server.list_max_ziplist_entries = REDIS_LIST_MAX_ZIPLIST_ENTRIES;</span><br><span class="line">    server.list_max_ziplist_value = REDIS_LIST_MAX_ZIPLIST_VALUE;</span><br><span class="line">    server.set_max_intset_entries = REDIS_SET_MAX_INTSET_ENTRIES;</span><br><span class="line">    server.zset_max_ziplist_entries = REDIS_ZSET_MAX_ZIPLIST_ENTRIES;</span><br><span class="line">    server.zset_max_ziplist_value = REDIS_ZSET_MAX_ZIPLIST_VALUE;</span><br><span class="line">    server.shutdown_asap = <span class="number">0</span>;</span><br><span class="line">    server.repl_ping_slave_period = REDIS_REPL_PING_SLAVE_PERIOD;</span><br><span class="line">    server.repl_timeout = REDIS_REPL_TIMEOUT;</span><br><span class="line">    server.repl_min_slaves_to_write = REDIS_DEFAULT_MIN_SLAVES_TO_WRITE;</span><br><span class="line">    server.repl_min_slaves_max_lag = REDIS_DEFAULT_MIN_SLAVES_MAX_LAG;</span><br><span class="line">    server.lua_caller = <span class="literal">NULL</span>;</span><br><span class="line">    server.lua_time_limit = REDIS_LUA_TIME_LIMIT;</span><br><span class="line">    server.lua_client = <span class="literal">NULL</span>;</span><br><span class="line">    server.lua_timedout = <span class="number">0</span>;</span><br><span class="line">    server.loading_process_events_interval_bytes = (<span class="number">1024</span>*<span class="number">1024</span>*<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">    updateLRUClock();</span><br><span class="line">    resetServerSaveParams();</span><br><span class="line"></span><br><span class="line">    appendServerSaveParams(<span class="number">60</span>*<span class="number">60</span>,<span class="number">1</span>);  <span class="comment">/* save after 1 hour and 1 change */</span></span><br><span class="line">    appendServerSaveParams(<span class="number">300</span>,<span class="number">100</span>);  <span class="comment">/* save after 5 minutes and 100 changes */</span></span><br><span class="line">    appendServerSaveParams(<span class="number">60</span>,<span class="number">10000</span>); <span class="comment">/* save after 1 minute and 10000 changes */</span></span><br><span class="line">    <span class="comment">/* Replication related */</span></span><br><span class="line">    server.masterauth = <span class="literal">NULL</span>;</span><br><span class="line">    server.masterhost = <span class="literal">NULL</span>;</span><br><span class="line">    server.masterport = <span class="number">6379</span>;</span><br><span class="line">    server.master = <span class="literal">NULL</span>;</span><br><span class="line">    server.cached_master = <span class="literal">NULL</span>;</span><br><span class="line">    server.repl_master_initial_offset = <span class="number">-1</span>;</span><br><span class="line">    server.repl_state = REDIS_REPL_NONE;</span><br><span class="line">    server.repl_syncio_timeout = REDIS_REPL_SYNCIO_TIMEOUT;</span><br><span class="line">    server.repl_serve_stale_data = REDIS_DEFAULT_SLAVE_SERVE_STALE_DATA;</span><br><span class="line">    server.repl_slave_ro = REDIS_DEFAULT_SLAVE_READ_ONLY;</span><br><span class="line">    server.repl_down_since = <span class="number">0</span>; <span class="comment">/* Never connected, repl is down since EVER. */</span></span><br><span class="line">    server.repl_disable_tcp_nodelay = REDIS_DEFAULT_REPL_DISABLE_TCP_NODELAY;</span><br><span class="line">    server.slave_priority = REDIS_DEFAULT_SLAVE_PRIORITY;</span><br><span class="line">    server.master_repl_offset = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Replication partial resync backlog */</span></span><br><span class="line">    server.repl_backlog = <span class="literal">NULL</span>;</span><br><span class="line">    server.repl_backlog_size = REDIS_DEFAULT_REPL_BACKLOG_SIZE;</span><br><span class="line">    server.repl_backlog_histlen = <span class="number">0</span>;</span><br><span class="line">    server.repl_backlog_idx = <span class="number">0</span>;</span><br><span class="line">    server.repl_backlog_off = <span class="number">0</span>;</span><br><span class="line">    server.repl_backlog_time_limit = REDIS_DEFAULT_REPL_BACKLOG_TIME_LIMIT;</span><br><span class="line">    server.repl_no_slaves_since = time(<span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Client output buffer limits */</span></span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; REDIS_CLIENT_LIMIT_NUM_CLASSES; j++)</span><br><span class="line">        server.client_obuf_limits[j] = clientBufferLimitsDefaults[j];</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Double constants initialization */</span></span><br><span class="line">    R_Zero = <span class="number">0.0</span>;</span><br><span class="line">    R_PosInf = <span class="number">1.0</span>/R_Zero;</span><br><span class="line">    R_NegInf = <span class="number">-1.0</span>/R_Zero;</span><br><span class="line">    R_Nan = R_Zero/R_Zero;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Command table -- we initiialize it here as it is part of the</span></span><br><span class="line"><span class="comment">     * initial configuration, since command names may be changed via</span></span><br><span class="line"><span class="comment">     * redis.conf using the rename-command directive. */</span></span><br><span class="line">    server.commands = dictCreate(&amp;commandTableDictType,<span class="literal">NULL</span>);</span><br><span class="line">    server.orig_commands = dictCreate(&amp;commandTableDictType,<span class="literal">NULL</span>);</span><br><span class="line">    populateCommandTable();</span><br><span class="line">    server.delCommand = lookupCommandByCString(<span class="string">"del"</span>);</span><br><span class="line">    server.multiCommand = lookupCommandByCString(<span class="string">"multi"</span>);</span><br><span class="line">    server.lpushCommand = lookupCommandByCString(<span class="string">"lpush"</span>);</span><br><span class="line">    server.lpopCommand = lookupCommandByCString(<span class="string">"lpop"</span>);</span><br><span class="line">    server.rpopCommand = lookupCommandByCString(<span class="string">"rpop"</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/* Slow log */</span></span><br><span class="line">    server.slowlog_log_slower_than = REDIS_SLOWLOG_LOG_SLOWER_THAN;</span><br><span class="line">    server.slowlog_max_len = REDIS_SLOWLOG_MAX_LEN;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Debugging */</span></span><br><span class="line">    server.assert_failed = <span class="string">"&lt;no assertion failed&gt;"</span>;</span><br><span class="line">    server.assert_file = <span class="string">"&lt;no file&gt;"</span>;</span><br><span class="line">    server.assert_line = <span class="number">0</span>;</span><br><span class="line">    server.bug_report_start = <span class="number">0</span>;</span><br><span class="line">    server.watchdog_period = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="initServer"><a href="#initServer" class="headerlink" title="initServer()"></a>initServer()</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">initServer</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> j;</span><br><span class="line"></span><br><span class="line">    signal(SIGHUP, SIG_IGN);</span><br><span class="line">    signal(SIGPIPE, SIG_IGN);</span><br><span class="line">    setupSignalHandlers();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (server.syslog_enabled) &#123;</span><br><span class="line">        openlog(server.syslog_ident, LOG_PID | LOG_NDELAY | LOG_NOWAIT,</span><br><span class="line">            server.syslog_facility);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    server.current_client = <span class="literal">NULL</span>;</span><br><span class="line">    server.clients = listCreate();</span><br><span class="line">    server.clients_to_close = listCreate();</span><br><span class="line">    server.slaves = listCreate();</span><br><span class="line">    server.monitors = listCreate();</span><br><span class="line">    server.slaveseldb = <span class="number">-1</span>; <span class="comment">/* Force to emit the first SELECT command. */</span></span><br><span class="line">    server.unblocked_clients = listCreate();</span><br><span class="line">    server.ready_keys = listCreate();</span><br><span class="line"></span><br><span class="line">    createSharedObjects();</span><br><span class="line">    adjustOpenFilesLimit();</span><br><span class="line">    server.el = aeCreateEventLoop(server.maxclients+REDIS_EVENTLOOP_FDSET_INCR);</span><br><span class="line">    server.db = zmalloc(<span class="keyword">sizeof</span>(redisDb)*server.dbnum);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Open the TCP listening socket for the user commands. */</span></span><br><span class="line">    <span class="keyword">if</span> (listenToPort(server.port,server.ipfd,&amp;server.ipfd_count) == REDIS_ERR)</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Open the listening Unix domain socket. */</span></span><br><span class="line">    <span class="keyword">if</span> (server.unixsocket != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        unlink(server.unixsocket); <span class="comment">/* don't care if this fails */</span></span><br><span class="line">        server.sofd = anetUnixServer(server.neterr,server.unixsocket,server.unixsocketperm);</span><br><span class="line">        <span class="keyword">if</span> (server.sofd == ANET_ERR) &#123;</span><br><span class="line">            redisLog(REDIS_WARNING, <span class="string">"Opening socket: %s"</span>, server.neterr);</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Abort if there are no listening sockets at all. */</span></span><br><span class="line">    <span class="keyword">if</span> (server.ipfd_count == <span class="number">0</span> &amp;&amp; server.sofd &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        redisLog(REDIS_WARNING, <span class="string">"Configured to not listen anywhere, exiting."</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Create the Redis databases, and initialize other internal state. */</span></span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; server.dbnum; j++) &#123;</span><br><span class="line">        server.db[j].dict = dictCreate(&amp;dbDictType,<span class="literal">NULL</span>);</span><br><span class="line">        server.db[j].expires = dictCreate(&amp;keyptrDictType,<span class="literal">NULL</span>);</span><br><span class="line">        server.db[j].blocking_keys = dictCreate(&amp;keylistDictType,<span class="literal">NULL</span>);</span><br><span class="line">        server.db[j].ready_keys = dictCreate(&amp;setDictType,<span class="literal">NULL</span>);</span><br><span class="line">        server.db[j].watched_keys = dictCreate(&amp;keylistDictType,<span class="literal">NULL</span>);</span><br><span class="line">        server.db[j].id = j;</span><br><span class="line">        server.db[j].avg_ttl = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    server.pubsub_channels = dictCreate(&amp;keylistDictType,<span class="literal">NULL</span>);</span><br><span class="line">    server.pubsub_patterns = listCreate();</span><br><span class="line">    listSetFreeMethod(server.pubsub_patterns,freePubsubPattern);</span><br><span class="line">    listSetMatchMethod(server.pubsub_patterns,listMatchPubsubPattern);</span><br><span class="line">    server.cronloops = <span class="number">0</span>;</span><br><span class="line">    server.rdb_child_pid = <span class="number">-1</span>;</span><br><span class="line">    server.aof_child_pid = <span class="number">-1</span>;</span><br><span class="line">    aofRewriteBufferReset();</span><br><span class="line">    server.aof_buf = sdsempty();</span><br><span class="line">    server.lastsave = time(<span class="literal">NULL</span>); <span class="comment">/* At startup we consider the DB saved. */</span></span><br><span class="line">    server.lastbgsave_try = <span class="number">0</span>;    <span class="comment">/* At startup we never tried to BGSAVE. */</span></span><br><span class="line">    server.rdb_save_time_last = <span class="number">-1</span>;</span><br><span class="line">    server.rdb_save_time_start = <span class="number">-1</span>;</span><br><span class="line">    server.dirty = <span class="number">0</span>;</span><br><span class="line">    server.stat_numcommands = <span class="number">0</span>;</span><br><span class="line">    server.stat_numconnections = <span class="number">0</span>;</span><br><span class="line">    server.stat_expiredkeys = <span class="number">0</span>;</span><br><span class="line">    server.stat_evictedkeys = <span class="number">0</span>;</span><br><span class="line">    server.stat_starttime = time(<span class="literal">NULL</span>);</span><br><span class="line">    server.stat_keyspace_misses = <span class="number">0</span>;</span><br><span class="line">    server.stat_keyspace_hits = <span class="number">0</span>;</span><br><span class="line">    server.stat_peak_memory = <span class="number">0</span>;</span><br><span class="line">    server.stat_fork_time = <span class="number">0</span>;</span><br><span class="line">    server.stat_rejected_conn = <span class="number">0</span>;</span><br><span class="line">    server.stat_sync_full = <span class="number">0</span>;</span><br><span class="line">    server.stat_sync_partial_ok = <span class="number">0</span>;</span><br><span class="line">    server.stat_sync_partial_err = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">memset</span>(server.ops_sec_samples,<span class="number">0</span>,<span class="keyword">sizeof</span>(server.ops_sec_samples));</span><br><span class="line">    server.ops_sec_idx = <span class="number">0</span>;</span><br><span class="line">    server.ops_sec_last_sample_time = mstime();</span><br><span class="line">    server.ops_sec_last_sample_ops = <span class="number">0</span>;</span><br><span class="line">    server.unixtime = time(<span class="literal">NULL</span>);</span><br><span class="line">    server.mstime = mstime();</span><br><span class="line">    server.lastbgsave_status = REDIS_OK;</span><br><span class="line">    server.repl_good_slaves_count = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Create the serverCron() time event, that's our main way to process</span></span><br><span class="line"><span class="comment">     * background operations. */</span></span><br><span class="line">    <span class="keyword">if</span>(aeCreateTimeEvent(server.el, <span class="number">1</span>, serverCron, <span class="literal">NULL</span>, <span class="literal">NULL</span>) == AE_ERR) &#123;</span><br><span class="line">        redisPanic(<span class="string">"Can't create the serverCron time event."</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Create an event handler for accepting new connections in TCP and Unix</span></span><br><span class="line"><span class="comment">     * domain sockets. */</span></span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; server.ipfd_count; j++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (aeCreateFileEvent(server.el, server.ipfd[j], AE_READABLE,</span><br><span class="line">            acceptTcpHandler,<span class="literal">NULL</span>) == AE_ERR)</span><br><span class="line">            &#123;</span><br><span class="line">                redisPanic(</span><br><span class="line">                    <span class="string">"Unrecoverable error creating server.ipfd file event."</span>);</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (server.sofd &gt; <span class="number">0</span> &amp;&amp; aeCreateFileEvent(server.el,server.sofd,AE_READABLE,</span><br><span class="line">        acceptUnixHandler,<span class="literal">NULL</span>) == AE_ERR) redisPanic(<span class="string">"Unrecoverable error creating server.sofd file event."</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Open the AOF file if needed. */</span></span><br><span class="line">    <span class="keyword">if</span> (server.aof_state == REDIS_AOF_ON) &#123;</span><br><span class="line">        server.aof_fd = open(server.aof_filename,</span><br><span class="line">                               O_WRONLY|O_APPEND|O_CREAT,<span class="number">0644</span>);</span><br><span class="line">        <span class="keyword">if</span> (server.aof_fd == <span class="number">-1</span>) &#123;</span><br><span class="line">            redisLog(REDIS_WARNING, <span class="string">"Can't open the append-only file: %s"</span>,</span><br><span class="line">                strerror(errno));</span><br><span class="line">            <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* 32 bit instances are limited to 4GB of address space, so if there is</span></span><br><span class="line"><span class="comment">     * no explicit limit in the user provided configuration we set a limit</span></span><br><span class="line"><span class="comment">     * at 3 GB using maxmemory with 'noeviction' policy'. This avoids</span></span><br><span class="line"><span class="comment">     * useless crashes of the Redis instance for out of memory. */</span></span><br><span class="line">    <span class="keyword">if</span> (server.arch_bits == <span class="number">32</span> &amp;&amp; server.maxmemory == <span class="number">0</span>) &#123;</span><br><span class="line">        redisLog(REDIS_WARNING,<span class="string">"Warning: 32 bit instance detected but no memory limit set. Setting 3 GB maxmemory limit with 'noeviction' policy now."</span>);</span><br><span class="line">        server.maxmemory = <span class="number">3072L</span>L*(<span class="number">1024</span>*<span class="number">1024</span>); <span class="comment">/* 3 GB */</span></span><br><span class="line">        server.maxmemory_policy = REDIS_MAXMEMORY_NO_EVICTION;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    replicationScriptCacheInit();</span><br><span class="line">    scriptingInit();</span><br><span class="line">    slowlogInit();</span><br><span class="line">    bioInit();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="redis数据库创建"><a href="#redis数据库创建" class="headerlink" title="redis数据库创建"></a>redis数据库创建</h3><h4 id="核心结构体redisDb"><a href="#核心结构体redisDb" class="headerlink" title="核心结构体redisDb"></a>核心结构体redisDb</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">redisDb</span> &#123;</span></span><br><span class="line">    dict *dict;                 <span class="comment">/* The keyspace for this DB */</span></span><br><span class="line">    dict *expires;              <span class="comment">/* Timeout of keys with a timeout set */</span></span><br><span class="line">    dict *blocking_keys;        <span class="comment">/* Keys with clients waiting for data (BLPOP) */</span></span><br><span class="line">    dict *ready_keys;           <span class="comment">/* Blocked keys that received a PUSH */</span></span><br><span class="line">    dict *watched_keys;         <span class="comment">/* WATCHED keys for MULTI/EXEC CAS */</span></span><br><span class="line">    <span class="keyword">int</span> id;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> avg_ttl;          <span class="comment">/* Average TTL, just for stats */</span></span><br><span class="line">&#125; redisDb;</span><br></pre></td></tr></table></figure>
-<h4 id="创建流程"><a href="#创建流程" class="headerlink" title="创建流程"></a>创建流程</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> REDIS_DEFAULT_DBNUM     16</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">initServerConfig</span><span class="params">()</span> </span>&#123;</span><br><span class="line">...</span><br><span class="line">    server.dbnum = REDIS_DEFAULT_DBNUM;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如果是配置文件里设置了数据库的数目,如<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Set the number of databases. The default database is DB 0, you can select</span></span><br><span class="line"><span class="comment"># a different one on a per-connection basis using SELECT &lt;dbid&gt; where</span></span><br><span class="line"><span class="comment"># dbid is a number between 0 and 'databases'-1</span></span><br><span class="line">databases 16</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//把文件配置信息读入内存</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">loadServerConfig</span><span class="params">(<span class="keyword">char</span> *filename, <span class="keyword">char</span> *options)</span> </span>&#123;</span><br><span class="line">...</span><br><span class="line">loadServerConfigFromString(config);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//解析配置信息</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">loadServerConfigFromString</span><span class="params">(<span class="keyword">char</span> *config)</span> </span>&#123;</span><br><span class="line">...</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!strcasecmp(argv[<span class="number">0</span>],<span class="string">"databases"</span>) &amp;&amp; argc == <span class="number">2</span>) &#123;</span><br><span class="line">            server.dbnum = atoi(argv[<span class="number">1</span>]);</span><br><span class="line">            <span class="keyword">if</span> (server.dbnum &lt; <span class="number">1</span>) &#123;</span><br><span class="line">                err = <span class="string">"Invalid number of databases"</span>; <span class="keyword">goto</span> loaderr;</span><br><span class="line">            &#125;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br><span class="line">            </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">initServer</span><span class="params">()</span> </span>&#123;</span><br><span class="line">...</span><br><span class="line">    server.db = zmalloc(<span class="keyword">sizeof</span>(redisDb)*server.dbnum);</span><br><span class="line">...</span><br><span class="line">    <span class="comment">/* Create the Redis databases, and initialize other internal state. */</span></span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; server.dbnum; j++) &#123;</span><br><span class="line">        server.db[j].dict = dictCreate(&amp;dbDictType,<span class="literal">NULL</span>);</span><br><span class="line">        server.db[j].expires = dictCreate(&amp;keyptrDictType,<span class="literal">NULL</span>);</span><br><span class="line">        server.db[j].blocking_keys = dictCreate(&amp;keylistDictType,<span class="literal">NULL</span>);</span><br><span class="line">        server.db[j].ready_keys = dictCreate(&amp;setDictType,<span class="literal">NULL</span>);</span><br><span class="line">        server.db[j].watched_keys = dictCreate(&amp;keylistDictType,<span class="literal">NULL</span>);</span><br><span class="line">        server.db[j].id = j;</span><br><span class="line">        server.db[j].avg_ttl = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="切换数据库"><a href="#切换数据库" class="headerlink" title="切换数据库"></a>切换数据库</h4><p>SELECT命令调用selectCommand, 有效值显然是[0, server.dbnum-1]<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">selectDb</span><span class="params">(redisClient *c, <span class="keyword">int</span> id)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (id &lt; <span class="number">0</span> || id &gt;= server.dbnum)</span><br><span class="line">        <span class="keyword">return</span> REDIS_ERR;</span><br><span class="line">    c-&gt;db = &amp;server.db[id];</span><br><span class="line">    <span class="keyword">return</span> REDIS_OK;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// SELECT命令调用selectCommand</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">selectCommand</span><span class="params">(redisClient *c)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> id;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (getLongFromObjectOrReply(c, c-&gt;argv[<span class="number">1</span>], &amp;id,</span><br><span class="line">        <span class="string">"invalid DB index"</span>) != REDIS_OK)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (selectDb(c,id) == REDIS_ERR) &#123;</span><br><span class="line">        addReplyError(c,<span class="string">"invalid DB index"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        addReply(c,shared.ok);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2112,7 +2121,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
