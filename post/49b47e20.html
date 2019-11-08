@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="redis,">
+  <meta name="keywords" content="ffmpeg,">
 
 
 
@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="[TOC] 基于redis-2.8 底层数据结构dict.h.cdict,hash的实现 adlist.h.c通用双向链表? sds.h.c封装了底层的字符串 五种redis对象(基于底层数据结构)t_list.ct_set.ct_string.ct_zset.ct_hash.c网络有关networking.c和anet,ae的关系? anet.h.ca代表什么?封装了底层操作系统的socket">
-<meta name="keywords" content="redis">
+<meta name="description" content="基本环境:CentOS7.7+gcc4.8.5 cpu信息查看:lscpu,操作系统查看:lsb_release -a 之前ffmpeg源码编译还正常的,换一台机器,用的cpu和之前的不一样.然后就不行了.报Segmentation Fault. 然后逐步找问题所在 首先先设置core file size,用gdb ffmpeg core,去定位问题ulimit -a/-c单位:字节Byte 然后">
+<meta name="keywords" content="ffmpeg">
 <meta property="og:type" content="article">
-<meta property="og:title" content="redis-项目文件概览">
-<meta property="og:url" content="https://mojiajun.github.io/post/11e7222f.html">
+<meta property="og:title" content="ffmpeg-一次SegmentationFault的debug过程">
+<meta property="og:url" content="https://mojiajun.github.io/post/49b47e20.html">
 <meta property="og:site_name" content="mojiajun">
-<meta property="og:description" content="[TOC] 基于redis-2.8 底层数据结构dict.h.cdict,hash的实现 adlist.h.c通用双向链表? sds.h.c封装了底层的字符串 五种redis对象(基于底层数据结构)t_list.ct_set.ct_string.ct_zset.ct_hash.c网络有关networking.c和anet,ae的关系? anet.h.ca代表什么?封装了底层操作系统的socket">
+<meta property="og:description" content="基本环境:CentOS7.7+gcc4.8.5 cpu信息查看:lscpu,操作系统查看:lsb_release -a 之前ffmpeg源码编译还正常的,换一台机器,用的cpu和之前的不一样.然后就不行了.报Segmentation Fault. 然后逐步找问题所在 首先先设置core file size,用gdb ffmpeg core,去定位问题ulimit -a/-c单位:字节Byte 然后">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-04-28T15:40:29.915Z">
+<meta property="og:updated_time" content="2019-11-08T12:21:08.897Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="redis-项目文件概览">
-<meta name="twitter:description" content="[TOC] 基于redis-2.8 底层数据结构dict.h.cdict,hash的实现 adlist.h.c通用双向链表? sds.h.c封装了底层的字符串 五种redis对象(基于底层数据结构)t_list.ct_set.ct_string.ct_zset.ct_hash.c网络有关networking.c和anet,ae的关系? anet.h.ca代表什么?封装了底层操作系统的socket">
+<meta name="twitter:title" content="ffmpeg-一次SegmentationFault的debug过程">
+<meta name="twitter:description" content="基本环境:CentOS7.7+gcc4.8.5 cpu信息查看:lscpu,操作系统查看:lsb_release -a 之前ffmpeg源码编译还正常的,换一台机器,用的cpu和之前的不一样.然后就不行了.报Segmentation Fault. 然后逐步找问题所在 首先先设置core file size,用gdb ffmpeg core,去定位问题ulimit -a/-c单位:字节Byte 然后">
 
 
 
@@ -120,13 +120,13 @@
 
 
 
-  <link rel="canonical" href="https://mojiajun.github.io/post/11e7222f.html">
+  <link rel="canonical" href="https://mojiajun.github.io/post/49b47e20.html">
 
 
 
 
 
-  <title>redis-项目文件概览 | mojiajun</title>
+  <title>ffmpeg-一次SegmentationFault的debug过程 | mojiajun</title>
   
 
 
@@ -263,7 +263,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/11e7222f.html">
+    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/49b47e20.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="mojiajun">
@@ -280,7 +280,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">redis-项目文件概览</h1>
+          <h1 class="post-title" itemprop="name headline">ffmpeg-一次SegmentationFault的debug过程</h1>
         
 
         <div class="post-meta">
@@ -292,8 +292,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-28T00:00:00+08:00">
-                2019-04-28
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-11-08T00:00:00+08:00">
+                2019-11-08
               </time>
             
 
@@ -315,19 +315,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/源码阅读/" itemprop="url" rel="index">
-                    <span itemprop="name">源码阅读</span>
-                  </a>
-                </span>
-
-                
-                
-                  , 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/源码阅读/redis/" itemprop="url" rel="index">
-                    <span itemprop="name">redis</span>
+                  <a href="/categories/Debug/" itemprop="url" rel="index">
+                    <span itemprop="name">Debug</span>
                   </a>
                 </span>
 
@@ -363,25 +352,32 @@
       
 
       
-        <p>[TOC]</p>
-<p>基于redis-2.8</p>
-<h2 id="底层数据结构"><a href="#底层数据结构" class="headerlink" title="底层数据结构"></a>底层数据结构</h2><h3 id="dict-h-c"><a href="#dict-h-c" class="headerlink" title="dict.h.c"></a>dict.h.c</h3><p>dict,hash的实现</p>
-<h3 id="adlist-h-c"><a href="#adlist-h-c" class="headerlink" title="adlist.h.c"></a>adlist.h.c</h3><p>通用双向链表?</p>
-<h3 id="sds-h-c"><a href="#sds-h-c" class="headerlink" title="sds.h.c"></a>sds.h.c</h3><p>封装了底层的字符串</p>
-<h2 id="五种redis对象-基于底层数据结构"><a href="#五种redis对象-基于底层数据结构" class="headerlink" title="五种redis对象(基于底层数据结构)"></a>五种redis对象(基于底层数据结构)</h2><h3 id="t-list-c"><a href="#t-list-c" class="headerlink" title="t_list.c"></a>t_list.c</h3><h3 id="t-set-c"><a href="#t-set-c" class="headerlink" title="t_set.c"></a>t_set.c</h3><h3 id="t-string-c"><a href="#t-string-c" class="headerlink" title="t_string.c"></a>t_string.c</h3><h3 id="t-zset-c"><a href="#t-zset-c" class="headerlink" title="t_zset.c"></a>t_zset.c</h3><h3 id="t-hash-c"><a href="#t-hash-c" class="headerlink" title="t_hash.c"></a>t_hash.c</h3><h2 id="网络有关"><a href="#网络有关" class="headerlink" title="网络有关"></a>网络有关</h2><h3 id="networking-c"><a href="#networking-c" class="headerlink" title="networking.c"></a>networking.c</h3><p>和anet,ae的关系?</p>
-<h3 id="anet-h-c"><a href="#anet-h-c" class="headerlink" title="anet.h.c"></a>anet.h.c</h3><p>a代表什么?封装了底层操作系统的socket API</p>
-<h3 id="ae-h-c"><a href="#ae-h-c" class="headerlink" title="ae.h.c"></a>ae.h.c</h3><p>简单的事件驱动库,redis的reactor模式的实现</p>
-<h4 id="ae-epoll-c-ae-evport-c-ae-kqueue-c-qe-select-c"><a href="#ae-epoll-c-ae-evport-c-ae-kqueue-c-qe-select-c" class="headerlink" title="ae_epoll.c,ae_evport.c,ae_kqueue.c,qe_select.c"></a>ae_epoll.c,ae_evport.c,ae_kqueue.c,qe_select.c</h4><p>这四个文件统一了不同操作系统提供的I/O event notification.<br>拿linux下的ae_epoll.c举例子,其在底层的epoll上面封了一层.</p>
-<p>ae.h.c会使用这四种操作系统提供的event notification之一,对于ae.h.c来说,API是统一的.</p>
-<h2 id="上层数据库"><a href="#上层数据库" class="headerlink" title="上层数据库"></a>上层数据库</h2><h3 id="redis-h-c"><a href="#redis-h-c" class="headerlink" title="redis.h.c"></a>redis.h.c</h3><p>redisDb是数据库的核心结构体,围绕它有redisClient,redisServer.分配代表客户端和服务器,然后再基于reactor模式,实现了两者之间的通信,典型的C/S架构.</p>
-<p>redis.h里面的很多API函数是在其他的一些.c里实现的,不一定在redis.c里.例如redisDb的API函数就是在db.c里实现的.</p>
-<h2 id="通用"><a href="#通用" class="headerlink" title="通用"></a>通用</h2><h3 id="zmalloc-h-c"><a href="#zmalloc-h-c" class="headerlink" title="zmalloc.h.c"></a>zmalloc.h.c</h3><p>封装了底层的malloc,calloc,remalloc,free四个函数.提供了可以进行内存分配统计的能力.</p>
+        <p>基本环境:CentOS7.7+gcc4.8.5</p>
+<p>cpu信息查看:lscpu,操作系统查看:lsb_release -a</p>
+<p>之前ffmpeg源码编译还正常的,换一台机器,用的cpu和之前的不一样.然后就不行了.报Segmentation Fault.</p>
+<p>然后逐步找问题所在</p>
+<h3 id="首先先设置core-file-size-用gdb-ffmpeg-core-去定位问题"><a href="#首先先设置core-file-size-用gdb-ffmpeg-core-去定位问题" class="headerlink" title="首先先设置core file size,用gdb ffmpeg core,去定位问题"></a>首先先设置core file size,用gdb ffmpeg core,去定位问题</h3><p>ulimit -a/-c单位:字节Byte</p>
+<p>然后可以直接在shell设置,但是保存不持久.为了一直可以core dump.设置/etc/security/limits.conf.设成了10G</p>
+<p>然后再次运行出错的ffmpeg命令,这时在执行目录下生产了一个core文件,一看接近5个G.</p>
+<p>然后gdb ffmpeg core</p>
+<p>但是此时一堆”??”gdb提示说是用debuginfo-install去安装调试信息,然后去一个一个安装.</p>
+<p>最后ffmpeg重新编译之前配置加几行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--<span class="built_in">enable</span>-debug=3 \</span><br><span class="line">--<span class="built_in">disable</span>-optimizations \</span><br><span class="line">--<span class="built_in">disable</span>-asm  \</span><br><span class="line">--<span class="built_in">disable</span>-stripping \</span><br></pre></td></tr></table></figure>
+<p>然后重新gdb看.</p>
+<p>发现栈帧如下:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[Thread debugging <span class="keyword">using</span> libthread_db enabled]</span><br><span class="line">Using host libthread_db library <span class="string">"/lib64/libthread_db.so.1"</span>.</span><br><span class="line">Core was generated by `/home/msgroup/ffmpeg-pkg/ffmpeg/ffmpeg -i ../Game.of.Thrones.S08E01.Kings.Landi<span class="string">'.</span></span><br><span class="line">Program terminated with signal 11, Segmentation fault.</span><br><span class="line">#<span class="number">0</span>  <span class="number">0x00000000018e484f</span> <span class="function">in <span class="title">x264_8_load_deinterleave_chroma_fenc_avx512</span> <span class="params">()</span></span></span><br><span class="line"><span class="function"><span class="params">(gdb)</span> bt</span></span><br><span class="line">#0  0x00000000018e484f in x264_8_load_deinterleave_chroma_fenc_avx512 ()</span><br><span class="line">#<span class="number">1</span>  <span class="number">0x0000000001806717</span> <span class="function">in <span class="title">ac_energy_mb</span> <span class="params">()</span></span></span><br><span class="line">#2  0x0000000001808a72 in x264_8_adaptive_quant_frame ()</span><br><span class="line">#<span class="number">3</span>  <span class="number">0x0000000001768476</span> <span class="function">in <span class="title">x264_8_encoder_encode</span> <span class="params">()</span></span></span><br><span class="line">#4  0x0000000000ba9b6a in X264_frame (ctx=0x4ce37c0, pkt=0x56a89b0, frame=0x5a7c5b0, got_packet=0x7ffce1f008bc) at libavcodec/libx264.c:413</span><br><span class="line">#5  0x0000000000a1677f in avcodec_encode_video2 (avctx=0x4ce37c0, avpkt=0x56a89b0, frame=0x5a7c5b0, got_packet_ptr=0x7ffce1f008bc) at libavcodec/encode.c:296</span><br><span class="line">#6  0x0000000000a16a71 in do_encode (avctx=0x4ce37c0, frame=0x5a7c5b0, got_packet=0x7ffce1f008bc) at libavcodec/encode.c:365</span><br><span class="line">#7  0x0000000000a16c4c in avcodec_send_frame (avctx=0x4ce37c0, frame=0x5a7c5b0) at libavcodec/encode.c:414</span><br><span class="line">#8  0x0000000000428cf8 in do_video_out (of=0x4cbdb70, ost=0x4e9e270, next_picture=0x5a7c5b0, sync_ipts=0) at fftools/ffmpeg.c:1286</span><br><span class="line">#9  0x0000000000429c54 in reap_filters (flush=0) at fftools/ffmpeg.c:1503</span><br><span class="line">#10 0x0000000000435160 in transcode_step () at fftools/ffmpeg.c:4645</span><br><span class="line">#11 0x0000000000435220 in transcode () at fftools/ffmpeg.c:4689</span><br><span class="line">#12 0x0000000000435992 in main (argc=8, argv=0x7ffce1f01778) at fftools/ffmpeg.c:4891</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+<h3 id="发现问题所在后-缩小问题范围"><a href="#发现问题所在后-缩小问题范围" class="headerlink" title="发现问题所在后,缩小问题范围"></a>发现问题所在后,缩小问题范围</h3><p>x264_8_load_deinterleave_chroma_fenc_avx512().感觉应该是高级点的cpu浮点数指令有问题</p>
+<p>x264源码里头搜一搜</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">grep x264_8_load_deinterleave_chroma_fenc_avx512 * -R</span><br><span class="line">grep _chroma_fenc_avx512 * -R</span><br><span class="line"></span><br><span class="line">nm common/x86/mc-c-8.o | less</span><br></pre></td></tr></table></figure>
+<p>还有就是源码里头也可以看看.</p>
+<p>没结果.然后gcc看看有没有取消avx512的选项,有两个-mno-avx,-mno-avx2.(只对C生成的汇编管用,要是手写的汇编没用吧.)但是好像不管用.然后发现不能在config.mak里改,这个貌似是由configure Shell脚本生成的.所以去这个脚本里改改试试.发现貌似还是不行.</p>
+<p>最后想到x264 configure的时候,多加一个选项.禁止x264使用platform-specific assembly optimizations(可能是一些手写汇编?)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--<span class="built_in">disable</span>-asm            <span class="built_in">disable</span> platform-specific assembly optimizations</span><br></pre></td></tr></table></figure>
+<p>然后重新编译x264,再重新编译ffmpeg.</p>
+<p>最后问题解决.</p>
 <blockquote>
-<p>  可以替换掉glibc的内存分配函数,例如可以用jemalloc库代替.有啥优点?</p>
+<p>  core dump挺重要啊.对于debug</p>
 </blockquote>
-<h2 id="杂项"><a href="#杂项" class="headerlink" title="杂项"></a>杂项</h2><h3 id="version-h"><a href="#version-h" class="headerlink" title="version.h"></a>version.h</h3><p>版本号</p>
-<h3 id="asciilogo-h"><a href="#asciilogo-h" class="headerlink" title="asciilogo.h"></a>asciilogo.h</h3><p>redis的ascii格式的logo,在服务器启动的时候会显示出来.</p>
-<h3 id="config-c"><a href="#config-c" class="headerlink" title="config.c"></a>config.c</h3><p>解析配置文件的实现函数,API接口在redis.h里</p>
 
       
     </div>
@@ -402,7 +398,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>Post link:</strong>
-    <a href="https://mojiajun.github.io/post/11e7222f.html" title="redis-项目文件概览">https://mojiajun.github.io/post/11e7222f.html</a>
+    <a href="https://mojiajun.github.io/post/49b47e20.html" title="ffmpeg-一次SegmentationFault的debug过程">https://mojiajun.github.io/post/49b47e20.html</a>
   </li>
   <li class="post-copyright-license">
     <strong>Copyright Notice: </strong>
@@ -417,7 +413,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/redis/" rel="tag"># redis</a>
+            <a href="/tags/ffmpeg/" rel="tag"># ffmpeg</a>
           
         </div>
       
@@ -430,8 +426,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/post/18ee0d3.html" rel="next" title="redis-server初始化">
-                <i class="fa fa-chevron-left"></i> redis-server初始化
+              <a href="/post/4a75fa2f.html" rel="next" title="mit6824-lab1-part-V">
+                <i class="fa fa-chevron-left"></i> mit6824-lab1-part-V
               </a>
             
           </div>
@@ -439,10 +435,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/post/18ee0c7.html" rel="prev" title="mit6828-内联汇编-xv6-xchg-spinlock">
-                mit6828-内联汇编-xv6-xchg-spinlock <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -574,7 +566,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#底层数据结构"><span class="nav-number">1.</span> <span class="nav-text">底层数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#dict-h-c"><span class="nav-number">1.1.</span> <span class="nav-text">dict.h.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#adlist-h-c"><span class="nav-number">1.2.</span> <span class="nav-text">adlist.h.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sds-h-c"><span class="nav-number">1.3.</span> <span class="nav-text">sds.h.c</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五种redis对象-基于底层数据结构"><span class="nav-number">2.</span> <span class="nav-text">五种redis对象(基于底层数据结构)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#t-list-c"><span class="nav-number">2.1.</span> <span class="nav-text">t_list.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#t-set-c"><span class="nav-number">2.2.</span> <span class="nav-text">t_set.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#t-string-c"><span class="nav-number">2.3.</span> <span class="nav-text">t_string.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#t-zset-c"><span class="nav-number">2.4.</span> <span class="nav-text">t_zset.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#t-hash-c"><span class="nav-number">2.5.</span> <span class="nav-text">t_hash.c</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#网络有关"><span class="nav-number">3.</span> <span class="nav-text">网络有关</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#networking-c"><span class="nav-number">3.1.</span> <span class="nav-text">networking.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#anet-h-c"><span class="nav-number">3.2.</span> <span class="nav-text">anet.h.c</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ae-h-c"><span class="nav-number">3.3.</span> <span class="nav-text">ae.h.c</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ae-epoll-c-ae-evport-c-ae-kqueue-c-qe-select-c"><span class="nav-number">3.3.1.</span> <span class="nav-text">ae_epoll.c,ae_evport.c,ae_kqueue.c,qe_select.c</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#上层数据库"><span class="nav-number">4.</span> <span class="nav-text">上层数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#redis-h-c"><span class="nav-number">4.1.</span> <span class="nav-text">redis.h.c</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通用"><span class="nav-number">5.</span> <span class="nav-text">通用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#zmalloc-h-c"><span class="nav-number">5.1.</span> <span class="nav-text">zmalloc.h.c</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#杂项"><span class="nav-number">6.</span> <span class="nav-text">杂项</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#version-h"><span class="nav-number">6.1.</span> <span class="nav-text">version.h</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#asciilogo-h"><span class="nav-number">6.2.</span> <span class="nav-text">asciilogo.h</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#config-c"><span class="nav-number">6.3.</span> <span class="nav-text">config.c</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#首先先设置core-file-size-用gdb-ffmpeg-core-去定位问题"><span class="nav-number">1.</span> <span class="nav-text">首先先设置core file size,用gdb ffmpeg core,去定位问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#发现问题所在后-缩小问题范围"><span class="nav-number">2.</span> <span class="nav-text">发现问题所在后,缩小问题范围</span></a></li></ol></div>
             
 
           </div>
