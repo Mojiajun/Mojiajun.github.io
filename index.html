@@ -262,6 +262,185 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/cebf9216.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/post/cebf9216.html" itemprop="url">C++11条件变量</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-01-10T00:00:00+08:00">
+                2020-01-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/多线程/" itemprop="url" rel="index">
+                    <span itemprop="name">多线程</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="std-condition-variable"><a href="#std-condition-variable" class="headerlink" title="std::condition_variable"></a>std::condition_variable</h1><p>头文件&lt;condition_variable&gt;</p>
+<p>注意有两个版本的std::condition_variable::wait().</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">wait</span><span class="params">( <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt;&amp; lock )</span></span>;  (<span class="number">1</span>)	(since C++<span class="number">11</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">Predicate</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">wait</span>( <span class="title">std</span>:</span>:unique_lock&lt;<span class="built_in">std</span>::mutex&gt;&amp; lock, Predicate pred );  (<span class="number">2</span>)	(since C++<span class="number">11</span>)</span><br></pre></td></tr></table></figure>
+<p>一个基本例子:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 参考Effective Modern C++ Item 39的例子</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;condition_variable&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 这些在实际使用过程放在一个类里吧?</span></span><br><span class="line"><span class="built_in">std</span>::condition_variable cv_;</span><br><span class="line"><span class="built_in">std</span>::mutex m_;</span><br><span class="line"></span><br><span class="line"><span class="keyword">bool</span> flag = <span class="literal">false</span>;  <span class="comment">// 共享状态变量的修改受std::mutex的保护,在这里不需要是std::atomic</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">signals</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 模拟计算任务消耗2秒</span></span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">2</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// RAII技法加锁并解锁对共享变量修改区.即critical section</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::lock_guard&lt;<span class="built_in">std</span>::mutex&gt; lg(m_);</span><br><span class="line"></span><br><span class="line">        flag = <span class="literal">true</span>;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"set flag = true"</span> &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    &#125;  <span class="comment">// lg解锁m_,析构函数中</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 这个位置没有持有std::mutex</span></span><br><span class="line">    <span class="comment">// 想调用notify必须是没有持有锁的状态!!!否则wait没有锁可以拿</span></span><br><span class="line">    <span class="comment">// 重点是思考的时候注意拿锁和解锁一定要刚好一对!!!</span></span><br><span class="line">    cv_.notify_one();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">waits</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 某些任务.</span></span><br><span class="line"></span><br><span class="line">    &#123;  <span class="comment">// critical section</span></span><br><span class="line">        <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; lk(m_);  <span class="comment">// lk加锁</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// waits() 执行到这里必须等待signals某些计算任务完成, 然后满足[] &#123; return flag; &#125; 这里面的条件得以满足了, 才能结束等待</span></span><br><span class="line">        cv_.wait(lk, [] &#123; <span class="keyword">return</span> flag; &#125;);</span><br><span class="line">        <span class="comment">// 等待完成之后wait()继续执行</span></span><br><span class="line"></span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"wait() finish"</span> &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    &#125;  <span class="comment">// lk解锁m_(析构函数中)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 等待另外一个线程计算完成之后的其他任务</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    std::thread t1(waits), t2(signals);</span><br><span class="line">    t1.join();</span><br><span class="line">    t2.join();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cv_.wait(lk, [] &#123; <span class="built_in">return</span> flag; &#125;);这个带第二个参数的重载版本的cv_.wait()能解决两个问题.</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">它等价于</span><br><span class="line"><span class="keyword">template</span>&lt; <span class="class"><span class="keyword">class</span> <span class="title">Predicate</span> &gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">condition_variable</span>:</span>:wait(unique_lock&lt;mutex&gt;&amp; lock, Predicate pred)</span><br><span class="line">	<span class="keyword">while</span> (!pred()) &#123;</span><br><span class="line">    wait(lock);  <span class="comment">// 这个是原始版本的wait()函数,只有一个参数</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>两个问题:</p>
+<p>1.唤醒丢失</p>
+<blockquote>
+<p>如果cv_.notify_one()已经执行了.但是cv_wait()在另外一个线程还没有执行,也没有关系.因为在执行cv_.wait(lk, [] { return flag; });的时候,首先就是检查函数体{…}返回的是不是true.如果是false.说明没有满足条件.那么才调用(1)第一个版本的wait().这个执行(unlock+block)两个操作(原子化的.不可分割.)…<br>但是如果是面对唤醒丢失情况.那么在检查{..}函数体的时候.发现条件true.那么while循环不进入循环,也就没执行第一个版本的wait().从而也就没block.然后cv_.wait(lk, [] { return flag; });返回.执行接下来的语句</p>
+</blockquote>
+<p>void wait( std::unique_lock<a href="std::mutex" target="_blank" rel="noopener">std::mutex</a>&amp; lock );  (1)    (since C++11)<br>在阻塞的时候被notify()之后,然后如果被选中了.那么它解除阻塞,拿到cpu时间片.然后拿锁.然后执行接下来的语句.</p>
+<p>但是<br>template<class predicate><br>void wait( std::unique_lock<a href="std::mutex" target="_blank" rel="noopener">std::mutex</a>&amp; lock, Predicate pred );  (2)    (since C++11)只是版本(1)的一个简单封装.它可能对[(解锁,block)+(unblock,加锁)]这套流程执行次数是0次.(比如在唤醒丢失情况).</class></p>
+<p>2.虚假唤醒.</p>
+<p>这个也就是为什么要用while(!pred()){ wait(lock)}包装(1)版本的wait的原因.条件不满足继续Wait()就行了.等下次的notify.这个虚假唤醒可以参考下面这个例子.[来自cppreference的std::condition_variable::notify_one]</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;condition_variable&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;chrono&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="built_in">std</span>::condition_variable cv;</span><br><span class="line"><span class="built_in">std</span>::mutex cv_m;</span><br><span class="line"><span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">bool</span> done = <span class="literal">false</span>;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">waits</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; lk(cv_m);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Waiting... \n"</span>;</span><br><span class="line">    cv.wait(lk, []&#123;<span class="keyword">return</span> i == <span class="number">1</span>;&#125;);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"...finished waiting. i == 1\n"</span>;</span><br><span class="line">    done = <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">signals</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Notifying falsely...\n"</span>;</span><br><span class="line">    cv.notify_one(); <span class="comment">// waiting thread is notified with i == 0.</span></span><br><span class="line">                     <span class="comment">// cv.wait wakes up, checks i, and goes back to waiting</span></span><br><span class="line"> </span><br><span class="line">    <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; lk(cv_m);</span><br><span class="line">    i = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (!done) </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Notifying true change...\n"</span>;</span><br><span class="line">        lk.unlock();</span><br><span class="line">        cv.notify_one(); <span class="comment">// waiting thread is notified with i == 1, cv.wait returns</span></span><br><span class="line">        <span class="built_in">std</span>::this_thread::sleep_for(<span class="built_in">std</span>::chrono::seconds(<span class="number">1</span>));</span><br><span class="line">        lk.lock();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::thread t1(waits), t2(signals);</span><br><span class="line">    t1.join(); </span><br><span class="line">    t2.join();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其他:</p>
+<p>1.std::condition_variable得配合std::mutex使用,但是不是直接对它解锁解锁.用的是std::unique_lock来辅助加锁解锁(用RAII).</p>
+<p>2.为什么在第一个例子里面的notify那个线程用std::lock_guard<a href="std::mutex" target="_blank" rel="noopener">std::mutex</a> lg(m_);其实用std::unique_lock也可以.它们区别在哪呢.翻看它们的API文档,std::unique_lock有lock(),unlock()等操作底下的std::mutex的接口函数.而std::lock_guard仅仅只能在构造的时候拿到锁,析构的时候释放锁.中间过程不能解锁再拿锁.它的功能没有std::unique_lock多.std::unique_lock性能消耗比std::lock_guard稍微大点.(见<em>C++</em> Concurrency in Action英文第二版)</p>
+<blockquote>
+<p>std::lock_guard和std::unique_lock都在析构函数中解锁.都是RAII管理类.<br>std::unique_lock可以选择在构造的时候不拿锁,std::defer_lock选项.std::lock_guard不行.</p>
+</blockquote>
+<p>如:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::defer_lock允许在不获取锁的情况下创建锁结构。当锁定多个互斥锁时，如果两个函数调用者同时尝试获取锁，则会有一个死锁机会窗口：</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; lock1(_mutex1, <span class="built_in">std</span>::defer_lock);</span><br><span class="line">    <span class="built_in">std</span>::unique_lock&lt;<span class="built_in">std</span>::mutex&gt; lock2(_mutex2, <span class="built_in">std</span>::defer_lock);</span><br><span class="line">    lock1.lock()</span><br><span class="line">    lock2.lock(); <span class="comment">// deadlock here 这里是可以会死锁的. </span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Locked! &lt;&lt; std::endl;</span></span><br><span class="line"><span class="string">    //...</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">使用以下代码，无论函数中发生什么，都会以适当的顺序获取和释放锁：</span></span><br><span class="line"><span class="string">&#123;</span></span><br><span class="line"><span class="string">    std::unique_lock&lt;std::mutex&gt; lock1(_mutex1, std::defer_lock);</span></span><br><span class="line"><span class="string">    std::unique_lock&lt;std::mutex&gt; lock2(_mutex2, std::defer_lock);</span></span><br><span class="line"><span class="string">    std::lock(lock1,lock2); // no deadlock possible</span></span><br><span class="line"><span class="string">    std::cout &lt;&lt; "</span>Locked! &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">       </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>多把锁的时候就可能会出现死锁.</p>
+<blockquote>
+<p>std::unique_lock感觉在两个地方得用<br>1.配合条件变量<br>2.除了在构造析构的时机,其他时候也想加锁或解锁.</p>
+</blockquote>
+<p>参考:</p>
+<p>1.Effective Modern C++ Item 39</p>
+<blockquote>
+<p>就像Item 39说的一样,这样用条件变量通知的办法abstract不够高,程序员还会涉及到一些细节,如果是one-shot一次性通知任务.可以用std::future+std::promise<void>,这么去写更简单.感觉这么写有点类似于Go的channel进行通知的那个意思了??</void></p>
+</blockquote>
+<p>2.cppreference</p>
+<p>3.<em>C++</em> Concurrency in Action英文第二版</p>
+<p>待分析:</p>
+<p>1.std::cout和printf()的线程安全问题.需不需要额外同步,感觉是要的啊.那临界区会变大呀.影响并发性能…(临界区小点好.)</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/49b47e20.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1890,188 +2069,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/18ee0c7.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="mojiajun">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mojiajun">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/post/18ee0c7.html" itemprop="url">mit6828-内联汇编-xv6-xchg-spinlock</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-07-10T00:00:00+08:00">
-                2019-07-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/OS/" itemprop="url" rel="index">
-                    <span itemprop="name">OS</span>
-                  </a>
-                </span>
-
-                
-                
-                  , 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/OS/xv6/" itemprop="url" rel="index">
-                    <span itemprop="name">xv6</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>[TOC]</p>
-<h2 id="inline-assembly"><a href="#inline-assembly" class="headerlink" title="inline assembly"></a>inline assembly</h2><p>入门:<a href="https://blog.csdn.net/slvher/article/details/8864996" target="_blank" rel="noopener">【Linux学习笔记】Linux C中内联汇编的语法格式及使用方法（Inline Assembly in Linux C）</a>这个讲的比较好了.更全面的得查类似<a href="http://www.ibiblio.org/gferg/ldp/GCC-Inline-Assembly-HOWTO.html#ss5.1" target="_blank" rel="noopener">GCC-Inline-Assembly-HOWTO</a>这种</p>
-<p>inline assembly感觉细节好多…下次看估计又忘了…</p>
-<hr>
-<p>用1对双引号将多行命令括起来 加”;”分号?<br>clobbered register修饰寄存器?修饰?<br><a href="https://en.wikipedia.org/wiki/Inline_assembler" target="_blank" rel="noopener">Inline assembler</a>里面有个用汇编求tan(x)的例子,待看,感觉挺有趣.</p>
-<hr>
-<p>当我们不想通过寄存器中转，而是直接操作内存时，可以用”m”来约束。例如：<br>asm volatile ( “lock; decl %0” : “=m” (counter) : “m” (counter));<br>该指令实现原子减一操作，输入、输出操作数均直接来自内存（<strong>也正因如此，才能保证操作的原子性</strong>）。 </p>
-<blockquote>
-<p>  也正因如此，才能保证操作的原子性,更底层细节?这是是保证原子性的关键吗?结合后面的xv6的xchg函数实现.<br>  3个东西.1是lock前缀,2是+代表read-modify-write,3是”m”直接操作内存</p>
-</blockquote>
-<p>“=的意思” output operand应该有个”=”,1.说明这个是输出操作数,2.write-only</p>
-<ul>
-<li>“r” is a constraint on the operands. We’ll see constraints in detail later. For the time being, “r” says to GCC to use any register for storing the operands. output operand constraint should have a constraint modifier “=”. And this modifier says that it is the output operand and is write-only.</li>
-</ul>
-<p>“cc”的意思</p>
-<p>If our instruction can alter the condition code register, we have to add “cc” to the list of clobbered registers.s</p>
-<hr>
-<h2 id="xv6的xchg函数"><a href="#xv6的xchg函数" class="headerlink" title="xv6的xchg函数"></a>xv6的xchg函数</h2><p>static inline uint<br>xchg(volatile uint <em>addr, uint newval)
-</em>交换<em>addr和newval,然后把</em>addr的原先的值作为result返回!!!这只是从C层面可以这么从逻辑上理解.实际编译器干的有些区别,但是最终结果一致.<br>范例:见后面</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> uint</span><br><span class="line">xchg(<span class="keyword">volatile</span> uint *addr, uint newval)</span><br><span class="line">&#123;</span><br><span class="line">  uint result;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// The + in "+m" denotes a read-modify-write operand.</span></span><br><span class="line">  <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"lock; xchgl %0, %1"</span> :</span></span></span><br><span class="line"><span class="function"><span class="params">               <span class="string">"+m"</span> (*addr), <span class="string">"=a"</span> (result) :</span></span></span><br><span class="line"><span class="function"><span class="params">               <span class="string">"1"</span> (newval) :</span></span></span><br><span class="line"><span class="function"><span class="params">               <span class="string">"cc"</span>)</span></span>;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 这个"1"感觉是代表对应前面的%1,指定位置的作用?没仔细查...猜的</span></span><br><span class="line">kernel.<span class="keyword">asm</span>:</span><br><span class="line"> <span class="number">8515</span>   <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"lock; xchgl %0, %1"</span> :</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8516</span> <span class="number">80104373</span>:       ba <span class="number">01</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>          mov    $<span class="number">0x1</span>,%edx</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8517</span> <span class="number">80104378</span>:       eb <span class="number">09</span>                   jmp    <span class="number">80104383</span> &lt;acquire+<span class="number">0x33</span>&gt;</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8518</span> <span class="number">8010437</span>a:       <span class="number">8</span>d b6 <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>       lea    <span class="number">0x0</span>(%esi),%esi</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8519</span> <span class="number">80104380</span>:       <span class="number">8b</span> <span class="number">5</span>d <span class="number">08</span>                mov    <span class="number">0x8</span>(%ebp),%ebx</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8520</span> <span class="number">80104383</span>:       <span class="number">89</span> d0                   mov    %edx,%eax</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8521</span> <span class="number">80104385</span>:       f0 <span class="number">87</span> <span class="number">03</span>                lock xchg %eax,(%ebx)</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8522</span>   <span class="keyword">while</span>(xchg(&amp;lk-&gt;locked, <span class="number">1</span>) != <span class="number">0</span>)</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8523</span> <span class="number">80104388</span>:       <span class="number">85</span> c0                   test   %eax,%eax</span></span></span><br><span class="line"><span class="function"><span class="params"> <span class="number">8524</span> <span class="number">8010438</span>a:       <span class="number">75</span> f4                   jne    <span class="number">80104380</span> &lt;acquire+<span class="number">0x30</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
-<p>在实际运行的汇编代码里面为什么顺序又变了?前后的顺序?<br>猜测:这部分代码还是得根据实际运行的情况来看,test   %eax,%eax,即测试的是eax,而且”=a” (result) :<br>所以eax存的是交换之后的值,那么在交换之前,存在是newval<br>根据lock; xchgl (<em>addr), newval字面来套是这样的.因为eax得存交换后的值,所以eax交换前存的是newval<br>所以lock; xchgl (</em>addr), eax,然后就和实际运行看到的相反了…这个过程是编译器给做的.并不太清楚编译器寄存器分配<br>规则…</p>
-<p>附上前后的其他东西,便于数那个&lt;acquire+0x30&gt;的位置十进制数偏移48,jne    80104380 &lt;acquire+0x30&gt;跳转到lea    0x0(%esi),%esi</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="number">8498</span> <span class="number">80104350</span> &lt;acquire&gt;:</span><br><span class="line"><span class="number">8499</span> &#123;</span><br><span class="line"><span class="number">8500</span> <span class="number">80104350</span>:       <span class="number">55</span>                      push   %ebp</span><br><span class="line"><span class="number">8501</span> <span class="number">80104351</span>:       <span class="number">89</span> e5                   mov    %esp,%ebp</span><br><span class="line"><span class="number">8502</span> <span class="number">80104353</span>:       <span class="number">56</span>                      push   %esi</span><br><span class="line"><span class="number">8503</span> <span class="number">80104354</span>:       <span class="number">53</span>                      push   %ebx</span><br><span class="line"><span class="number">8504</span>   pushcli(); <span class="comment">// disable interrupts to avoid deadlock.</span></span><br><span class="line"><span class="number">8505</span> <span class="number">80104355</span>:       e8 <span class="number">26</span> ff ff ff          call   <span class="number">80104280</span> &lt;pushcli&gt;</span><br><span class="line"><span class="number">8506</span>   <span class="keyword">if</span>(holding(lk))</span><br><span class="line"><span class="number">8507</span> <span class="number">8010435</span>a:       <span class="number">8b</span> <span class="number">5</span>d <span class="number">08</span>                mov    <span class="number">0x8</span>(%ebp),%ebx</span><br><span class="line"><span class="number">8508</span> <span class="number">8010435</span>d:       <span class="number">83</span> ec <span class="number">0</span>c                sub    $<span class="number">0xc</span>,%esp</span><br><span class="line"><span class="number">8509</span> <span class="number">80104360</span>:       <span class="number">53</span>                      push   %ebx</span><br><span class="line"><span class="number">8510</span> <span class="number">80104361</span>:       e8 ba ff ff ff          call   <span class="number">80104320</span> &lt;holding&gt;</span><br><span class="line"><span class="number">8511</span> <span class="number">80104366</span>:       <span class="number">83</span> c4 <span class="number">10</span>                add    $<span class="number">0x10</span>,%esp</span><br><span class="line"><span class="number">8512</span> <span class="number">80104369</span>:       <span class="number">85</span> c0                   test   %eax,%eax</span><br><span class="line"><span class="number">8513</span> <span class="number">8010436b</span>:       <span class="number">0f</span> <span class="number">85</span> <span class="number">83</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>       jne    <span class="number">801043f</span>4 &lt;acquire+<span class="number">0xa4</span>&gt;</span><br><span class="line"><span class="number">8514</span> <span class="number">80104371</span>:       <span class="number">89</span> c6                   mov    %eax,%esi</span><br><span class="line"><span class="number">8515</span>   <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"lock; xchgl %0, %1"</span> :   </span></span></span><br><span class="line"><span class="function"><span class="params"><span class="number">8516</span> <span class="number">80104373</span>:       ba <span class="number">01</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>          mov    $<span class="number">0x1</span>,%edx</span></span></span><br><span class="line"><span class="function"><span class="params"><span class="number">8517</span> <span class="number">80104378</span>:       eb <span class="number">09</span>                   jmp    <span class="number">80104383</span> &lt;acquire+<span class="number">0x33</span>&gt;</span></span></span><br></pre></td></tr></table></figure>
-<h2 id="xchg-使用案例-xv6的spinlock的acquire和release"><a href="#xchg-使用案例-xv6的spinlock的acquire和release" class="headerlink" title="xchg()使用案例,xv6的spinlock的acquire和release"></a>xchg()使用案例,xv6的spinlock的acquire和release</h2><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">acquire(struct spinlock *lk)</span><br><span class="line">&#123;</span><br><span class="line">  pushcli(); <span class="comment">// disable interrupts to avoid deadlock.</span></span><br><span class="line">  <span class="keyword">if</span>(holding(lk))</span><br><span class="line">    panic(<span class="string">"acquire"</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// The xchg is atomic.</span></span><br><span class="line">  <span class="keyword">while</span>(xchg(&amp;lk-&gt;locked, <span class="number">1</span>) != <span class="number">0</span>)</span><br><span class="line">    ;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Tell the C compiler and the processor to not move loads or stores</span></span><br><span class="line">  <span class="comment">// past this point, to ensure that the critical section's memory</span></span><br><span class="line">  <span class="comment">// references happen after the lock is acquired.</span></span><br><span class="line">  __sync_synchronize();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Record info about lock acquisition for debugging.</span></span><br><span class="line">  lk-&gt;cpu = mycpu();</span><br><span class="line">  getcallerpcs(&amp;lk, lk-&gt;pcs);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Release the lock.</span></span><br><span class="line"><span class="keyword">void</span></span><br><span class="line">release(struct spinlock *lk)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span>(!holding(lk))</span><br><span class="line">    panic(<span class="string">"release"</span>);</span><br><span class="line"></span><br><span class="line">  lk-&gt;pcs[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">  lk-&gt;cpu = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  __sync_synchronize();</span><br><span class="line">  <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">"movl $0, %0"</span> : <span class="string">"+m"</span> (lk-&gt;locked) : )</span></span>;</span><br><span class="line"></span><br><span class="line">  popcli();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"> <span class="number">8516</span> <span class="number">80104373</span>:       ba <span class="number">01</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>          mov    $<span class="number">0x1</span>,%edx</span><br><span class="line"> <span class="number">8517</span> <span class="number">80104378</span>:       eb <span class="number">09</span>                   jmp    <span class="number">80104383</span> &lt;acquire+<span class="number">0x33</span>&gt;</span><br><span class="line"> <span class="number">8518</span> <span class="number">8010437</span>a:       <span class="number">8</span>d b6 <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>       lea    <span class="number">0x0</span>(%esi),%esi</span><br><span class="line"> <span class="number">8519</span> <span class="number">80104380</span>:       <span class="number">8b</span> <span class="number">5</span>d <span class="number">08</span>                mov    <span class="number">0x8</span>(%ebp),%ebx</span><br><span class="line"> <span class="number">8520</span> <span class="number">80104383</span>:       <span class="number">89</span> d0                   mov    %edx,%eax</span><br><span class="line"> <span class="number">8521</span> <span class="number">80104385</span>:       f0 <span class="number">87</span> <span class="number">03</span>                lock xchg %eax,(%ebx)</span><br><span class="line"> <span class="number">8523</span> <span class="number">80104388</span>:       <span class="number">85</span> c0                   test   %eax,%eax</span><br><span class="line"> <span class="number">8524</span> <span class="number">8010438</span>a:       <span class="number">75</span> f4                   jne    <span class="number">80104380</span> &lt;acquire+<span class="number">0x30</span>&gt;</span><br><span class="line"><span class="comment">// 这八行汇编是底下的这个while循环被编译器编译后处理的结果,</span></span><br><span class="line"><span class="comment">// 在kernel.asm拿到的.详细的见前面的分析.jne    </span></span><br><span class="line"><span class="comment">// 80104380 &lt;acquire+0x30&gt;跳到lea    0x0(%esi),%esi</span></span><br><span class="line">  <span class="keyword">while</span>(xchg(&amp;lk-&gt;locked, <span class="number">1</span>) != <span class="number">0</span>)</span><br><span class="line">    ;</span><br><span class="line"><span class="comment">// 这个就是操作系统教材里面爱提的概念busy wait?</span></span><br><span class="line"><span class="comment">// 在汇编层面实际执行的循环是:</span></span><br><span class="line"> <span class="number">8518</span> <span class="number">8010437</span>a:       <span class="number">8</span>d b6 <span class="number">00</span> <span class="number">00</span> <span class="number">00</span> <span class="number">00</span>       lea    <span class="number">0x0</span>(%esi),%esi</span><br><span class="line"> <span class="number">8519</span> <span class="number">80104380</span>:       <span class="number">8b</span> <span class="number">5</span>d <span class="number">08</span>                mov    <span class="number">0x8</span>(%ebp),%ebx</span><br><span class="line"> <span class="number">8520</span> <span class="number">80104383</span>:       <span class="number">89</span> d0                   mov    %edx,%eax</span><br><span class="line"> <span class="number">8521</span> <span class="number">80104385</span>:       f0 <span class="number">87</span> <span class="number">03</span>                lock xchg %eax,(%ebx)</span><br><span class="line"> <span class="number">8523</span> <span class="number">80104388</span>:       <span class="number">85</span> c0                   test   %eax,%eax</span><br><span class="line"> <span class="number">8524</span> <span class="number">8010438</span>a:       <span class="number">75</span> f4                   jne    <span class="number">80104380</span> &lt;acquire+<span class="number">0x30</span>&gt;</span><br></pre></td></tr></table></figure>
-<p>没拿到锁的时候,lk-&gt;locked存的是0,拿到锁后存的是1.<br>情况A:假设lk这把spinlock的locked原来的状态是0,代表当前这把锁还没有被拿到过,然后进入acquire(),xchg()换lk-&gt;locked和1,交换后lk-&gt;locked存的变成1了,代表锁上了.然后从C层面看的话,xchg()返回的结果是lk-&gt;locked()交换之前的值.也就是0,所以while(0 != 0)条件不满足,false,while(false),那么不执行循环语句,在这里是空语句(;).然后执行__sync_synchronize();.代表拿到锁了.<br>情况B:假设lk这把spinlock的locked原来的状态是1,代表当前这把锁已经被拿过了,然后进入acquire(),xchg()换lk-&gt;locked和1,交换后lk-&gt;locked存的仍然是1(1和1交换).然后从C层面看的话,xchg()返回的结果是lk-&gt;locked()交换之前的值.也就是1,所以while(1 != 0)条件满足,true,while(true),那么执行循环语句,在这里是空语句(;)然后再次执行xchg()…还是1和1交换.然后再次执行xchg()…这个就是spinlock的本质!</p>
-<h2 id="额外"><a href="#额外" class="headerlink" title="额外"></a>额外</h2><p>1.read-modify-write??</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// The + in "+m" denotes a read-modify-write operand.</span></span><br><span class="line">+号在GCC-Inline-Assembly-HOWTO还没找着(没仔细找),还有这个read-modify-write operand,是原子操作的关键所在???!!!</span><br></pre></td></tr></table></figure>
-<p>2.研究下busy wait和sleep<br><a href="https://stackoverflow.com/questions/1107593/what-are-trade-offs-for-busy-wait-vs-sleep" target="_blank" rel="noopener">What are trade offs for “busy wait” vs “sleep”?</a>还没看,但是待看…<br>感觉busy wait消耗cpu资源,sleep并没有消耗cpu资源(只是粗略的讲)</p>
-<p>3.实际调试下,打断点.在acquire()上</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2122,7 +2119,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -2133,7 +2130,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -2144,7 +2141,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
@@ -2181,7 +2178,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
