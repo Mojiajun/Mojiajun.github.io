@@ -262,6 +262,170 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/436c1fd4.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/post/436c1fd4.html" itemprop="url">Rust-对象销毁过程中的栈溢出问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-02-13T00:00:00+08:00">
+                2020-02-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Rust/" itemprop="url" rel="index">
+                    <span itemprop="name">Rust</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>问题来源:<a href="http://rust-unofficial.github.io/too-many-lists/first-drop.html" target="_blank" rel="noopener">http://rust-unofficial.github.io/too-many-lists/first-drop.html</a></p>
+<p>代码:</p>
+<p>注意对象销毁类似C++.也有两个过程1.执行Drop().类似析构函数2.释放内存</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::mem;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="class"><span class="keyword">struct</span> <span class="title">List</span></span> &#123;</span><br><span class="line">    head: Link,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">Link</span></span> &#123;</span><br><span class="line">    Empty,</span><br><span class="line">    More(<span class="built_in">Box</span>&lt;Node&gt;),</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node</span></span> &#123;</span><br><span class="line">    elem: <span class="built_in">i32</span>,</span><br><span class="line">    next: Link,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> <span class="built_in">Drop</span> <span class="keyword">for</span> Node &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">drop</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">"drop() function &#123;&#125;"</span>, <span class="keyword">self</span>.elem);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> List &#123;</span><br><span class="line">    <span class="comment">/// 创建一个List. head为空链接, 即创建一个空链表</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">new</span></span>() -&gt; <span class="keyword">Self</span> &#123;</span><br><span class="line">        List &#123; head: Link::Empty &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">push</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, elem: <span class="built_in">i32</span>) &#123;</span><br><span class="line">        <span class="keyword">let</span> new_node = <span class="built_in">Box</span>::new(Node &#123;</span><br><span class="line">            elem: elem,</span><br><span class="line">            next: mem::replace(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>.head, Link::Empty),</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="comment">// 修改stack的top</span></span><br><span class="line">        <span class="comment">// new_node 加上More tag后移动给self.head</span></span><br><span class="line">        <span class="keyword">self</span>.head = Link::More(new_node);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 传入的是List的可变引用&amp;mut List</span></span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">pop</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) -&gt; <span class="built_in">Option</span>&lt;<span class="built_in">i32</span>&gt; &#123;</span><br><span class="line">        <span class="comment">// self.head是Link.现在把Link里面存的variant替换成Link::empty.然后返回原先的variant.</span></span><br><span class="line">        <span class="comment">// 改变了List的状态.但是并没有移走它的状态.放了另外一个状态在self.head里面</span></span><br><span class="line">        <span class="comment">// 然后对返回的那个Link::* variant 这个值进行 match</span></span><br><span class="line">        <span class="keyword">match</span> mem::replace(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>.head, Link::Empty) &#123;</span><br><span class="line">            <span class="comment">// 解开Link这个enum的Tag</span></span><br><span class="line">            Link::Empty =&gt; &#123; <span class="literal">None</span> &#125;</span><br><span class="line">            <span class="comment">// 如果这个variant是More(*), 那么解开More这个tag后'*'会被移动给node</span></span><br><span class="line">            Link::More(<span class="keyword">mut</span> node) =&gt; &#123;</span><br><span class="line">                <span class="comment">// 把node.next这个Link移动给self.head.</span></span><br><span class="line">                <span class="comment">// 这里因为Node有Drop Trait.所以是moveable类型. </span></span><br><span class="line">                <span class="comment">// 如果用self.head = node.next 那么Node里面的部分元素就被移动走了. 然后Node就成了一个部分有效部分无效的数据, 所以不行</span></span><br><span class="line">                <span class="keyword">self</span>.head = mem::replace(&amp;<span class="keyword">mut</span> node.next, Link::Empty);</span><br><span class="line">                <span class="literal">Some</span>(node.elem)</span><br><span class="line">            &#125; <span class="comment">// node在这里死掉吧.?</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut</span> list = List::new();</span><br><span class="line"></span><br><span class="line">    <span class="built_in">assert_eq!</span>(list.pop(), <span class="literal">None</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> n <span class="keyword">in</span> <span class="number">1</span>..<span class="number">100000000</span> &#123;</span><br><span class="line">        list.push(n);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"main function end here"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">main function end here</span><br><span class="line"><span class="built_in">drop</span>() function <span class="number">99999999</span></span><br><span class="line"><span class="built_in">drop</span>() function <span class="number">99999998</span></span><br><span class="line"><span class="built_in">drop</span>() function <span class="number">99999997</span></span><br><span class="line"><span class="built_in">drop</span>() function <span class="number">99999996</span></span><br><span class="line"><span class="built_in">drop</span>() function <span class="number">99999995</span></span><br><span class="line"><span class="built_in">drop</span>() function <span class="number">99999994</span></span><br><span class="line"><span class="built_in">drop</span>() function <span class="number">99999993</span></span><br><span class="line"><span class="built_in">drop</span>() function <span class="number">99999992</span></span><br><span class="line"><span class="built_in">drop</span>() function <span class="number">99999991</span></span><br><span class="line"><span class="built_in">drop</span>() function <span class="number">99999990</span></span><br><span class="line"><span class="built_in">drop</span>() function <span class="number">99999989</span></span><br><span class="line"><span class="built_in">drop</span>() function <span class="number">99999988</span></span><br><span class="line"><span class="built_in">drop</span>() function <span class="number">99999987</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>链表头是99999999这个元素.</p>
+<p>其中为什么不用self.head = node.next</p>
+<blockquote>
+<p>Here, we tried to move a field out of a struct of type <code>DropStruct</code> which implements the <code>Drop</code> trait. However, a struct cannot be dropped if one or more of its fields have been moved.<a href="https://doc.rust-lang.org/error-index.html#E0509" target="_blank" rel="noopener">https://doc.rust-lang.org/error-index.html#E0509</a></p>
+</blockquote>
+<p>或者把Node的Drop去掉.然后就可以用self.head = node.next了.</p>
+<p>下面这段C++代码也是同样的道理,意味着如果像rust里那么写,栈非常深的话,应该也会stackoverflow.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;memory&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bar</span> &#123;</span></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  Bar(<span class="keyword">int</span> id) :</span><br><span class="line">      id_(id) &#123;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line">  ~Bar() &#123;</span><br><span class="line">      <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"~Bar() "</span> &lt;&lt; <span class="string">"id "</span> &lt;&lt; id_ &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">  &#125;</span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">int</span> id_;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> &#123;</span></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  Foo(<span class="keyword">int</span> id) :</span><br><span class="line">      id_(id) &#123;</span><br><span class="line"></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  ~Foo() &#123;</span><br><span class="line">      <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"~Foo() "</span> &lt;&lt; <span class="string">"id "</span> &lt;&lt; id_ &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">int</span> id_;</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Bar&gt; next_;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> obj_01 = <span class="built_in">std</span>::make_unique&lt;Foo&gt;(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">auto</span> obj_02 = <span class="built_in">std</span>::make_unique&lt;Bar&gt;(<span class="number">2</span>);</span><br><span class="line">    obj_01-&gt;next_ = <span class="built_in">std</span>::move(obj_02);</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"main end"</span> &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>那段Rust代码按照文章里提的写成迭代写法就好了…</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::mem;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="class"><span class="keyword">struct</span> <span class="title">List</span></span> &#123;</span><br><span class="line">    head: Link,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">Link</span></span> &#123;</span><br><span class="line">    Empty,</span><br><span class="line">    More(<span class="built_in">Box</span>&lt;Node&gt;),</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node</span></span> &#123;</span><br><span class="line">    elem: <span class="built_in">i32</span>,</span><br><span class="line">    next: Link,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> List &#123;</span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">new</span></span>() -&gt; <span class="keyword">Self</span> &#123;</span><br><span class="line">        List &#123; head: Link::Empty &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">push</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, elem: <span class="built_in">i32</span>) &#123;</span><br><span class="line">        <span class="keyword">let</span> new_node = <span class="built_in">Box</span>::new(Node &#123;</span><br><span class="line">            elem: elem,</span><br><span class="line">            next: mem::replace(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>.head, Link::Empty),</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">self</span>.head = Link::More(new_node);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">pop</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) -&gt; <span class="built_in">Option</span>&lt;<span class="built_in">i32</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">match</span> mem::replace(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>.head, Link::Empty) &#123;</span><br><span class="line">            Link::Empty =&gt; <span class="literal">None</span>,</span><br><span class="line">            Link::More(node) =&gt; &#123;</span><br><span class="line">                <span class="keyword">self</span>.head = node.next;</span><br><span class="line">                <span class="literal">Some</span>(node.elem)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> <span class="built_in">Drop</span> <span class="keyword">for</span> List &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">drop</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) &#123;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">let</span> <span class="keyword">mut</span> cur_link = mem::replace(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>.head, Link::Empty);</span><br><span class="line">				</span><br><span class="line">        <span class="comment">// boxed_node是Box&lt;Node&gt;类型</span></span><br><span class="line">        <span class="keyword">while</span> <span class="keyword">let</span> Link::More(<span class="keyword">mut</span> boxed_node) = cur_link &#123;</span><br><span class="line">            cur_link = mem::replace(&amp;<span class="keyword">mut</span> boxed_node.next, Link::Empty);</span><br><span class="line">        &#125;  <span class="comment">// boxed_node这个Box死掉, 执行Node的Drop + 释放Node内存</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut</span> list = List::new();</span><br><span class="line"></span><br><span class="line">    <span class="built_in">assert_eq!</span>(list.pop(), <span class="literal">None</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> n <span class="keyword">in</span> <span class="number">1</span>..<span class="number">100000000</span> &#123;</span><br><span class="line">        list.push(n);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"main function end here"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>或者这样</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">use</span> std::mem;</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="class"><span class="keyword">struct</span> <span class="title">List</span></span> &#123;</span><br><span class="line">    head: Link,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">Link</span></span> &#123;</span><br><span class="line">    Empty,</span><br><span class="line">    More(<span class="built_in">Box</span>&lt;Node&gt;),</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node</span></span> &#123;</span><br><span class="line">    elem: <span class="built_in">i32</span>,</span><br><span class="line">    next: Link,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> <span class="built_in">Drop</span> <span class="keyword">for</span> Node &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">drop</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="built_in">println!</span>(<span class="string">"drop() function &#123;&#125;"</span>, <span class="keyword">self</span>.elem);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> List &#123;</span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">new</span></span>() -&gt; <span class="keyword">Self</span> &#123;</span><br><span class="line">        List &#123; head: Link::Empty &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">push</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, elem: <span class="built_in">i32</span>) &#123;</span><br><span class="line">        <span class="keyword">let</span> new_node = <span class="built_in">Box</span>::new(Node &#123;</span><br><span class="line">            elem: elem,</span><br><span class="line">            next: mem::replace(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>.head, Link::Empty),</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">self</span>.head = Link::More(new_node);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">pub</span> <span class="function"><span class="keyword">fn</span> <span class="title">pop</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) -&gt; <span class="built_in">Option</span>&lt;<span class="built_in">i32</span>&gt; &#123;</span><br><span class="line">        <span class="keyword">match</span> mem::replace(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>.head, Link::Empty) &#123;</span><br><span class="line">            Link::Empty =&gt; <span class="literal">None</span>,</span><br><span class="line">            Link::More(<span class="keyword">mut</span> node) =&gt; &#123;</span><br><span class="line">                <span class="keyword">self</span>.head = mem::replace(&amp;<span class="keyword">mut</span> node.next, Link::Empty);</span><br><span class="line">                <span class="literal">Some</span>(node.elem)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> <span class="built_in">Drop</span> <span class="keyword">for</span> List &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fn</span> <span class="title">drop</span></span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>) &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="keyword">mut</span> cur_link = mem::replace(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>.head, Link::Empty);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> <span class="keyword">let</span> Link::More(<span class="keyword">mut</span> boxed_node) = cur_link &#123;</span><br><span class="line">            cur_link = mem::replace(&amp;<span class="keyword">mut</span> boxed_node.next, Link::Empty);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">fn</span> <span class="title">main</span></span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="keyword">mut</span> list = List::new();</span><br><span class="line"></span><br><span class="line">    <span class="built_in">assert_eq!</span>(list.pop(), <span class="literal">None</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> n <span class="keyword">in</span> <span class="number">1</span>..<span class="number">100000000</span> &#123;</span><br><span class="line">        list.push(n);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">"main function end here"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其他:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">    <span class="comment">//Bar *bar = new Bar(1);</span></span><br><span class="line">    <span class="comment">//delete bar;</span></span><br><span class="line">C++里面<span class="keyword">delete</span> bar干了两件事<span class="number">1.</span>执行~Bar()<span class="number">2.</span>释放内存</span><br></pre></td></tr></table></figure>
+<p>只不过用Box或者std::unique_ptr.这个delete的动作不用程序员手写出来来.用RAII方法管理.但是本质还是会执行两个步骤,在Rust里就是1.释放内存前先执行Box<node>管理的那个struct的Drop().然后释放掉Box管理的内存.</node></p>
+<p>编译器在清理Box<node>这种递归结构的时候,分成2部分,类似C++(这个Drop就等价于C++的析构函数…).会先去执行链表头元素的Drop().然后释放这个Box拥有的内存.在这两个步骤之间,要想释放掉内存,必须把每个子结构的Drop()+释放内存两个操作都完成了.才能释放父结构的内存.所以元素一多起来,就能很明显的看到调用栈的深度…然后stackoverflow.</node></p>
+<p>代码怎么从Box的Drop跑到Node的Drop的???类似于C++里从std::unique_ptr::~unique_ptr()运行调用delete __ptr.</p>
+<p>在macOS上用lldb + br s -n …各种Debug方法看汇编看出来.</p>
+<p>和<a href="http://rust-unofficial.github.io/too-many-lists/first-drop.htmls不同的一点.Node有Drop方法.." target="_blank" rel="noopener">http://rust-unofficial.github.io/too-many-lists/first-drop.htmls不同的一点.Node有Drop方法..</a>.</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/50924fad.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1841,199 +2005,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/d800d427.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="mojiajun">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mojiajun">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/post/d800d427.html" itemprop="url">Leecode-BinaryTree前序中序后序(非递归+stack)和(MorrisTraversal)</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-08T00:00:00+08:00">
-                2019-08-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/算法与数据结构/" itemprop="url" rel="index">
-                    <span itemprop="name">算法与数据结构</span>
-                  </a>
-                </span>
-
-                
-                
-                  , 
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/算法与数据结构/Leetcode/" itemprop="url" rel="index">
-                    <span itemprop="name">Leetcode</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>分别是Leecode94-144-145三道题,这里不讨论递归调用(很简单).</p>
-<h2 id="非递归-stack"><a href="#非递归-stack" class="headerlink" title="非递归+stack"></a>非递归+stack</h2><p>时间复杂度O(n),空间复杂度O(h),h是树的高度</p>
-<p>中序前序代码结构差不多,后序在它们的基础上稍微改改.(后序稍微麻烦点)</p>
-<h3 id="中序"><a href="#中序" class="headerlink" title="中序"></a>中序</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; inorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        <span class="built_in">stack</span>&lt;TreeNode*&gt; bufstack;</span><br><span class="line">        TreeNode *cur = root;</span><br><span class="line">        <span class="keyword">while</span> (!bufstack.empty() || cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur) &#123;</span><br><span class="line">                bufstack.push(cur);</span><br><span class="line">                cur = cur-&gt;left;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                cur = bufstack.top();</span><br><span class="line">                result.push_back(cur-&gt;val);</span><br><span class="line">                bufstack.pop();</span><br><span class="line">                cur = cur-&gt;right;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h3 id="前序"><a href="#前序" class="headerlink" title="前序"></a>前序</h3><p>和中序遍历只差一行.</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; preorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        <span class="built_in">stack</span>&lt;TreeNode*&gt; bufstack;</span><br><span class="line">        TreeNode *cur = root;</span><br><span class="line">        <span class="keyword">while</span> (!bufstack.empty() || cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur) &#123;</span><br><span class="line">                bufstack.push(cur);</span><br><span class="line">                result.push_back(cur-&gt;val);</span><br><span class="line">                cur = cur-&gt;left;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                cur = bufstack.top();</span><br><span class="line">                bufstack.pop();</span><br><span class="line">                cur = cur-&gt;right;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h3 id="后序"><a href="#后序" class="headerlink" title="后序"></a>后序</h3><p>这次的写法还是与前序中序的写法有些接近的.好记点.在前序中序的基础上稍微改改.</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; postorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        <span class="built_in">stack</span>&lt;TreeNode*&gt; bufstack;</span><br><span class="line">        TreeNode *cur = root;</span><br><span class="line">        TreeNode *lastcur;  <span class="comment">// 记住cur的上一个位置</span></span><br><span class="line">        <span class="keyword">while</span> (!bufstack.empty() || cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur) &#123;</span><br><span class="line">                bufstack.push(cur);</span><br><span class="line">                cur = cur-&gt;left;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;  </span><br><span class="line">                cur = bufstack.top();</span><br><span class="line">                bufstack.pop();</span><br><span class="line">                <span class="keyword">if</span> (!cur-&gt;right || cur-&gt;right == lastcur) &#123;</span><br><span class="line">                    result.push_back(cur-&gt;val);  </span><br><span class="line">                    <span class="comment">//如果上一次访问的是右节点,或者右节点为空,才可以访问这个节点. </span></span><br><span class="line">                    lastcur = cur;</span><br><span class="line">                    cur = <span class="literal">NULL</span>;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    bufstack.push(cur);  </span><br><span class="line">                    <span class="comment">//如果是这种情况,右节点存在且还没访问右节点,那么根节点要再次入栈.// 两次进栈</span></span><br><span class="line">                    cur = cur-&gt;right;     </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;   </span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>针对二次进栈的优化.见下面👇</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; postorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        <span class="built_in">stack</span>&lt;TreeNode*&gt; bufstack;</span><br><span class="line">        TreeNode *cur = root;</span><br><span class="line">        TreeNode *lastcur;  <span class="comment">// 记住cur的上一个位置</span></span><br><span class="line">        <span class="keyword">while</span> (!bufstack.empty() || cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur) &#123;</span><br><span class="line">                bufstack.push(cur);</span><br><span class="line">                cur = cur-&gt;left;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;  </span><br><span class="line">                cur = bufstack.top();</span><br><span class="line">                <span class="keyword">if</span> (!cur-&gt;right || cur-&gt;right == lastcur) &#123;</span><br><span class="line">                    result.push_back(cur-&gt;val);  <span class="comment">//如果上一次访问的是右节点,或者右节点为空,才可以访问这个节点. </span></span><br><span class="line">                    lastcur = cur;</span><br><span class="line">                    cur = <span class="literal">NULL</span>;</span><br><span class="line">                    bufstack.pop();</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    cur = cur-&gt;right;     </span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;   </span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="MorrisTraversal"><a href="#MorrisTraversal" class="headerlink" title="MorrisTraversal"></a>MorrisTraversal</h2><p>时间复杂度O(n),空间复杂度O(1)</p>
-<p>这个算法里面蕴含的思想就是利用leaf-&gt;left和leaf-&gt;right实现”线索化”,不利用栈从而找到相应的父节点.在这三种Morris遍历里面,都只用了leaf-&gt;right,充分利用已有的资源!降低了空间复杂度,变成O(1),很厉害!</p>
-<ul>
-<li>三种MorrisTraversal实现(前序中序后序)都只用了leaf-&gt;right</li>
-<li>利用leaf的右孩子作为线索,指向在这个leaf之后的父节点的位置,和本科数据结构书(比如严蔚敏数据结构)讲的那种线索二叉树类似,但是!MorrisTraversal这里的节点是下面这样定义的,并没有多出ltag和rtag,而严蔚敏数据结构的节点定义有这两个,所以这个MorrisTraversal方法是真的厉害.本质思想差不多,都是”线索化”.</li>
-</ul>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">TreeNode</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> val;</span><br><span class="line">    TreeNode *left;</span><br><span class="line">    TreeNode *right;</span><br><span class="line">    TreeNode(<span class="keyword">int</span> x) : val(x), left(<span class="literal">NULL</span>), right(<span class="literal">NULL</span>) &#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<ul>
-<li><p>这种方法[前序中序后序代码实现的基本结构差不多]是在Leecode这样的TreeNode定义的基础上,在遍历过程中,对leaf-&gt;right添加父节点位置,然后在第二次cur又回来的时候,用pre-&gt;right = NULL;进行还原,所以只在遍历的过程中会使得这棵树的leaf-&gt;right产生些许变化.遍历完了又恢复过来.[会导致树在遍历过程中被改变.这是和递归解法,非递归-stack解法不同的一点.]</p>
-</li>
-<li><p>这种方法最大的优点是空间复杂度是O(1),constant级的空间复杂度</p>
-</li>
-</ul>
-<h3 id="中序-Morris-inorder-traversal"><a href="#中序-Morris-inorder-traversal" class="headerlink" title="中序-Morris inorder traversal"></a>中序-Morris inorder traversal</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; inorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        TreeNode *cur, *pre;</span><br><span class="line">        cur = root;</span><br><span class="line">        <span class="keyword">while</span>(cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur-&gt;left) &#123;</span><br><span class="line">                pre = cur-&gt;left;</span><br><span class="line">                <span class="keyword">while</span> (pre-&gt;right &amp;&amp; pre-&gt;right != cur) pre = pre-&gt;right;</span><br><span class="line">                <span class="keyword">if</span> (!pre-&gt;right) &#123;</span><br><span class="line">                    pre-&gt;right = cur;</span><br><span class="line">                    cur = cur-&gt;left;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;  <span class="comment">// pre-&gt;right不为空,代表被第一次到这时填充过了,然后去掉它(还原)</span></span><br><span class="line">                    pre-&gt;right = <span class="literal">NULL</span>;</span><br><span class="line">                    result.push_back(cur-&gt;val);</span><br><span class="line">                    cur = cur-&gt;right;</span><br><span class="line">                &#125;   </span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                result.push_back(cur-&gt;val);</span><br><span class="line">                cur = cur-&gt;right;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>实现及理解trick:例如在纸上画一颗这样的树:[1,2,3,4,5,6,null]-(类似leecode里的题那么表示树),然后思考cur和pre的位置变化情况,结合输出结果,[425163]最好形象理解.想象这颗树底下还有很多节点也是一样的.代码都是起作用的,然后多写几遍就明白了…重点是对整个过程在脑海中形象理解.然后体会cur和pre节点的作用</p>
-<h3 id="前序-Morris-preorder-traversal"><a href="#前序-Morris-preorder-traversal" class="headerlink" title="前序-Morris preorder traversal"></a>前序-Morris preorder traversal</h3><p>从前序版本的Morris traversal代码改过来的,代码只差了一行</p>
-<p>彻底理解上面中序的过程后,然后思考下,把result.push_back(cur-&gt;val);这样的代码删除,改成前序的关键就是把result.push_back(cur-&gt;val);的位置变到cur第一次碰到(!pre-&gt;right)的时候那里.</p>
-<p>也就是</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; preorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        TreeNode *cur, *pre;</span><br><span class="line">        cur = root;</span><br><span class="line">        <span class="keyword">while</span>(cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur-&gt;left) &#123;</span><br><span class="line">                pre = cur-&gt;left;</span><br><span class="line">                <span class="keyword">while</span> (pre-&gt;right &amp;&amp; pre-&gt;right != cur) pre = pre-&gt;right;</span><br><span class="line">                <span class="keyword">if</span> (!pre-&gt;right) &#123;</span><br><span class="line">                    result.push_back(cur-&gt;val);</span><br><span class="line">                    pre-&gt;right = cur;</span><br><span class="line">                    cur = cur-&gt;left;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;  <span class="comment">// pre-&gt;right不为空,代表被第一次到这时填充过了,然后去掉它(还原)</span></span><br><span class="line">                    pre-&gt;right = <span class="literal">NULL</span>;</span><br><span class="line">                    cur = cur-&gt;right;</span><br><span class="line">                &#125;   </span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                result.push_back(cur-&gt;val);</span><br><span class="line">                cur = cur-&gt;right;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>只有一行代码不同.剩下的result.push_back(cur-&gt;val);思考下为什么不用改变位置?<br>这种cur节点不存在cur到这里两次,只到这里一次,所以在前序中序都是在这里result.push_back(cur-&gt;val);<br>这种节点就是树:[1,2,3,4,5,6,null]里的节点4这样的节点.</p>
-<p>这种节点有什么特点?cur-&gt;left为NULL!</p>
-<h3 id="后序-Morris-postorder-traversal"><a href="#后序-Morris-postorder-traversal" class="headerlink" title="后序-Morris postorder traversal"></a>后序-Morris postorder traversal</h3><p>Morris postorder traversal实现比前序中序麻烦在多了个reverseAddNodes()和一个dummy节点</p>
-<p>程序主体和Morris in-order traversal,Morris pre-order traversal差不多.多了个reverseAddNodes(cur-&gt;left, pre, result);这里最好结合图来看…下面👇这位朋友后序的图画的不错,可以作为Morris postorder traversal理解的参考</p>
-<p><a href="https://www.cnblogs.com/AnnieKim/archive/2013/06/15/MorrisTraversal.html" target="_blank" rel="noopener">Annie Kim’s Blog-Morris Traversal方法遍历二叉树（非递归，不用栈，O(1)空间）</a></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; postorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        <span class="function">TreeNode <span class="title">dummy</span><span class="params">(<span class="number">0</span>)</span></span>;</span><br><span class="line">        dummy.left = root;</span><br><span class="line">        TreeNode *cur = &amp;dummy, *pre;</span><br><span class="line">        <span class="keyword">while</span>(cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur-&gt;left) &#123;</span><br><span class="line">                pre = cur-&gt;left;</span><br><span class="line">                <span class="keyword">while</span> (pre-&gt;right &amp;&amp; pre-&gt;right != cur) pre = pre-&gt;right;</span><br><span class="line">                <span class="keyword">if</span> (!pre-&gt;right) &#123;</span><br><span class="line">                    pre-&gt;right = cur;</span><br><span class="line">                    cur = cur-&gt;left;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;  <span class="comment">// pre-&gt;right不为空,代表被第一次到这时填充过了,然后去掉它(还原)</span></span><br><span class="line">                    reverseAddNodes(cur-&gt;left, pre, result);</span><br><span class="line">                    pre-&gt;right = <span class="literal">NULL</span>;</span><br><span class="line">                    cur = cur-&gt;right;</span><br><span class="line">                &#125;   </span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                cur = cur-&gt;right;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">reverseNodes</span><span class="params">(TreeNode* start, TreeNode* end)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (start == end) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        TreeNode* x = start;</span><br><span class="line">        TreeNode* y = start-&gt;right;</span><br><span class="line">        TreeNode* z;</span><br><span class="line">        <span class="keyword">while</span> (x != end) &#123;</span><br><span class="line">            z = y-&gt;right;</span><br><span class="line">            y-&gt;right = x;</span><br><span class="line">            x = y;</span><br><span class="line">            y = z;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">reverseAddNodes</span><span class="params">(TreeNode* start, TreeNode* end, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&amp; result)</span> </span>&#123;</span><br><span class="line">        reverseNodes(start, end);</span><br><span class="line">        TreeNode* node = end;</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">            result.push_back(node-&gt;val);</span><br><span class="line">            <span class="keyword">if</span> (node == start) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            node = node-&gt;right;</span><br><span class="line">        &#125;</span><br><span class="line">        reverseNodes(end, start);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>reverseAddNodes()这个过程,可以不reverse吗???</p>
-<p>修改成用一个临时vector代替reverseNodes函数</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; postorderTraversal(TreeNode* root) &#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; result;</span><br><span class="line">        <span class="keyword">if</span> (!root) <span class="keyword">return</span> result;</span><br><span class="line">        <span class="function">TreeNode <span class="title">dummy</span><span class="params">(<span class="number">0</span>)</span></span>;</span><br><span class="line">        dummy.left = root;</span><br><span class="line">        TreeNode *cur = &amp;dummy, *pre;</span><br><span class="line">        <span class="keyword">while</span>(cur) &#123;</span><br><span class="line">            <span class="keyword">if</span> (cur-&gt;left) &#123;</span><br><span class="line">                pre = cur-&gt;left;</span><br><span class="line">                <span class="keyword">while</span> (pre-&gt;right &amp;&amp; pre-&gt;right != cur) pre = pre-&gt;right;</span><br><span class="line">                <span class="keyword">if</span> (!pre-&gt;right) &#123;</span><br><span class="line">                    pre-&gt;right = cur;</span><br><span class="line">                    cur = cur-&gt;left;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;  <span class="comment">// pre-&gt;right不为空,代表被第一次到这时填充过了,然后去掉它(还原)</span></span><br><span class="line">                    reverseAddNodes(cur-&gt;left, pre, result);</span><br><span class="line">                    pre-&gt;right = <span class="literal">NULL</span>;</span><br><span class="line">                    cur = cur-&gt;right;</span><br><span class="line">                &#125;   </span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                cur = cur-&gt;right;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">reverseAddNodes</span><span class="params">(TreeNode* start, TreeNode* end, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&amp; result)</span> </span>&#123;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; temp;</span><br><span class="line">        TreeNode* node = start;</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">            temp.push_back(node-&gt;val);</span><br><span class="line">            <span class="keyword">if</span> (node == end) &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            node = node-&gt;right;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">auto</span> iter = temp.rbegin(); iter != temp.rend(); ++iter) &#123;</span><br><span class="line">            result.push_back(*iter);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<hr>
-<p>morris是谁?</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2084,7 +2055,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-count">17</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -2095,7 +2066,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">13</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -2106,7 +2077,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-count">9</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
