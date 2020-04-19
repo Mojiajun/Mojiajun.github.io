@@ -262,6 +262,188 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/bbc35084.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/post/bbc35084.html" itemprop="url">mit6824-lab1-part-II</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-09-27T00:00:00+08:00">
+                2019-09-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/分布式/" itemprop="url" rel="index">
+                    <span itemprop="name">分布式</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/分布式/mit6824/" itemprop="url" rel="index">
+                    <span itemprop="name">mit6824</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>[TOC]</p>
+<h2 id="lab1-Part-I-Map-Reduce-input-and-output-part-II"><a href="#lab1-Part-I-Map-Reduce-input-and-output-part-II" class="headerlink" title="lab1-Part-I-Map/Reduce input and output-part-II"></a>lab1-Part-I-Map/Reduce input and output-part-II</h2><h3 id="实现mapF和reduceF"><a href="#实现mapF和reduceF" class="headerlink" title="实现mapF和reduceF"></a>实现mapF和reduceF</h3><p>有一个坑.在mapF里面</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mapF</span><span class="params">(filename <span class="keyword">string</span>, contents <span class="keyword">string</span>)</span> []<span class="title">mapreduce</span>.<span class="title">KeyValue</span></span> &#123;</span><br><span class="line">	<span class="comment">// Your code here (Part II).</span></span><br><span class="line">	<span class="comment">// 划分词</span></span><br><span class="line">	<span class="comment">// 划分词这里得搞明白...</span></span><br><span class="line">	<span class="comment">// words := strings.Fields(contents)  // 不行.为什么待研究.</span></span><br><span class="line">	words := strings.FieldsFunc(contents, <span class="function"><span class="keyword">func</span><span class="params">(c <span class="keyword">rune</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> !unicode.IsLetter(c)</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 先构造一个map</span></span><br><span class="line">	mapping := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">int</span>) <span class="comment">// 有溢出的风险</span></span><br><span class="line">	<span class="keyword">for</span> _, w := <span class="keyword">range</span> words &#123;</span><br><span class="line">		mapping[w]++</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//把map的数据写入res</span></span><br><span class="line">	<span class="keyword">var</span> res []mapreduce.KeyValue</span><br><span class="line">	<span class="keyword">for</span> key, val := <span class="keyword">range</span> mapping &#123;</span><br><span class="line">		res = <span class="built_in">append</span>(res, mapreduce.KeyValue&#123;Key: key, Value: strconv.Itoa(val)&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> res</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">reduceF</span><span class="params">(key <span class="keyword">string</span>, values []<span class="keyword">string</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="comment">// Your code here (Part II).</span></span><br><span class="line">	<span class="keyword">var</span> valInt <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">for</span> _, val := <span class="keyword">range</span> values &#123;</span><br><span class="line">		valIntTemp, err := strconv.Atoi(val);</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Fatal(<span class="string">"reduceF() fail "</span>, err)</span><br><span class="line">		&#125;</span><br><span class="line">		valInt += valIntTemp</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> strconv.Itoa(valInt) <span class="comment">// 这么写的话也可能溢出.</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="存疑的"><a href="#存疑的" class="headerlink" title="存疑的"></a>存疑的</h3><p>1.merge阶段的merge() {}并不能解决重复key的问题.写了个测试这个merge()可能会出问题的代码.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"bufio"</span></span><br><span class="line">	<span class="string">"encoding/json"</span></span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"log"</span></span><br><span class="line">	<span class="string">"os"</span></span><br><span class="line">	<span class="string">"sort"</span></span><br><span class="line">	<span class="string">"strconv"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> nReduceTest = <span class="number">3</span></span><br><span class="line"><span class="keyword">const</span> jobName = <span class="string">"wcseq"</span>  <span class="comment">// 根据实际测试情况修改.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> KeyValue <span class="keyword">struct</span> &#123;</span><br><span class="line">	Key   <span class="keyword">string</span></span><br><span class="line">	Value <span class="keyword">string</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> prefix = <span class="string">"$填入你的路径/6.824/src/main/"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mergeName</span><span class="params">(jobName <span class="keyword">string</span>, reduceTask <span class="keyword">int</span>)</span> <span class="title">string</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> prefix + <span class="string">"mrtmp."</span> + jobName + <span class="string">"-res-"</span> + strconv.Itoa(reduceTask)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">mergeTestFuntion</span><span class="params">()</span></span> &#123;</span><br><span class="line">	kvs := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="keyword">string</span>]<span class="keyword">string</span>)</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; nReduceTest; i++ &#123;</span><br><span class="line">		p := mergeName(jobName, i)</span><br><span class="line">		fmt.Printf(<span class="string">"Merge: read %s\n"</span>, p)</span><br><span class="line">		file, err := os.Open(p)</span><br><span class="line">		<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">			log.Fatal(<span class="string">"Merge: "</span>, err)</span><br><span class="line">		&#125;</span><br><span class="line">		dec := json.NewDecoder(file)</span><br><span class="line">		<span class="keyword">for</span> &#123;</span><br><span class="line">			<span class="keyword">var</span> kv KeyValue</span><br><span class="line">			err = dec.Decode(&amp;kv)</span><br><span class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">				<span class="keyword">break</span></span><br><span class="line">			&#125;</span><br><span class="line">			kvs[kv.Key] = kv.Value</span><br><span class="line">		&#125;</span><br><span class="line">		file.Close()</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">var</span> keys []<span class="keyword">string</span></span><br><span class="line">	<span class="keyword">for</span> k := <span class="keyword">range</span> kvs &#123;</span><br><span class="line">		keys = <span class="built_in">append</span>(keys, k)</span><br><span class="line">	&#125;</span><br><span class="line">	sort.Strings(keys)</span><br><span class="line"></span><br><span class="line">	file, err := os.Create(prefix + <span class="string">"mrtmp."</span> + jobName + <span class="string">"-MergeTest"</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		log.Fatal(<span class="string">"Merge: create "</span>, err)</span><br><span class="line">	&#125;</span><br><span class="line">	w := bufio.NewWriter(file)</span><br><span class="line">	<span class="keyword">for</span> _, k := <span class="keyword">range</span> keys &#123;</span><br><span class="line">		fmt.Fprintf(w, <span class="string">"%s: %s\n"</span>, k, kvs[k])</span><br><span class="line">	&#125;</span><br><span class="line">	w.Flush()</span><br><span class="line">	file.Close()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	mergeTestFuntion()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后把mrtmp.wcseq-res-0,mrtmp.wcseq-res-1,mrtmp.wcseq-res-2这些文件里面故意设的至少有两个key一样的情况.因为kvs[kv.Key] = kv.Value这一行代码,所以结果会出问题.统计出来的数字不对.</p>
+<p>但是为什么统计词数是正确的呢???</p>
+<p>原因在于doMap()阶段的ihash(kv.Key)%nReduce.</p>
+<blockquote>
+<p>反证法:要想在merge()阶段出现&gt;=2个相同的key.必须在至少两个不同的mrtmp.xxx-res-…,mrtmp.wcseq-res-…文件里面出现出现重复的key.而假设这两个文件分别是mrtmp.xxx-res-X,mrtmp.xxx-res-Y,<br>而来自于<br>mrtmp.test-0-X<br>mrtmp.test-1-X<br>mrtmp.test-2-X<br>…</p>
+<p>mrtmp.xxx-res-Y来自于<br>mrtmp.test-0-Y<br>mrtmp.test-1-Y<br>mrtmp.test-2-Y<br>…</p>
+<p>所以重复的key来自于mrtmp.test-0-X,mrtmp.test-1-Y这种情况.所以在reduce这个维度的索引的X!=Y.<br>而重复的key必定ihash(kv.Key)%nReduce一样,也就是会放置到同一个[reduce这个维度的索引].出现矛盾!!!</p>
+<p>所以哪怕用mit-6824里master_splitmerge.go里的merge()阶段的代码,在比如word count这样的问题里也不会出现问题.而用户可以传入的函数只有mapF和reduceF.分别对应map阶段和reduce阶段,用户对merge阶段无控制权.</p>
+</blockquote>
+<p>2.strings.FieldsFunc和strings.Fields的区别</p>
+<p>FieldsFunc额外要传入一个函数.为什么用Fields会出问题?</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//  words := strings.Fields(contents)  // 不行.为什么待研究.</span></span><br><span class="line">	words := strings.FieldsFunc(contents, <span class="function"><span class="keyword">func</span><span class="params">(c <span class="keyword">rune</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">		<span class="keyword">return</span> !unicode.IsLetter(c)</span><br><span class="line">	&#125;)</span><br></pre></td></tr></table></figure>
+<p>3.sort -n -k2 mrtmp.wcseq-MergeTest | diff - mrtmp.wcseq.sort &gt; diff.out</p>
+<p>sort命令学习一下.</p>
+<h3 id="master-worker分布式运行-做完part-III之后再回来看这里"><a href="#master-worker分布式运行-做完part-III之后再回来看这里" class="headerlink" title="master-worker分布式运行(做完part-III之后再回来看这里)"></a>master-worker分布式运行(做完part-III之后再回来看这里)</h3><p>2) Master (e.g., go run wc.go master localhost:7777 x1.txt .. xN.txt)</p>
+<p>这种方式只是启动了server端.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Can be run in 3 ways:</span></span><br><span class="line"><span class="comment">// 1) Sequential (e.g., go run wc.go master sequential x1.txt .. xN.txt)</span></span><br><span class="line"><span class="comment">// 2) Master (e.g., go run wc.go master localhost:7777 x1.txt .. xN.txt)</span></span><br><span class="line"><span class="comment">// 3) Worker (e.g., go run wc.go worker localhost:7777 localhost:7778 &amp;)</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">len</span>(os.Args) &lt; <span class="number">4</span> &#123;</span><br><span class="line">		fmt.Printf(<span class="string">"%s: see usage comments in file\n"</span>, os.Args[<span class="number">0</span>])</span><br><span class="line">	&#125; <span class="keyword">else</span> <span class="keyword">if</span> os.Args[<span class="number">1</span>] == <span class="string">"master"</span> &#123;</span><br><span class="line">		<span class="keyword">var</span> mr *mapreduce.Master</span><br><span class="line">		<span class="keyword">if</span> os.Args[<span class="number">2</span>] == <span class="string">"sequential"</span> &#123;</span><br><span class="line">			mr = mapreduce.Sequential(<span class="string">"wcseq"</span>, os.Args[<span class="number">3</span>:], <span class="number">3</span>, mapF, reduceF)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			mr = mapreduce.Distributed(<span class="string">"wcseq"</span>, os.Args[<span class="number">3</span>:], <span class="number">3</span>, os.Args[<span class="number">2</span>])</span><br><span class="line">		&#125;</span><br><span class="line">		mr.Wait()</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		mapreduce.RunWorker(os.Args[<span class="number">2</span>], os.Args[<span class="number">3</span>], mapF, reduceF, <span class="number">100</span>, <span class="literal">nil</span>)</span><br><span class="line">		<span class="comment">// 第一个参数是master address. 第二个参数是worker address</span></span><br><span class="line">		<span class="comment">// 第一个参数谁给它?单独启动?试试</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>启动master,用一个shell</p>
+<p>GOPATH=/Users/***/go/src/6824-course-project/6.824 go run wc.go master localhost:7777 pg-wc-testfile-custom.txt pg-wc-testfile-custom-02.txt</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">mr = mapreduce.Distributed(<span class="string">"wcseq"</span>, os.Args[<span class="number">3</span>:], <span class="number">3</span>, os.Args[<span class="number">2</span>])</span><br><span class="line"><span class="comment">// 第二个参数,即输入文件列表</span></span><br><span class="line"><span class="comment">// 第三个参数,reduce-3个reduce task</span></span><br><span class="line"><span class="comment">// 第四个参数指定了,master监听的地址.</span></span><br><span class="line"></span><br><span class="line">Args[*]对应的参数:</span><br><span class="line"><span class="keyword">go</span> run wc.<span class="keyword">go</span> /<span class="keyword">var</span>/tmp/<span class="number">824</span><span class="number">-501</span>/mr90843-master</span><br><span class="line"></span><br><span class="line">Args[<span class="number">0</span>]:</span><br><span class="line">/<span class="keyword">var</span>/folders/vh/hz32rv8x2fzfdsqc7xpqq2640000gn/T/<span class="keyword">go</span>-build105600263/b001/exe/wc</span><br><span class="line">Args[<span class="number">1</span>]:</span><br><span class="line">/<span class="keyword">var</span>/tmp/<span class="number">824</span><span class="number">-501</span>/mr90843-master</span><br><span class="line">然后以此类推</span><br><span class="line"></span><br><span class="line">在test_test.<span class="keyword">go</span>里面的使用范例:</span><br><span class="line">	master := port(<span class="string">"master"</span>)</span><br><span class="line">	mr := Distributed(<span class="string">"test"</span>, files, nReduce, master)</span><br></pre></td></tr></table></figure>
+<p>启动worker.用另外一个shell</p>
+<p>GOPATH=/Users/***/go/src/6824-course-project/6.824 go run wc.go worker localhost:7777 localhost:7778</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mapreduce.RunWorker(os.Args[<span class="number">2</span>], os.Args[<span class="number">3</span>], mapF, reduceF, <span class="number">100</span>, <span class="literal">nil</span>)</span><br><span class="line"><span class="comment">// 第一个参数是master的监听地址</span></span><br><span class="line"><span class="comment">// 第二个参数是worker自己即将监听的地址</span></span><br><span class="line"><span class="comment">// 100代表这个worker只能做100个task</span></span><br><span class="line"></span><br><span class="line">在test_test.<span class="keyword">go</span>里面的使用范例:</span><br><span class="line">		<span class="keyword">go</span> RunWorker(mr.address, port(<span class="string">"worker"</span>+strconv.Itoa(i)),</span><br><span class="line">			MapFunc, ReduceFunc, <span class="number">-1</span>, <span class="literal">nil</span>)</span><br></pre></td></tr></table></figure>
+<p>为什么测试源里面有数字不行???没统计是和划分有关系吗,估计是,反正是map阶段有问题</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/c77df7da.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -658,194 +840,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/3b45df5e.html">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="mojiajun">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mojiajun">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/post/3b45df5e.html" itemprop="url">C++-虚函数机制-01</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-07-22T00:00:00+08:00">
-                2019-07-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C/" itemprop="url" rel="index">
-                    <span itemprop="name">C++</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>[TOC]</p>
-<p>这篇是虚函数表vtbl和虚表指针vptr的基础.基本认知,采用的是调试器反汇编看底层的方式.额外提了下空类.</p>
-<p>测试环境:<br>x86-64<br>Ubuntu 18.04.2 LTS<br>cat /proc/version</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Linux version 4.15.0-48-generic (buildd@lgw01-amd64-036) (gcc version 7.3.0 (Ubuntu 7.3.0-16ubuntu3)) <span class="comment">#51-Ubuntu SMP Wed Apr 3 08:28:49 UTC 2019</span></span><br></pre></td></tr></table></figure>
-<h3 id="虚函数表"><a href="#虚函数表" class="headerlink" title="虚函数表"></a>虚函数表</h3><p>虚函数机制(没分析继承)</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">virtual_func_test01.cc</span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstdio&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CVirtual</span> &#123;</span></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">int</span> <span class="title">GetNumber</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> _nNumber;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">SetNumber</span><span class="params">(<span class="keyword">int</span> nNumber)</span> </span>&#123;</span><br><span class="line">      _nNumber = nNumber;</span><br><span class="line">  &#125;</span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">int</span> _nNumber;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> nSizeOfCVirtual = <span class="keyword">sizeof</span>(CVirtual);</span><br><span class="line">    <span class="keyword">int</span> nSizeOfPointer = <span class="keyword">sizeof</span>(<span class="keyword">int</span> *);</span><br><span class="line">    <span class="comment">//printf("the size of CVirtual (in BYTE) is : %d\n", nSizeOfCVirtual);</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>编译:g++ -g -o virtual_func_test01 virtual_func_test01.cc<br>调试:lldb ./virtual_func_test01</p>
-<p>main这里打个断点.然后反汇编一下.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(lldb) dis</span><br><span class="line">virtual_func_test01`main:</span><br><span class="line">    0x5555555545fa &lt;+0&gt;:  pushq  %rbp</span><br><span class="line">    0x5555555545fb &lt;+1&gt;:  movq   %rsp, %rbp</span><br><span class="line">    0x5555555545fe &lt;+4&gt;:  movl   $0x10, -0x8(%rbp)</span><br><span class="line">    0x555555554605 &lt;+11&gt;: movl   $0x8, -0x4(%rbp)</span><br><span class="line">-&gt;  0x55555555460c &lt;+18&gt;: movl   $0x0, %eax</span><br><span class="line">    0x555555554611 &lt;+23&gt;: popq   %rbp</span><br><span class="line">    0x555555554612 &lt;+24&gt;: retq</span><br></pre></td></tr></table></figure>
-<p>结果分别是(十进制)16和8<br>涉及 rbp,rsp 栈向低地址生长,eax(返回值常用的寄存器,见CSAPP第三章),ATT格式汇编等基础.这里不提了.</p>
-<hr>
-<p>修改一下代码,创建一个栈上的对象testObj.</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">CVirtual <span class="title">testObj</span><span class="params">(<span class="number">10324</span>)</span></span>;</span><br><span class="line">    testObj.SetNumber(<span class="number">200</span>);</span><br><span class="line">    testObj.GetNumber();</span><br><span class="line">    CVirtual *ptestObj = &amp;testObj;</span><br><span class="line">    <span class="keyword">int</span> nSizeOfCVirtual = <span class="keyword">sizeof</span>(CVirtual);</span><br><span class="line">    <span class="keyword">int</span> nSizeOfPointer = <span class="keyword">sizeof</span>(<span class="keyword">int</span> *);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>貌似lldb没找到gdb info vtbl类似的命令,所以在这里用gdb查看一下vtbl(要等CVirtual的构造函数执行完,否则vtbl里面的地址不对,相当于还没初始化好.).</p>
-<p>然后反汇编main函数,顺便用info vtbl testObj查看一下虚函数表</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">(gdb) disassemble main</span><br><span class="line">Dump of assembler code for function main():</span><br><span class="line">   0x000055555555475a &lt;+0&gt;:	push   %rbp</span><br><span class="line">   0x000055555555475b &lt;+1&gt;:	mov    %rsp,%rbp</span><br><span class="line">   0x000055555555475e &lt;+4&gt;:	sub    $0x30,%rsp</span><br><span class="line">   0x0000555555554762 &lt;+8&gt;:	mov    %fs:0x28,%rax</span><br><span class="line">   0x000055555555476b &lt;+17&gt;:	mov    %rax,-0x8(%rbp)</span><br><span class="line">   0x000055555555476f &lt;+21&gt;:	xor    %eax,%eax</span><br><span class="line">   0x0000555555554771 &lt;+23&gt;:	lea    -0x20(%rbp),%rax</span><br><span class="line">   0x0000555555554775 &lt;+27&gt;:	mov    $0x2854,%esi</span><br><span class="line">   0x000055555555477a &lt;+32&gt;:	mov    %rax,%rdi</span><br><span class="line">   0x000055555555477d &lt;+35&gt;:	callq  0x5555555547d0 &lt;CVirtual::CVirtual(int)&gt;</span><br><span class="line">   0x0000555555554782 &lt;+40&gt;:	lea    -0x20(%rbp),%rax</span><br><span class="line">   0x0000555555554786 &lt;+44&gt;:	mov    $0xc8,%esi</span><br><span class="line">   0x000055555555478b &lt;+49&gt;:	mov    %rax,%rdi</span><br><span class="line">   0x000055555555478e &lt;+52&gt;:	callq  0x555555554808 &lt;CVirtual::SetNumber(int)&gt;</span><br><span class="line">   0x0000555555554793 &lt;+57&gt;:	lea    -0x20(%rbp),%rax</span><br><span class="line">   0x0000555555554797 &lt;+61&gt;:	mov    %rax,%rdi</span><br><span class="line">   0x000055555555479a &lt;+64&gt;:	callq  0x5555555547f6 &lt;CVirtual::GetNumber()&gt;</span><br><span class="line">   0x000055555555479f &lt;+69&gt;:	lea    -0x20(%rbp),%rax</span><br><span class="line">   0x00005555555547a3 &lt;+73&gt;:	mov    %rax,-0x28(%rbp)</span><br><span class="line">   0x00005555555547a7 &lt;+77&gt;:	movl   $0x10,-0x30(%rbp)</span><br><span class="line">   0x00005555555547ae &lt;+84&gt;:	movl   $0x8,-0x2c(%rbp)</span><br><span class="line">=&gt; 0x00005555555547b5 &lt;+91&gt;:	mov    $0x0,%eax</span><br><span class="line">   0x00005555555547ba &lt;+96&gt;:	mov    -0x8(%rbp),%rdx</span><br><span class="line">   0x00005555555547be &lt;+100&gt;:	xor    %fs:0x28,%rdx</span><br><span class="line">   0x00005555555547c7 &lt;+109&gt;:	je     0x5555555547ce &lt;main()+116&gt;</span><br><span class="line">   0x00005555555547c9 &lt;+111&gt;:	callq  0x555555554630 &lt;__stack_chk_fail@plt&gt;</span><br><span class="line">   0x00005555555547ce &lt;+116&gt;:	leaveq</span><br><span class="line">   0x00005555555547cf &lt;+117&gt;:	retq</span><br><span class="line">End of assembler dump.</span><br><span class="line"></span><br><span class="line">(gdb) info vtbl testObj</span><br><span class="line">vtable for &apos;CVirtual&apos; @ 0x555555754d98 (subobject @ 0x7fffffffe470):</span><br><span class="line">[0]: 0x5555555547f6 &lt;CVirtual::GetNumber()&gt;</span><br><span class="line">[1]: 0x555555554808 &lt;CVirtual::SetNumber(int)&gt;</span><br><span class="line">刚好就是main里面callq的函数地址.// subobject @ 0x7fffffffe470 gdb打印的testObj对象的地址</span><br></pre></td></tr></table></figure>
-<hr>
-<p>然后看一下这个testObj占多大?对象的地址在哪?</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(gdb) x ptestObj</span><br><span class="line"> :	0x55754d98</span><br><span class="line">//ptestObj指针在main帧里面,栈上面的变量.这个指针的值是0x7fffffffe470,也就是testObj的地址.注意后面的0x55754d98是0x7fffffffe470指向的位置的内容(也就是vtbl的值)</span><br></pre></td></tr></table></figure>
-<p>又因为testObj在栈上占16字节<br>然后读一下这块内存的内容,注意输出是小端.</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(gdb) x/16xb 0x7fffffffe470</span><br><span class="line">0x7fffffffe470:	0x98	0x4d	0x75	0x55	0x55	0x55	0x00	0x00</span><br><span class="line">0x7fffffffe478:	0xc8	0x00	0x00	0x00	0x55	0x55	0x00	0x00</span><br></pre></td></tr></table></figure>
-<p>因为sizeof(int) == 4字节.在目前的机器的实现上前8个字节存的是指向vtbl的vptr.<br>vptr存的地址是0x00005555 55754d98.<br>0xc8 0x00 0x00 0x00是后面调用testObj.SetNumber(200);存入的200,还有四个字节估计和对齐有关?</p>
-<p>然后把虚函数表里面的内容读出来看看</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(gdb) x/32xb 0x0000555555754d98</span><br><span class="line">0x555555754d98 &lt;_ZTV8CVirtual+16&gt;:	0xf6	0x47	0x55	0x55	0x55	0x55	0x00	0x00</span><br><span class="line">0x555555754da0 &lt;_ZTV8CVirtual+24&gt;:	0x08	0x48	0x55	0x55	0x55	0x55	0x00	0x00</span><br><span class="line">0x555555754da8 &lt;_ZTI8CVirtual&gt;:	0xf8	0x67	0xdc	0xf7	0xff	0x7f	0x00	0x00</span><br><span class="line">0x555555754db0 &lt;_ZTI8CVirtual+8&gt;:	0xa8	0x48	0x55	0x55	0x55	0x55	0x00	0x00</span><br></pre></td></tr></table></figure>
-<p>前两项输出和gdb info vtal结果一样.</p>
-<p>最后看看</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[0]: 0x5555555547f6 &lt;CVirtual::GetNumber()&gt;</span><br><span class="line">[1]: 0x555555554808 &lt;CVirtual::SetNumber(int)&gt;</span><br><span class="line">这两个函数的内容存在哪了.</span><br></pre></td></tr></table></figure>
-<p>disassemble 0x5555555547f6 </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(gdb) x/64x 0x5555555547f6</span><br><span class="line">0x5555555547f6 &lt;CVirtual::GetNumber()&gt;:	0x55	0x48	0x89	0xe5	0x48	0x89	0x7d	0xf8</span><br><span class="line">0x5555555547fe &lt;CVirtual::GetNumber()+8&gt;:	0x48	0x8b	0x45	0xf8	0x8b	0x40	0x08	0x5d</span><br><span class="line">0x555555554806 &lt;CVirtual::GetNumber()+16&gt;:	0xc3	0x90	0x55	0x48	0x89	0xe5	0x48	0x89</span><br><span class="line">0x55555555480e &lt;CVirtual::SetNumber(int)+6&gt;:	0x7d	0xf8	0x89	0x75	0xf4	0x48	0x8b	0x45</span><br><span class="line">0x555555554816 &lt;CVirtual::SetNumber(int)+14&gt;:	0xf8	0x8b	0x55	0xf4	0x89	0x50	0x08	0x90</span><br><span class="line">0x55555555481e &lt;CVirtual::SetNumber(int)+22&gt;:	0x5d	0xc3	0x41	0x57	0x41	0x56	0x49	0x89</span><br><span class="line">0x555555554826 &lt;__libc_csu_init+6&gt;:	0xd7	0x41	0x55	0x41	0x54	0x4c	0x8d	0x25</span><br><span class="line">0x55555555482e &lt;__libc_csu_init+14&gt;:	0x46	0x05	0x20	0x00	0x55	0x48	0x8d	0x2d</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(gdb) disassemble 0x5555555547f6</span><br><span class="line">Dump of assembler code for function CVirtual::GetNumber():</span><br><span class="line">   0x00005555555547f6 &lt;+0&gt;:		push   %rbp</span><br><span class="line">   0x00005555555547f7 &lt;+1&gt;:		mov    %rsp,%rbp</span><br><span class="line">   0x00005555555547fa &lt;+4&gt;:		mov    %rdi,-0x8(%rbp)</span><br><span class="line">   0x00005555555547fe &lt;+8&gt;:		mov    -0x8(%rbp),%rax</span><br><span class="line">   0x0000555555554802 &lt;+12&gt;:	mov    0x8(%rax),%eax</span><br><span class="line">   0x0000555555554805 &lt;+15&gt;:	pop    %rbp</span><br><span class="line">   0x0000555555554806 &lt;+16&gt;:	retq</span><br><span class="line">End of assembler dump.</span><br></pre></td></tr></table></figure>
-<p>同理[1]: 0x555555554808 <a href="CVirtual::SetNumber(int)" target="_blank" rel="noopener">CVirtual::SetNumber(int)</a>不在这里列举了.<br>最后的最后,看看在ELF文件里面这两函数在哪.readelf命令看,但是显示的加载地址都比较小.与调试器里面的不符.1.<a href="https://www.martinkysel.com/demystifying-virtual-tables-in-c-part-1-trivial-constructors/" target="_blank" rel="noopener">Demystifying Virtual Tables In C++</a>这个人分析却是一样的.老版本的不是这样的啊.什么情况…加载器都干了些什么…算了,先不分析这里了.后续再看了.</p>
-<h3 id="空类"><a href="#空类" class="headerlink" title="空类"></a>空类</h3><p>参考<a href="http://www.stroustrup.com/bs_faq2.html#sizeof-empty" target="_blank" rel="noopener">Bjarne Stroustrup-Why is the size of an empty class not zero?</a></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Empty</span> &#123;</span> &#125;;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	Empty a, b;</span><br><span class="line">	Empty *pa = &amp;a;</span><br><span class="line">	Empty *pb = &amp;b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    f();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(lldb) frame variable</span><br><span class="line">(Empty) a = &#123;&#125;</span><br><span class="line">(Empty) b = &#123;&#125;</span><br><span class="line">(Empty *) pa = 0x00007fffffffe4a6</span><br><span class="line">(Empty *) pb = 0x00007fffffffe4a7</span><br><span class="line">(lldb) expression &amp;a</span><br><span class="line">(Empty *) <span class="variable">$0</span> = 0x00007fffffffe4a6</span><br><span class="line">(lldb) expression &amp;b</span><br><span class="line">(Empty *) <span class="variable">$1</span> = 0x00007fffffffe4a7</span><br><span class="line">(lldb) memory <span class="built_in">read</span> --size 1 --format x --count 1 0x00007fffffffe4a6</span><br><span class="line">0x7fffffffe4a6: 0x00</span><br><span class="line">(lldb) memory <span class="built_in">read</span> --size 1 --format x --count 1 0x00007fffffffe4a7</span><br><span class="line">0x7fffffffe4a7: 0x00</span><br></pre></td></tr></table></figure>
-<p>在我的这台机器上空类的对象占一个字节.字节内容查看是0x00.<br>很奇怪的一点是,没有Empty <em>pa = &a;Empty </em>pb = &b;这两行的话用调试器看expression &amp;a和expression &amp;b是一样的?</p>
-<p>1.如果是吧地址取出来Empty <em>pa = &a;Empty </em>pb = &b;像这样,不管调试器还是直接打印出来,pa和pb都会是不同的地址.<br>2.如果按Bjarne Stroustrup给的例子,进行if测试,也是不会相同的.</p>
-<hr>
-<p>但是如果是empty base class,那么会有一个编译器的优化,叫做empty base class optimization</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstdio&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">cout</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Empty</span> &#123;</span> &#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">X</span> :</span> Empty &#123;</span><br><span class="line">        <span class="keyword">int</span> a;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(X* p)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">void</span>* p1 = p;</span><br><span class="line">        <span class="keyword">void</span>* p2 = &amp;p-&gt;a;</span><br><span class="line">        <span class="keyword">if</span> (p1 == p2) <span class="built_in">cout</span> &lt;&lt; <span class="string">"nice: good optimizer\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    X testObj;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sizeof X %d\n"</span>, <span class="keyword">sizeof</span>(X));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sizeof testObj %d\n"</span>, <span class="keyword">sizeof</span>(testObj));</span><br><span class="line">    f(&amp;testObj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>输出:</p>
-<p>sizeof X 4<br>sizeof testObj 4<br>nice: good optimizer</p>
-<hr>
-<p>参考:</p>
-<p>1.<a href="https://www.martinkysel.com/demystifying-virtual-tables-in-c-part-1-trivial-constructors/" target="_blank" rel="noopener">Demystifying Virtual Tables In C++</a></p>
-<p>2.<a href="http://www.stroustrup.com/bs_faq2.html#sizeof-empty" target="_blank" rel="noopener">Bjarne Stroustrup-Why is the size of an empty class not zero?</a></p>
-<p>3.反汇编与逆向分析技术揭秘</p>
-<p>4.深入探索C++对象模型</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/a24c8ee4.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -993,6 +987,194 @@
 <p>在main里面没调用析构函数?被编译器优化了???关优化试试.<br>析构这里有没有类似构造的RVO的g++ -fno-elide-constructors这样的东西?强制不优化,执行析构函数.<br>这里结合Effective Modern C++的有一小节来看(讲编译器在背后帮你实现了哪些copy control函数那节,主要这里有C++11的,而Effective C++里面只没有移动版本copy control函数的分析).先放着吧…</p>
 <p>参考:</p>
 <p>1.反汇编与逆向分析技术揭秘</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/3b45df5e.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/post/3b45df5e.html" itemprop="url">C++-虚函数机制-01</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-07-22T00:00:00+08:00">
+                2019-07-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index">
+                    <span itemprop="name">C++</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>[TOC]</p>
+<p>这篇是虚函数表vtbl和虚表指针vptr的基础.基本认知,采用的是调试器反汇编看底层的方式.额外提了下空类.</p>
+<p>测试环境:<br>x86-64<br>Ubuntu 18.04.2 LTS<br>cat /proc/version</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Linux version 4.15.0-48-generic (buildd@lgw01-amd64-036) (gcc version 7.3.0 (Ubuntu 7.3.0-16ubuntu3)) <span class="comment">#51-Ubuntu SMP Wed Apr 3 08:28:49 UTC 2019</span></span><br></pre></td></tr></table></figure>
+<h3 id="虚函数表"><a href="#虚函数表" class="headerlink" title="虚函数表"></a>虚函数表</h3><p>虚函数机制(没分析继承)</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">virtual_func_test01.cc</span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstdio&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CVirtual</span> &#123;</span></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">int</span> <span class="title">GetNumber</span><span class="params">()</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> _nNumber;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">SetNumber</span><span class="params">(<span class="keyword">int</span> nNumber)</span> </span>&#123;</span><br><span class="line">      _nNumber = nNumber;</span><br><span class="line">  &#125;</span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">int</span> _nNumber;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> nSizeOfCVirtual = <span class="keyword">sizeof</span>(CVirtual);</span><br><span class="line">    <span class="keyword">int</span> nSizeOfPointer = <span class="keyword">sizeof</span>(<span class="keyword">int</span> *);</span><br><span class="line">    <span class="comment">//printf("the size of CVirtual (in BYTE) is : %d\n", nSizeOfCVirtual);</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译:g++ -g -o virtual_func_test01 virtual_func_test01.cc<br>调试:lldb ./virtual_func_test01</p>
+<p>main这里打个断点.然后反汇编一下.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(lldb) dis</span><br><span class="line">virtual_func_test01`main:</span><br><span class="line">    0x5555555545fa &lt;+0&gt;:  pushq  %rbp</span><br><span class="line">    0x5555555545fb &lt;+1&gt;:  movq   %rsp, %rbp</span><br><span class="line">    0x5555555545fe &lt;+4&gt;:  movl   $0x10, -0x8(%rbp)</span><br><span class="line">    0x555555554605 &lt;+11&gt;: movl   $0x8, -0x4(%rbp)</span><br><span class="line">-&gt;  0x55555555460c &lt;+18&gt;: movl   $0x0, %eax</span><br><span class="line">    0x555555554611 &lt;+23&gt;: popq   %rbp</span><br><span class="line">    0x555555554612 &lt;+24&gt;: retq</span><br></pre></td></tr></table></figure>
+<p>结果分别是(十进制)16和8<br>涉及 rbp,rsp 栈向低地址生长,eax(返回值常用的寄存器,见CSAPP第三章),ATT格式汇编等基础.这里不提了.</p>
+<hr>
+<p>修改一下代码,创建一个栈上的对象testObj.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">CVirtual <span class="title">testObj</span><span class="params">(<span class="number">10324</span>)</span></span>;</span><br><span class="line">    testObj.SetNumber(<span class="number">200</span>);</span><br><span class="line">    testObj.GetNumber();</span><br><span class="line">    CVirtual *ptestObj = &amp;testObj;</span><br><span class="line">    <span class="keyword">int</span> nSizeOfCVirtual = <span class="keyword">sizeof</span>(CVirtual);</span><br><span class="line">    <span class="keyword">int</span> nSizeOfPointer = <span class="keyword">sizeof</span>(<span class="keyword">int</span> *);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>貌似lldb没找到gdb info vtbl类似的命令,所以在这里用gdb查看一下vtbl(要等CVirtual的构造函数执行完,否则vtbl里面的地址不对,相当于还没初始化好.).</p>
+<p>然后反汇编main函数,顺便用info vtbl testObj查看一下虚函数表</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">(gdb) disassemble main</span><br><span class="line">Dump of assembler code for function main():</span><br><span class="line">   0x000055555555475a &lt;+0&gt;:	push   %rbp</span><br><span class="line">   0x000055555555475b &lt;+1&gt;:	mov    %rsp,%rbp</span><br><span class="line">   0x000055555555475e &lt;+4&gt;:	sub    $0x30,%rsp</span><br><span class="line">   0x0000555555554762 &lt;+8&gt;:	mov    %fs:0x28,%rax</span><br><span class="line">   0x000055555555476b &lt;+17&gt;:	mov    %rax,-0x8(%rbp)</span><br><span class="line">   0x000055555555476f &lt;+21&gt;:	xor    %eax,%eax</span><br><span class="line">   0x0000555555554771 &lt;+23&gt;:	lea    -0x20(%rbp),%rax</span><br><span class="line">   0x0000555555554775 &lt;+27&gt;:	mov    $0x2854,%esi</span><br><span class="line">   0x000055555555477a &lt;+32&gt;:	mov    %rax,%rdi</span><br><span class="line">   0x000055555555477d &lt;+35&gt;:	callq  0x5555555547d0 &lt;CVirtual::CVirtual(int)&gt;</span><br><span class="line">   0x0000555555554782 &lt;+40&gt;:	lea    -0x20(%rbp),%rax</span><br><span class="line">   0x0000555555554786 &lt;+44&gt;:	mov    $0xc8,%esi</span><br><span class="line">   0x000055555555478b &lt;+49&gt;:	mov    %rax,%rdi</span><br><span class="line">   0x000055555555478e &lt;+52&gt;:	callq  0x555555554808 &lt;CVirtual::SetNumber(int)&gt;</span><br><span class="line">   0x0000555555554793 &lt;+57&gt;:	lea    -0x20(%rbp),%rax</span><br><span class="line">   0x0000555555554797 &lt;+61&gt;:	mov    %rax,%rdi</span><br><span class="line">   0x000055555555479a &lt;+64&gt;:	callq  0x5555555547f6 &lt;CVirtual::GetNumber()&gt;</span><br><span class="line">   0x000055555555479f &lt;+69&gt;:	lea    -0x20(%rbp),%rax</span><br><span class="line">   0x00005555555547a3 &lt;+73&gt;:	mov    %rax,-0x28(%rbp)</span><br><span class="line">   0x00005555555547a7 &lt;+77&gt;:	movl   $0x10,-0x30(%rbp)</span><br><span class="line">   0x00005555555547ae &lt;+84&gt;:	movl   $0x8,-0x2c(%rbp)</span><br><span class="line">=&gt; 0x00005555555547b5 &lt;+91&gt;:	mov    $0x0,%eax</span><br><span class="line">   0x00005555555547ba &lt;+96&gt;:	mov    -0x8(%rbp),%rdx</span><br><span class="line">   0x00005555555547be &lt;+100&gt;:	xor    %fs:0x28,%rdx</span><br><span class="line">   0x00005555555547c7 &lt;+109&gt;:	je     0x5555555547ce &lt;main()+116&gt;</span><br><span class="line">   0x00005555555547c9 &lt;+111&gt;:	callq  0x555555554630 &lt;__stack_chk_fail@plt&gt;</span><br><span class="line">   0x00005555555547ce &lt;+116&gt;:	leaveq</span><br><span class="line">   0x00005555555547cf &lt;+117&gt;:	retq</span><br><span class="line">End of assembler dump.</span><br><span class="line"></span><br><span class="line">(gdb) info vtbl testObj</span><br><span class="line">vtable for &apos;CVirtual&apos; @ 0x555555754d98 (subobject @ 0x7fffffffe470):</span><br><span class="line">[0]: 0x5555555547f6 &lt;CVirtual::GetNumber()&gt;</span><br><span class="line">[1]: 0x555555554808 &lt;CVirtual::SetNumber(int)&gt;</span><br><span class="line">刚好就是main里面callq的函数地址.// subobject @ 0x7fffffffe470 gdb打印的testObj对象的地址</span><br></pre></td></tr></table></figure>
+<hr>
+<p>然后看一下这个testObj占多大?对象的地址在哪?</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(gdb) x ptestObj</span><br><span class="line"> :	0x55754d98</span><br><span class="line">//ptestObj指针在main帧里面,栈上面的变量.这个指针的值是0x7fffffffe470,也就是testObj的地址.注意后面的0x55754d98是0x7fffffffe470指向的位置的内容(也就是vtbl的值)</span><br></pre></td></tr></table></figure>
+<p>又因为testObj在栈上占16字节<br>然后读一下这块内存的内容,注意输出是小端.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(gdb) x/16xb 0x7fffffffe470</span><br><span class="line">0x7fffffffe470:	0x98	0x4d	0x75	0x55	0x55	0x55	0x00	0x00</span><br><span class="line">0x7fffffffe478:	0xc8	0x00	0x00	0x00	0x55	0x55	0x00	0x00</span><br></pre></td></tr></table></figure>
+<p>因为sizeof(int) == 4字节.在目前的机器的实现上前8个字节存的是指向vtbl的vptr.<br>vptr存的地址是0x00005555 55754d98.<br>0xc8 0x00 0x00 0x00是后面调用testObj.SetNumber(200);存入的200,还有四个字节估计和对齐有关?</p>
+<p>然后把虚函数表里面的内容读出来看看</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(gdb) x/32xb 0x0000555555754d98</span><br><span class="line">0x555555754d98 &lt;_ZTV8CVirtual+16&gt;:	0xf6	0x47	0x55	0x55	0x55	0x55	0x00	0x00</span><br><span class="line">0x555555754da0 &lt;_ZTV8CVirtual+24&gt;:	0x08	0x48	0x55	0x55	0x55	0x55	0x00	0x00</span><br><span class="line">0x555555754da8 &lt;_ZTI8CVirtual&gt;:	0xf8	0x67	0xdc	0xf7	0xff	0x7f	0x00	0x00</span><br><span class="line">0x555555754db0 &lt;_ZTI8CVirtual+8&gt;:	0xa8	0x48	0x55	0x55	0x55	0x55	0x00	0x00</span><br></pre></td></tr></table></figure>
+<p>前两项输出和gdb info vtal结果一样.</p>
+<p>最后看看</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[0]: 0x5555555547f6 &lt;CVirtual::GetNumber()&gt;</span><br><span class="line">[1]: 0x555555554808 &lt;CVirtual::SetNumber(int)&gt;</span><br><span class="line">这两个函数的内容存在哪了.</span><br></pre></td></tr></table></figure>
+<p>disassemble 0x5555555547f6 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">(gdb) x/64x 0x5555555547f6</span><br><span class="line">0x5555555547f6 &lt;CVirtual::GetNumber()&gt;:	0x55	0x48	0x89	0xe5	0x48	0x89	0x7d	0xf8</span><br><span class="line">0x5555555547fe &lt;CVirtual::GetNumber()+8&gt;:	0x48	0x8b	0x45	0xf8	0x8b	0x40	0x08	0x5d</span><br><span class="line">0x555555554806 &lt;CVirtual::GetNumber()+16&gt;:	0xc3	0x90	0x55	0x48	0x89	0xe5	0x48	0x89</span><br><span class="line">0x55555555480e &lt;CVirtual::SetNumber(int)+6&gt;:	0x7d	0xf8	0x89	0x75	0xf4	0x48	0x8b	0x45</span><br><span class="line">0x555555554816 &lt;CVirtual::SetNumber(int)+14&gt;:	0xf8	0x8b	0x55	0xf4	0x89	0x50	0x08	0x90</span><br><span class="line">0x55555555481e &lt;CVirtual::SetNumber(int)+22&gt;:	0x5d	0xc3	0x41	0x57	0x41	0x56	0x49	0x89</span><br><span class="line">0x555555554826 &lt;__libc_csu_init+6&gt;:	0xd7	0x41	0x55	0x41	0x54	0x4c	0x8d	0x25</span><br><span class="line">0x55555555482e &lt;__libc_csu_init+14&gt;:	0x46	0x05	0x20	0x00	0x55	0x48	0x8d	0x2d</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(gdb) disassemble 0x5555555547f6</span><br><span class="line">Dump of assembler code for function CVirtual::GetNumber():</span><br><span class="line">   0x00005555555547f6 &lt;+0&gt;:		push   %rbp</span><br><span class="line">   0x00005555555547f7 &lt;+1&gt;:		mov    %rsp,%rbp</span><br><span class="line">   0x00005555555547fa &lt;+4&gt;:		mov    %rdi,-0x8(%rbp)</span><br><span class="line">   0x00005555555547fe &lt;+8&gt;:		mov    -0x8(%rbp),%rax</span><br><span class="line">   0x0000555555554802 &lt;+12&gt;:	mov    0x8(%rax),%eax</span><br><span class="line">   0x0000555555554805 &lt;+15&gt;:	pop    %rbp</span><br><span class="line">   0x0000555555554806 &lt;+16&gt;:	retq</span><br><span class="line">End of assembler dump.</span><br></pre></td></tr></table></figure>
+<p>同理[1]: 0x555555554808 <a href="CVirtual::SetNumber(int)" target="_blank" rel="noopener">CVirtual::SetNumber(int)</a>不在这里列举了.<br>最后的最后,看看在ELF文件里面这两函数在哪.readelf命令看,但是显示的加载地址都比较小.与调试器里面的不符.1.<a href="https://www.martinkysel.com/demystifying-virtual-tables-in-c-part-1-trivial-constructors/" target="_blank" rel="noopener">Demystifying Virtual Tables In C++</a>这个人分析却是一样的.老版本的不是这样的啊.什么情况…加载器都干了些什么…算了,先不分析这里了.后续再看了.</p>
+<h3 id="空类"><a href="#空类" class="headerlink" title="空类"></a>空类</h3><p>参考<a href="http://www.stroustrup.com/bs_faq2.html#sizeof-empty" target="_blank" rel="noopener">Bjarne Stroustrup-Why is the size of an empty class not zero?</a></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Empty</span> &#123;</span> &#125;;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	Empty a, b;</span><br><span class="line">	Empty *pa = &amp;a;</span><br><span class="line">	Empty *pb = &amp;b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    f();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(lldb) frame variable</span><br><span class="line">(Empty) a = &#123;&#125;</span><br><span class="line">(Empty) b = &#123;&#125;</span><br><span class="line">(Empty *) pa = 0x00007fffffffe4a6</span><br><span class="line">(Empty *) pb = 0x00007fffffffe4a7</span><br><span class="line">(lldb) expression &amp;a</span><br><span class="line">(Empty *) <span class="variable">$0</span> = 0x00007fffffffe4a6</span><br><span class="line">(lldb) expression &amp;b</span><br><span class="line">(Empty *) <span class="variable">$1</span> = 0x00007fffffffe4a7</span><br><span class="line">(lldb) memory <span class="built_in">read</span> --size 1 --format x --count 1 0x00007fffffffe4a6</span><br><span class="line">0x7fffffffe4a6: 0x00</span><br><span class="line">(lldb) memory <span class="built_in">read</span> --size 1 --format x --count 1 0x00007fffffffe4a7</span><br><span class="line">0x7fffffffe4a7: 0x00</span><br></pre></td></tr></table></figure>
+<p>在我的这台机器上空类的对象占一个字节.字节内容查看是0x00.<br>很奇怪的一点是,没有Empty <em>pa = &a;Empty </em>pb = &b;这两行的话用调试器看expression &amp;a和expression &amp;b是一样的?</p>
+<p>1.如果是吧地址取出来Empty <em>pa = &a;Empty </em>pb = &b;像这样,不管调试器还是直接打印出来,pa和pb都会是不同的地址.<br>2.如果按Bjarne Stroustrup给的例子,进行if测试,也是不会相同的.</p>
+<hr>
+<p>但是如果是empty base class,那么会有一个编译器的优化,叫做empty base class optimization</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstdio&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">cout</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Empty</span> &#123;</span> &#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">X</span> :</span> Empty &#123;</span><br><span class="line">        <span class="keyword">int</span> a;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(X* p)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">void</span>* p1 = p;</span><br><span class="line">        <span class="keyword">void</span>* p2 = &amp;p-&gt;a;</span><br><span class="line">        <span class="keyword">if</span> (p1 == p2) <span class="built_in">cout</span> &lt;&lt; <span class="string">"nice: good optimizer\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    X testObj;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sizeof X %d\n"</span>, <span class="keyword">sizeof</span>(X));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"sizeof testObj %d\n"</span>, <span class="keyword">sizeof</span>(testObj));</span><br><span class="line">    f(&amp;testObj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出:</p>
+<p>sizeof X 4<br>sizeof testObj 4<br>nice: good optimizer</p>
+<hr>
+<p>参考:</p>
+<p>1.<a href="https://www.martinkysel.com/demystifying-virtual-tables-in-c-part-1-trivial-constructors/" target="_blank" rel="noopener">Demystifying Virtual Tables In C++</a></p>
+<p>2.<a href="http://www.stroustrup.com/bs_faq2.html#sizeof-empty" target="_blank" rel="noopener">Bjarne Stroustrup-Why is the size of an empty class not zero?</a></p>
+<p>3.反汇编与逆向分析技术揭秘</p>
+<p>4.深入探索C++对象模型</p>
 
           
         
@@ -1768,7 +1950,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-count">19</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>

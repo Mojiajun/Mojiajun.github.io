@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Leetcode,算法,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="[TOC] N皇后递归实现常规思路 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879808182838485868788899091929394959">
+<meta name="keywords" content="Leetcode,算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="回溯法-N皇后问题-递归非递归实现-子集组合全排列的非递归实现">
+<meta property="og:url" content="https://mojiajun.github.io/post/688ffe04.html">
+<meta property="og:site_name" content="mojiajun">
+<meta property="og:description" content="[TOC] N皇后递归实现常规思路 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879808182838485868788899091929394959">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2020-04-19T14:08:20.306Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="回溯法-N皇后问题-递归非递归实现-子集组合全排列的非递归实现">
+<meta name="twitter:description" content="[TOC] N皇后递归实现常规思路 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273747576777879808182838485868788899091929394959">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://mojiajun.github.io/post/688ffe04.html">
+
+
+
+
+
+  <title>回溯法-N皇后问题-递归非递归实现-子集组合全排列的非递归实现 | mojiajun</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mojiajun</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            About
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/688ffe04.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">回溯法-N皇后问题-递归非递归实现-子集组合全排列的非递归实现</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-04-19T00:00:00+08:00">
+                2020-04-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/算法与数据结构/" itemprop="url" rel="index">
+                    <span itemprop="name">算法与数据结构</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/算法与数据结构/Leetcode/" itemprop="url" rel="index">
+                    <span itemprop="name">Leetcode</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>[TOC]</p>
+<h3 id="N皇后递归实现"><a href="#N皇后递归实现" class="headerlink" title="N皇后递归实现"></a>N皇后递归实现</h3><p>常规思路</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  Solution() : total_(<span class="number">0</span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt;&gt; solveNQueens(<span class="keyword">int</span> n) &#123;</span><br><span class="line">      <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt;&gt; allres;</span><br><span class="line">      <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> allres;</span><br><span class="line">      dim_ = n;</span><br><span class="line">      <span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; board(n, <span class="built_in">string</span>(n, <span class="string">'.'</span>));</span><br><span class="line">      <span class="comment">// 在row = 0的这一行放置一个皇后</span></span><br><span class="line">      dfs(board, allres, <span class="number">0</span>);</span><br><span class="line">      <span class="keyword">return</span> allres;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">getTotal</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> total_; &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  <span class="comment">/// board:</span></span><br><span class="line">  <span class="comment">/// allres:</span></span><br><span class="line">  <span class="comment">/// row: 这个dfs目前在处理哪一行</span></span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">dfs</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; &amp;board, <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt;&gt; &amp;allres, <span class="keyword">int</span> row)</span> </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (row == dim_) &#123;  <span class="comment">// 如果已经到了最后最后一行的下一行</span></span><br><span class="line">          <span class="comment">// 保存当前的board</span></span><br><span class="line">          total_ += <span class="number">1</span>;</span><br><span class="line">          allres.push_back(board);</span><br><span class="line">          <span class="keyword">return</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> col = <span class="number">0</span>; col &lt; dim_; ++col) &#123;  <span class="comment">// 对目前这一行的所有点进行考虑</span></span><br><span class="line">          <span class="comment">// 比如一开始就是这四个点:[0][0], [0][1], [0][2], [0][3]</span></span><br><span class="line">          <span class="comment">// 如果在当前的board里, 在[row][col]这个点能放置皇后</span></span><br><span class="line">          <span class="keyword">if</span> (isPointRowColInsertableWithPreQueens(board, row, col)) &#123;</span><br><span class="line">              <span class="comment">// 那么放置</span></span><br><span class="line">              board[row][col] = <span class="string">'Q'</span>;</span><br><span class="line">              <span class="comment">// dfs进入下一行, (因为这一行已经放置过了)</span></span><br><span class="line">              dfs(board, allres, row + <span class="number">1</span>);</span><br><span class="line">              <span class="comment">// 对board进行还原(), 就是在这里回溯的!!!</span></span><br><span class="line">              board[row][col] = <span class="string">'.'</span>;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// 1. 不能同行(即row相同, col不同): 这一点由dfs的实现保证, 不需要检查</span></span><br><span class="line">  <span class="comment">/// 2. 不能同列()</span></span><br><span class="line">  <span class="comment">/// 3. 不能处在对角线.(两个方向的对角线)</span></span><br><span class="line">  <span class="comment">/// 2/3后面两点而且只需要考虑'&lt;row'的行!!!因为后面的行还没有放置皇后, 不需要考虑</span></span><br><span class="line">  <span class="comment">//在调用isPointRowColInsertableWithPreQueens的时候, board[row][col]还没有放置'Q'</span></span><br><span class="line">  <span class="function"><span class="keyword">bool</span> <span class="title">isPointRowColInsertableWithPreQueens</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; &amp;board, <span class="keyword">int</span> row, <span class="keyword">int</span> col)</span> </span>&#123;</span><br><span class="line">      <span class="comment">//不能同列, 那么就和之前的行比较</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> pre_row = row - <span class="number">1</span>; pre_row &gt;= <span class="number">0</span>; --pre_row) &#123;</span><br><span class="line">          <span class="keyword">if</span> (board[pre_row][col] == <span class="string">'Q'</span>) &#123;</span><br><span class="line">              <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 不能同对角线, 左上角的对角线</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> left_top_row = row - <span class="number">1</span>, left_top_col = col - <span class="number">1</span>; left_top_row &gt;= <span class="number">0</span> &amp;&amp; left_top_col &gt;= <span class="number">0</span>;</span><br><span class="line">           --left_top_row, --left_top_col) &#123;</span><br><span class="line">          <span class="keyword">if</span> (board[left_top_row][left_top_col] == <span class="string">'Q'</span>) &#123;</span><br><span class="line">              <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 不能同对角线, 右上角的对角线</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> right_top_row = row - <span class="number">1</span>, right_top_col = col + <span class="number">1</span>; right_top_row &gt;= <span class="number">0</span> &amp;&amp; right_top_col &lt; dim_;</span><br><span class="line">           --right_top_row, ++right_top_col) &#123;</span><br><span class="line">          <span class="keyword">if</span> (board[right_top_row][right_top_col] == <span class="string">'Q'</span>) &#123;</span><br><span class="line">              <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">int</span> total_ = <span class="number">0</span>;</span><br><span class="line">  <span class="comment">// board是个正方形</span></span><br><span class="line">  <span class="keyword">int</span> dim_;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Solution solution;</span><br><span class="line">    <span class="keyword">int</span> n = <span class="number">8</span>;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt;&gt; results = solution.solveNQueens(n);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; results.size(); ++i) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; results[<span class="number">0</span>].size(); ++j) &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; results[i][j] &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"when n = "</span> &lt;&lt; n &lt;&lt; <span class="string">", total: "</span> &lt;&lt; solution.getTotal() &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//int main() &#123;</span></span><br><span class="line"><span class="comment">//    for (int n = 1; n &lt;= 10; ++n) &#123;</span></span><br><span class="line"><span class="comment">//        Solution solution;</span></span><br><span class="line"><span class="comment">//        vector&lt;vector&lt;string&gt;&gt; results = solution.solveNQueens(n);</span></span><br><span class="line"><span class="comment">//        std::cout &lt;&lt; "when n = " &lt;&lt; n &lt;&lt; ", total: " &lt;&lt; solution.getTotal() &lt;&lt; '\n';</span></span><br><span class="line"><span class="comment">//    &#125;</span></span><br><span class="line"><span class="comment">//&#125;</span></span><br><span class="line"><span class="comment">//when n = 1, total: 1</span></span><br><span class="line"><span class="comment">//when n = 2, total: 0</span></span><br><span class="line"><span class="comment">//when n = 3, total: 0</span></span><br><span class="line"><span class="comment">//when n = 4, total: 2</span></span><br><span class="line"><span class="comment">//when n = 5, total: 10</span></span><br><span class="line"><span class="comment">//when n = 6, total: 4</span></span><br><span class="line"><span class="comment">//when n = 7, total: 40</span></span><br><span class="line"><span class="comment">//when n = 8, total: 92</span></span><br><span class="line"><span class="comment">//when n = 9, total: 352</span></span><br><span class="line"><span class="comment">//when n = 10, total: 724</span></span><br></pre></td></tr></table></figure>
+<h3 id="N皇后非递归实现"><a href="#N皇后非递归实现" class="headerlink" title="N皇后非递归实现"></a>N皇后非递归实现</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cassert&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt;&gt; solveNQueens(<span class="keyword">int</span> n) &#123;</span><br><span class="line">      dim_ = n;</span><br><span class="line">      <span class="comment">// 每一行的皇后的列位置, 下标从1开始</span></span><br><span class="line">      <span class="comment">// 行列的位置都是[1, dim_]</span></span><br><span class="line">      <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; pos(dim_ + <span class="number">1</span>, <span class="number">-1</span>);</span><br><span class="line">      iterateSolve(pos);</span><br><span class="line">      <span class="keyword">return</span> results_;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">getTotal</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> total_;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">iterateSolve</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;pos)</span> </span>&#123;</span><br><span class="line">      <span class="comment">// 第一个放置位置在[1, 1]</span></span><br><span class="line">      <span class="keyword">int</span> row = <span class="number">1</span>, col = <span class="number">1</span>;</span><br><span class="line">      <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">          <span class="comment">// 从当前行找一个可放置位置</span></span><br><span class="line">          <span class="keyword">while</span> (row &lt;= dim_ &amp;&amp; col &lt;= dim_) &#123;</span><br><span class="line">              <span class="keyword">if</span> (isValid(pos, row, col)) &#123;</span><br><span class="line">                  <span class="comment">// 第row行设置皇后位置为col</span></span><br><span class="line">                  pos[row] = col;</span><br><span class="line">                  <span class="comment">// 去下一行找</span></span><br><span class="line">                  row += <span class="number">1</span>;</span><br><span class="line">                  <span class="comment">// 列的位置重置为1</span></span><br><span class="line">                  col = <span class="number">1</span>;</span><br><span class="line">                  <span class="keyword">break</span>;</span><br><span class="line">              &#125;</span><br><span class="line">              <span class="comment">// 当前row, col的位置不能放置皇后, row不变, ++col;</span></span><br><span class="line">              ++col;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="comment">// 当所有行都已经有一个皇后</span></span><br><span class="line">          <span class="keyword">if</span> (row &gt; dim_) &#123;</span><br><span class="line">              total_ += <span class="number">1</span>;</span><br><span class="line">              results_.push_back(generateBoardFromPos(pos));</span><br><span class="line">              row = dim_;  <span class="comment">// 仍然扫描最后一行</span></span><br><span class="line">              <span class="comment">// 下一列</span></span><br><span class="line">              col = pos[row] + <span class="number">1</span>;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="comment">// 当前行已经扫描完了, 需要回到上一行了</span></span><br><span class="line">          <span class="keyword">if</span> (col &gt; dim_) &#123;</span><br><span class="line">              <span class="keyword">if</span> (row == <span class="number">1</span>) &#123;</span><br><span class="line">                  <span class="comment">// 是不是第一行已经考虑完了, 是的话, 总的while循环退出</span></span><br><span class="line">                  <span class="keyword">break</span>;</span><br><span class="line">              &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                  <span class="comment">// 把目前这一行放置的皇后取消</span></span><br><span class="line">                  <span class="comment">// 回溯</span></span><br><span class="line">                  pos[row] = <span class="number">-1</span>;</span><br><span class="line">                  <span class="comment">// 去上一行</span></span><br><span class="line">                  row -= <span class="number">1</span>;</span><br><span class="line">                  <span class="comment">// 上一行的后一个位置</span></span><br><span class="line">                  col = pos[row] + <span class="number">1</span>;</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// 根据pos数组得出一个board</span></span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; generateBoardFromPos(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;pos) &#123;</span><br><span class="line">      <span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; board(dim_, <span class="built_in">string</span>(dim_, <span class="string">'.'</span>));</span><br><span class="line">      <span class="comment">// [1, dim_]行</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> row = <span class="number">1</span>; row &lt;= dim_; ++row) &#123;</span><br><span class="line">          <span class="keyword">int</span> x = row - <span class="number">1</span>;</span><br><span class="line">          <span class="keyword">int</span> y = pos[row] - <span class="number">1</span>;</span><br><span class="line">          board[x][y] = <span class="string">'Q'</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> board;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// isValid功能: 要在board[row][col]这个位置放置皇后, 可以放吗?</span></span><br><span class="line">  <span class="comment">//</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">/// 1. 不能同行(即row相同, col不同): 这一点由实现本身保证(因为一行pos[row]只会有一个列的位置), 不需要检查</span></span><br><span class="line">  <span class="comment">/// 2. 不能同列</span></span><br><span class="line">  <span class="comment">/// 3. 不能处在对角线.(两个方向的对角线)</span></span><br><span class="line">  <span class="comment">/// 2/3后面两点而且只需要考虑'&lt;row'的行!!!因为后面的行还没有放置皇后, 不需要考虑, 即与行在[1, row - 1]之间的皇后比较是否冲突</span></span><br><span class="line">  <span class="function"><span class="keyword">bool</span> <span class="title">isValid</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;pos, <span class="keyword">int</span> row, <span class="keyword">int</span> col)</span> </span>&#123;</span><br><span class="line">      assert(row &gt;= <span class="number">1</span> &amp;&amp; row &lt;= dim_);</span><br><span class="line">      assert(col &gt;= <span class="number">1</span> &amp;&amp; col &lt;= dim_);</span><br><span class="line">      <span class="comment">// 不能同列, 那么就和之前的行比较</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> pre_row = row - <span class="number">1</span>; pre_row &gt;= <span class="number">1</span>; --pre_row) &#123;</span><br><span class="line">          <span class="keyword">if</span> (pos[pre_row] == col) &#123;</span><br><span class="line">              <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 不能同对角线, 左上角的对角线</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> left_top_row = row - <span class="number">1</span>, left_top_col = col - <span class="number">1</span>; left_top_row &gt;= <span class="number">1</span> &amp;&amp; left_top_col &gt;= <span class="number">1</span>;</span><br><span class="line">           --left_top_row, --left_top_col) &#123;</span><br><span class="line">          <span class="keyword">if</span> (pos[left_top_row] == left_top_col) &#123;</span><br><span class="line">              <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 不能同对角线, 右上角的对角线</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> right_top_row = row - <span class="number">1</span>, right_top_col = col + <span class="number">1</span>; right_top_row &gt;= <span class="number">1</span> &amp;&amp; right_top_col &lt;= dim_;</span><br><span class="line">           --right_top_row, ++right_top_col) &#123;</span><br><span class="line">          <span class="keyword">if</span> (pos[right_top_row] == right_top_col) &#123;</span><br><span class="line">              <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt;&gt; results_;</span><br><span class="line">  <span class="keyword">int</span> total_ = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">int</span> dim_ = <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Solution solution;</span><br><span class="line">    <span class="keyword">int</span> n = <span class="number">8</span>;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt;&gt; results = solution.solveNQueens(n);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"when n = "</span> &lt;&lt; n &lt;&lt; <span class="string">" , the number of total is: "</span> &lt;&lt; solution.getTotal() &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;res : results) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;stringcol : res) &#123;</span><br><span class="line">            <span class="built_in">cout</span> &lt;&lt; stringcol &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"\n\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Leetcode51就是这个题.经典问题</p>
+<p>本质还是DFS搜索,只不过没用递归,和递归解法一样.都是对解空间的那棵树进行搜索…只不过用非递归的方法来回溯和深度优先搜索.</p>
+<p>也没用stack…用stack也能实现另外一个版本的非递归N皇后解法(这种解法大体还是类似于用vector<int> pos的解法,把这个vector<int> pos换成了stack<int> 不过用stack的方法感觉不如这种用vector<int> pos定义一个position数组的方法…更好的stack解法待研究).</int></int></int></int></p>
+<hr>
+<h3 id="利用N皇后非递归回溯的思路做子集-组合-全排列三道题"><a href="#利用N皇后非递归回溯的思路做子集-组合-全排列三道题" class="headerlink" title="利用N皇后非递归回溯的思路做子集/组合/全排列三道题"></a>利用N皇后非递归回溯的思路做子集/组合/全排列三道题</h3><p>递归解法就不贴上来了.比较简单.见<a href="https://github.com/labuladong/fucking-algorithm" target="_blank" rel="noopener">fucking-algorithm</a>/<a href="https://github.com/labuladong/fucking-algorithm/tree/master/高频面试系列" target="_blank" rel="noopener">高频面试系列</a>/子集排列组合.md</p>
+<p>三道题的解法都类似于N皇后的非递归的思路…</p>
+<h4 id="子集"><a href="#子集" class="headerlink" title="子集"></a>子集</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; solveQuestion(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;nums) &#123;</span><br><span class="line">      <span class="keyword">int</span> rows = nums.size();</span><br><span class="line">      dims_ = rows;</span><br><span class="line">      <span class="comment">// 列位置, 下标从1开始</span></span><br><span class="line">      <span class="comment">// 行列的位置都是[1, ...]</span></span><br><span class="line">      <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; pos(dims_ + <span class="number">1</span>, <span class="number">-1</span>);</span><br><span class="line">      iterateSolve(pos, nums);</span><br><span class="line">      <span class="keyword">return</span> results_;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">getTotal</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> total_;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">iterateSolve</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;pos, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;nums)</span> </span>&#123;</span><br><span class="line">      <span class="comment">// 构造一个空集</span></span><br><span class="line">      results_.emplace_back();</span><br><span class="line">      total_ += <span class="number">1</span>;</span><br><span class="line">      <span class="comment">// 第一个放置位置在[1, 1]</span></span><br><span class="line">      <span class="keyword">int</span> row = <span class="number">1</span>, col = <span class="number">1</span>;</span><br><span class="line">      <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">          <span class="comment">// 从当前行找一个可取位置</span></span><br><span class="line">          <span class="keyword">while</span> (row &lt;= dims_ &amp;&amp; col &lt;= dims_) &#123;</span><br><span class="line">              <span class="comment">// 第row行设置可取位置为col</span></span><br><span class="line">              pos[row] = col;</span><br><span class="line">              total_ += <span class="number">1</span>;</span><br><span class="line">              results_.push_back(generateBoardFromPos(pos, row, nums));</span><br><span class="line">              <span class="comment">// 去下一行找</span></span><br><span class="line">              row += <span class="number">1</span>;</span><br><span class="line">              col += <span class="number">1</span>;</span><br><span class="line">              <span class="keyword">break</span>;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="comment">// 当所有行都已经有一个可取位置</span></span><br><span class="line">          <span class="keyword">if</span> (row &gt; dims_) &#123;</span><br><span class="line">              row = dims_;  <span class="comment">// 仍然扫描最后一行</span></span><br><span class="line">              <span class="comment">// 下一列</span></span><br><span class="line">              col = pos[row] + <span class="number">1</span>;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="comment">// 当前行已经扫描完了, 需要回到上一行了</span></span><br><span class="line">          <span class="keyword">if</span> (col &gt; dims_) &#123;</span><br><span class="line">              <span class="keyword">if</span> (row == <span class="number">1</span>) &#123;</span><br><span class="line">                  <span class="comment">// 是不是第一行已经考虑完了, 是的话, 总的while循环退出</span></span><br><span class="line">                  <span class="keyword">break</span>;</span><br><span class="line">              &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                  <span class="comment">// 把目前这一行放置的可取位置取消</span></span><br><span class="line">                  <span class="comment">// 回溯</span></span><br><span class="line">                  pos[row] = <span class="number">-1</span>;</span><br><span class="line">                  <span class="comment">// 去上一行</span></span><br><span class="line">                  row -= <span class="number">1</span>;</span><br><span class="line">                  <span class="comment">// 上一行的后一个位置</span></span><br><span class="line">                  col = pos[row] + <span class="number">1</span>;</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// 根据pos数组得出一个board</span></span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; generateBoardFromPos(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;pos, <span class="keyword">int</span> pos_size, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;nums) &#123;</span><br><span class="line">      <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; board(pos_size, INT_MIN);</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> row = <span class="number">1</span>; row &lt;= pos_size; ++row) &#123;</span><br><span class="line">          <span class="keyword">int</span> x = row - <span class="number">1</span>;</span><br><span class="line">          <span class="keyword">int</span> y = pos[row] - <span class="number">1</span>;</span><br><span class="line">          board[x] = nums[y];</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> board;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; results_;</span><br><span class="line">  <span class="keyword">int</span> total_ = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">int</span> dims_ = <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Solution solution;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; nums&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; results = solution.solveQuestion(nums);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">" the number of total is: "</span> &lt;&lt; solution.getTotal() &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;res : results) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;item : res) &#123;</span><br><span class="line">            <span class="built_in">cout</span> &lt;&lt; item &lt;&lt; <span class="string">' '</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="组合"><a href="#组合" class="headerlink" title="组合"></a>组合</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="comment">/// 求组合</span></span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; solveQuestion(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;nums, <span class="keyword">int</span> k) &#123;</span><br><span class="line">      rows_ = k;</span><br><span class="line">      cols_ = nums.size();</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 空nums的处理?</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">// 列位置, 下标从1开始</span></span><br><span class="line">      <span class="comment">// 行列的位置都是[1, ...]</span></span><br><span class="line">      <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; pos(rows_ + <span class="number">1</span>, <span class="number">-1</span>);</span><br><span class="line">      iterateSolve(pos, nums);</span><br><span class="line">      <span class="keyword">return</span> results_;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">getTotal</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> total_;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  <span class="function"><span class="keyword">bool</span> <span class="title">isValid</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;pos, <span class="keyword">int</span> row, <span class="keyword">int</span> col)</span> </span>&#123;</span><br><span class="line">      <span class="comment">// 不能出现两个pos[row]一样的情况</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> pre_row = row - <span class="number">1</span>; pre_row &gt;= <span class="number">1</span>; --pre_row) &#123;</span><br><span class="line">          <span class="keyword">if</span> (pos[pre_row] == col) &#123;</span><br><span class="line">              <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// 如果dims_是0, 可能会死循环...</span></span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">iterateSolve</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;pos, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;nums)</span> </span>&#123;</span><br><span class="line">      <span class="comment">// 第一个放置位置在[1, 1]</span></span><br><span class="line">      <span class="keyword">int</span> row = <span class="number">1</span>, col = <span class="number">1</span>;</span><br><span class="line">      <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">          <span class="comment">// 从当前行找一个可取位置</span></span><br><span class="line">          <span class="comment">// 感觉没必要用while ...</span></span><br><span class="line">          <span class="keyword">while</span> (row &lt;= rows_ &amp;&amp; col &lt;= cols_) &#123;</span><br><span class="line">              <span class="comment">// 第row行设置可取位置为col</span></span><br><span class="line">              pos[row] = col;</span><br><span class="line">              <span class="comment">// 去下一行找</span></span><br><span class="line">              row += <span class="number">1</span>;</span><br><span class="line">              col += <span class="number">1</span>;</span><br><span class="line">              <span class="keyword">break</span>;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="comment">// 当所有行都已经有一个可取位置</span></span><br><span class="line">          <span class="keyword">if</span> (row &gt; rows_) &#123;</span><br><span class="line">              total_ += <span class="number">1</span>;</span><br><span class="line">              results_.push_back(generateBoardFromPos(pos, nums));</span><br><span class="line">              row = rows_;  <span class="comment">// 仍然扫描最后一行</span></span><br><span class="line">              <span class="comment">// 下一列</span></span><br><span class="line">              col = pos[row] + <span class="number">1</span>;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="comment">// 当前行已经扫描完了, 需要回到上一行了</span></span><br><span class="line">          <span class="keyword">if</span> (col &gt; cols_) &#123;</span><br><span class="line">              <span class="keyword">if</span> (row == <span class="number">1</span>) &#123;</span><br><span class="line">                  <span class="comment">// 是不是第一行已经考虑完了, 是的话, 总的while循环退出</span></span><br><span class="line">                  <span class="keyword">break</span>;</span><br><span class="line">              &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                  <span class="comment">// 把目前这一行放置的可取位置取消</span></span><br><span class="line">                  <span class="comment">// 回溯</span></span><br><span class="line">                  pos[row] = <span class="number">-1</span>;</span><br><span class="line">                  <span class="comment">// 去上一行</span></span><br><span class="line">                  row -= <span class="number">1</span>;</span><br><span class="line">                  <span class="comment">// 上一行的后一个位置</span></span><br><span class="line">                  col = pos[row] + <span class="number">1</span>;</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// 根据pos数组得出一个board</span></span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; generateBoardFromPos(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;pos, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;nums) &#123;</span><br><span class="line">      <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; board(rows_, INT_MIN);</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> row = <span class="number">1</span>; row &lt;= rows_; ++row) &#123;</span><br><span class="line">          <span class="keyword">int</span> x = row - <span class="number">1</span>;</span><br><span class="line">          <span class="keyword">int</span> y = pos[row] - <span class="number">1</span>;</span><br><span class="line">          board[x] = nums[y];</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> board;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; results_;</span><br><span class="line">  <span class="keyword">int</span> total_ = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">int</span> rows_ = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">int</span> cols_ = <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Solution solution;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; nums&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>&#125;;</span><br><span class="line">    <span class="comment">// 4选2 组合问题</span></span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; results = solution.solveQuestion(nums, <span class="number">2</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">" the number of total is: "</span> &lt;&lt; solution.getTotal() &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;res : results) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;item : res) &#123;</span><br><span class="line">            <span class="built_in">cout</span> &lt;&lt; item &lt;&lt; <span class="string">' '</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="全排列"><a href="#全排列" class="headerlink" title="全排列"></a>全排列</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">// Created by mojiajun on 2020/4/18.</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> &#123;</span></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; solveQuestion(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;nums) &#123;</span><br><span class="line">      <span class="keyword">int</span> rows = nums.size();</span><br><span class="line">      dims_ = rows;</span><br><span class="line">      <span class="comment">// 列位置, 下标从1开始</span></span><br><span class="line">      <span class="comment">// 行列的位置都是[1, ...]</span></span><br><span class="line">      <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; pos(dims_ + <span class="number">1</span>, <span class="number">-1</span>);</span><br><span class="line">      iterateSolve(pos, nums);</span><br><span class="line">      <span class="keyword">return</span> results_;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">int</span> <span class="title">getTotal</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> total_;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  <span class="function"><span class="keyword">bool</span> <span class="title">isValid</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;pos, <span class="keyword">int</span> row, <span class="keyword">int</span> col)</span> </span>&#123;</span><br><span class="line">      <span class="comment">// 不能出现两个pos[row]一样的情况</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> pre_row = row - <span class="number">1</span>; pre_row &gt;= <span class="number">1</span>; --pre_row) &#123;</span><br><span class="line">          <span class="keyword">if</span> (pos[pre_row] == col) &#123;</span><br><span class="line">              <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">iterateSolve</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;pos, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;nums)</span> </span>&#123;</span><br><span class="line">      <span class="comment">// 第一个放置位置在[1, 1]</span></span><br><span class="line">      <span class="keyword">int</span> row = <span class="number">1</span>, col = <span class="number">1</span>;</span><br><span class="line">      <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">          <span class="comment">// 从当前行找一个可取位置</span></span><br><span class="line">          <span class="keyword">while</span> (row &lt;= dims_ &amp;&amp; col &lt;= dims_) &#123;</span><br><span class="line">              <span class="keyword">if</span> (isValid(pos, row, col)) &#123;</span><br><span class="line">                  <span class="comment">// 第row行设置可取位置为col</span></span><br><span class="line">                  pos[row] = col;</span><br><span class="line">                  <span class="comment">// 去下一行找</span></span><br><span class="line">                  row += <span class="number">1</span>;</span><br><span class="line">                  <span class="comment">// 列的位置重置为1</span></span><br><span class="line">                  col = <span class="number">1</span>;</span><br><span class="line">                  <span class="keyword">break</span>;</span><br><span class="line">              &#125;</span><br><span class="line">              ++col;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="comment">// 当所有行都已经有一个可取位置</span></span><br><span class="line">          <span class="keyword">if</span> (row &gt; dims_) &#123;</span><br><span class="line">              total_ += <span class="number">1</span>;</span><br><span class="line">              results_.push_back(generateBoardFromPos(pos, nums));</span><br><span class="line">              row = dims_;  <span class="comment">// 仍然扫描最后一行</span></span><br><span class="line">              <span class="comment">// 下一列</span></span><br><span class="line">              col = pos[row] + <span class="number">1</span>;</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="comment">// 当前行已经扫描完了, 需要回到上一行了</span></span><br><span class="line">          <span class="keyword">if</span> (col &gt; dims_) &#123;</span><br><span class="line">              <span class="keyword">if</span> (row == <span class="number">1</span>) &#123;</span><br><span class="line">                  <span class="comment">// 是不是第一行已经考虑完了, 是的话, 总的while循环退出</span></span><br><span class="line">                  <span class="keyword">break</span>;</span><br><span class="line">              &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                  <span class="comment">// 把目前这一行放置的可取位置取消</span></span><br><span class="line">                  <span class="comment">// 回溯</span></span><br><span class="line">                  pos[row] = <span class="number">-1</span>;</span><br><span class="line">                  <span class="comment">// 去上一行</span></span><br><span class="line">                  row -= <span class="number">1</span>;</span><br><span class="line">                  <span class="comment">// 上一行的后一个位置</span></span><br><span class="line">                  col = pos[row] + <span class="number">1</span>;</span><br><span class="line">              &#125;</span><br><span class="line">          &#125;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/// 根据pos数组得出一个board</span></span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; generateBoardFromPos(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;pos, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;nums) &#123;</span><br><span class="line">      <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; board(dims_, INT_MIN);</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> row = <span class="number">1</span>; row &lt;= dims_; ++row) &#123;</span><br><span class="line">          <span class="keyword">int</span> x = row - <span class="number">1</span>;</span><br><span class="line">          <span class="keyword">int</span> y = pos[row] - <span class="number">1</span>;</span><br><span class="line">          board[x] = nums[y];</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> board;</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; results_;</span><br><span class="line">  <span class="keyword">int</span> total_ = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">int</span> dims_ = <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Solution solution;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; nums&#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt; results = solution.solveQuestion(nums);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">" the number of total is: "</span> &lt;&lt; solution.getTotal() &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;res : results) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;item : res) &#123;</span><br><span class="line">            <span class="built_in">cout</span> &lt;&lt; item &lt;&lt; <span class="string">' '</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>Post author:</strong>
+    mojiajun
+  </li>
+  <li class="post-copyright-link">
+    <strong>Post link:</strong>
+    <a href="https://mojiajun.github.io/post/688ffe04.html" title="回溯法-N皇后问题-递归非递归实现-子集组合全排列的非递归实现">https://mojiajun.github.io/post/688ffe04.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice: </strong>
+    All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 4.0</a> unless stating additionally.
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Leetcode/" rel="tag"># Leetcode</a>
+          
+            <a href="/tags/算法/" rel="tag"># 算法</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/post/4d990729.html" rel="next" title="Rust-移动结构体内部元素的思考">
+                <i class="fa fa-chevron-left"></i> Rust-移动结构体内部元素的思考
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">mojiajun</p>
+              <p class="site-description motion-element" itemprop="description">莫佳骏学习笔记</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#N皇后递归实现"><span class="nav-number">1.</span> <span class="nav-text">N皇后递归实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#N皇后非递归实现"><span class="nav-number">2.</span> <span class="nav-text">N皇后非递归实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#利用N皇后非递归回溯的思路做子集-组合-全排列三道题"><span class="nav-number">3.</span> <span class="nav-text">利用N皇后非递归回溯的思路做子集/组合/全排列三道题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#子集"><span class="nav-number">3.1.</span> <span class="nav-text">子集</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#组合"><span class="nav-number">3.2.</span> <span class="nav-text">组合</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#全排列"><span class="nav-number">3.3.</span> <span class="nav-text">全排列</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">mojiajun</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
