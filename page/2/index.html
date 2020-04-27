@@ -262,6 +262,192 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/376c92d0.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="mojiajun">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mojiajun">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/post/376c92d0.html" itemprop="url">mit6824-lab1-part-III</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-08T00:00:00+08:00">
+                2019-10-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/分布式/" itemprop="url" rel="index">
+                    <span itemprop="name">分布式</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/分布式/mit6824/" itemprop="url" rel="index">
+                    <span itemprop="name">mit6824</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>[TOC]</p>
+<h2 id="lab1-Part-I-Map-Reduce-input-and-output-part-III"><a href="#lab1-Part-I-Map-Reduce-input-and-output-part-III" class="headerlink" title="lab1-Part-I-Map/Reduce input and output-part-III"></a>lab1-Part-I-Map/Reduce input and output-part-III</h2><p> There will usually be more tasks than worker threads, so <code>schedule()</code> must give each worker a sequence of tasks, one at a time. <code>schedule()</code> should wait until all tasks have completed, and then return.</p>
+<p>part3需要实现schedule()函数</p>
+<h3 id="先理解整体执行流程"><a href="#先理解整体执行流程" class="headerlink" title="先理解整体执行流程"></a>先理解整体执行流程</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">TestParallelBasic</span><span class="params">(t *testing.T)</span></span> &#123;</span><br><span class="line">	mr := setup()</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">2</span>; i++ &#123; <span class="comment">// 1个master+2个worker?</span></span><br><span class="line">		<span class="keyword">go</span> RunWorker(mr.address, port(<span class="string">"worker"</span>+strconv.Itoa(i)),</span><br><span class="line">			MapFunc, ReduceFunc, <span class="number">-1</span>, <span class="literal">nil</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	mr.Wait()</span><br><span class="line">	check(t, mr.files)</span><br><span class="line"></span><br><span class="line">	cleanup(mr)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>两个worker,都是由RunWorker()创建,考虑其中任意一个worker的创建过程.<br>在RunWorker()运行的时候,master rpc server已经在listen了.master rpc server阻塞在Accept()上.当worker有关的struct的已经构造好了之后.使用Worker的method,调用wk.register(MasterAddress).然后worker发起rpc调用.<br>master rpc server监听goroutine收到请求后,go一个新的goroutine执行rpcs.ServeConn(conn),处理request,然后在worker goroutine里因为是Synchronous call[见go-rpc文档,因为是.Call调用方式],所以会等待结果.然后分两块来看的话:</p>
+<p>1.worker</p>
+<p>收到rpc调用的结果返回后(结果是什么?),正常情况下进入监听状态.然后进入准备接收任务的状态.任务怎么派发过来的?<br>去哪执行?</p>
+<p>2.master rpc server</p>
+<p>go一个新的goroutine执行rpcs.ServeConn(conn),之后:<br>其实就做了两件事,<br>一是把worker的address,即worker.name,也即是它即将监听的Unix domain socket放入master.workers.<br>二是对当前wait在newCond条件变量上的goroutine(这些goroutine处于block状态)调用mr.newCond.Broadcast()<br>处于wait状态的goroutine是forwardRegistrations()(一个还是两个??schedule()中间的block怎么设置?通过ch := make(chan string)???),然后forwardRegistrations()解除block,启一个新的goroutine去把新收的worker的address送给channel.然后这个新的goroutine处于block直到channel的另一端即schedule goroutine收到这个worker的地址,然后schedule goroutine收到这个新的worker address.解除block.进行schedule?如果是map阶段的话,会分配map任务给这个新来的worker吧?然后schedule调度完了之后,进行rpc调用Worker.DoTask.</p>
+<p>再之后,worker处理这个rpc请求,它又启一个goroutine,去执行Worker.DoTask.然后里面就会调用lab1-part-I里的doMap()或doReduce()了.再经过和lab1-part-I相同的过程,处理完它应该处理的任务.</p>
+<h3 id="尝试实现schedule"><a href="#尝试实现schedule" class="headerlink" title="尝试实现schedule()"></a>尝试实现schedule()</h3><p>从registerChan接收worker.(这一步并不容易),然后指派task</p>
+<p>下面是需要实现的关键点:</p>
+<p>1.worker数目一般小于task数目,每个worker可能会执行若干个task.但是对于每个worker,rpc调用worker.DoTask的时候,同一时刻,只能被调用一次,一个worker协程同步调用(用rpc包的.Call方法)worker.DoTask.必须得等它返回了,才能进行下一次rpc调用.(官方暗示用channel)</p>
+<p>2.schedule()应该使用所有的worker.(复杂点是不是还可能有负载均衡.),包括在schedule()运行之后才得到的worker</p>
+<p>第一版-有问题的代码.请忽略.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">schedule</span><span class="params">(jobName <span class="keyword">string</span>, mapFiles []<span class="keyword">string</span>, nReduce <span class="keyword">int</span>, phase jobPhase, registerChan <span class="keyword">chan</span> <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> ntasks <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">var</span> n_other <span class="keyword">int</span> <span class="comment">// number of inputs (for reduce) or outputs (for map)</span></span><br><span class="line">	<span class="keyword">switch</span> phase &#123;</span><br><span class="line">	<span class="keyword">case</span> mapPhase:</span><br><span class="line">		ntasks = <span class="built_in">len</span>(mapFiles)</span><br><span class="line">		n_other = nReduce</span><br><span class="line">	<span class="keyword">case</span> reducePhase:</span><br><span class="line">		ntasks = nReduce</span><br><span class="line">		n_other = <span class="built_in">len</span>(mapFiles)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	fmt.Printf(<span class="string">"Schedule: %v %v tasks (%d I/Os)\n"</span>, ntasks, phase, n_other)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// All ntasks tasks have to be scheduled on workers. Once all tasks</span></span><br><span class="line">	<span class="comment">// have completed successfully, schedule() should return.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// Your code here (Part III, Part IV).</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// worker设成工作池模式?新来的worker怎么办?</span></span><br><span class="line">	<span class="comment">// 监视一个工作池?然后这个工作池随时可能会增加worker</span></span><br><span class="line">	<span class="comment">// 对工作池遍历指派任务?</span></span><br><span class="line">	<span class="comment">// 把ntasks个任务指配完</span></span><br><span class="line">	<span class="comment">// 最终目标是把ntasks个任务分配给若干个worker</span></span><br><span class="line"></span><br><span class="line">	workerPool := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">string</span>, <span class="number">100</span>) <span class="comment">// 这个buffer的尺寸设多大合适?</span></span><br><span class="line">	<span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 从forwardRegistration收到一个worker的地址</span></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="comment">// 不开一个新的协程去负责接收registerChan里面的worker好像不行,因为不知道会有多少个worker会来,以及多久来.而registerChan</span></span><br><span class="line">		<span class="comment">// 又是unbuffer的,接收不到就会阻塞</span></span><br><span class="line">		worker := &lt;-registerChan <span class="comment">// 怎么设置成有元素就接收,没有元素就跳过的模式?放在某一个task进行之前检查吗?</span></span><br><span class="line">		workerPool &lt;- worker</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// ntasks个task对应n个协程?,然后每个协程内部阻塞在向workerPool获得worker上?获取完worker之后又阻塞在rpc的同步调用上?</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; ntasks; i++ &#123; <span class="comment">// 必须等待workerPool有可用的worker,否则阻塞?</span></span><br><span class="line">		<span class="comment">// 从workerPool中获取一个可用的worker,否则阻塞在这里,阻塞的时候要保证workerPool能接收新的worker</span></span><br><span class="line">		<span class="keyword">var</span> doTaskArgs DoTaskArgs;</span><br><span class="line">		doTaskArgs.JobName = jobName</span><br><span class="line">		doTaskArgs.TaskNumber = i</span><br><span class="line">		doTaskArgs.NumOtherPhase = n_other</span><br><span class="line">		<span class="keyword">switch</span> phase &#123;</span><br><span class="line">		<span class="keyword">case</span> mapPhase:</span><br><span class="line">			doTaskArgs.Phase = mapPhase</span><br><span class="line">			doTaskArgs.File = mapFiles[i]</span><br><span class="line">		<span class="keyword">case</span> reducePhase:</span><br><span class="line">			doTaskArgs.Phase = reducePhase</span><br><span class="line">		&#125;</span><br><span class="line">		wg.Add(<span class="number">1</span>)</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			<span class="keyword">for</span> worker := <span class="keyword">range</span> workerPool &#123;</span><br><span class="line">				call(worker, <span class="string">"Worker.DoTask"</span>, doTaskArgs, <span class="literal">nil</span>) <span class="comment">// 同步调用?用新的协程来执行它,会阻塞在新的协程里面</span></span><br><span class="line">				workerPool &lt;- worker                                     <span class="comment">// 用完之后又放回workerPool</span></span><br><span class="line">				wg.Done()  <span class="comment">// 这里的逻辑可能有问题...</span></span><br><span class="line">			&#125;</span><br><span class="line">		&#125;()</span><br><span class="line">	&#125;</span><br><span class="line">	wg.Wait()</span><br><span class="line">	fmt.Printf(<span class="string">"Schedule: %v done\n"</span>, phase)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="一些bug"><a href="#一些bug" class="headerlink" title="一些bug"></a>一些bug</h3><h4 id="rpc-Register-method-“CleanupFiles”-has-1-input-parameters-needs-exactly-three"><a href="#rpc-Register-method-“CleanupFiles”-has-1-input-parameters-needs-exactly-three" class="headerlink" title="rpc.Register: method “CleanupFiles” has 1 input parameters; needs exactly three"></a>rpc.Register: method “CleanupFiles” has 1 input parameters; needs exactly three</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Distributed()调用mr.startRPCServer()的时候会报错.</span><br><span class="line"></span><br><span class="line"><span class="number">2019</span>/<span class="number">10</span>/<span class="number">08</span> <span class="number">14</span>:<span class="number">31</span>:<span class="number">03</span> rpc.Register: method <span class="string">"CleanupFiles"</span> has <span class="number">1</span> input parameters; needs exactly three</span><br><span class="line"><span class="number">2019</span>/<span class="number">10</span>/<span class="number">08</span> <span class="number">14</span>:<span class="number">31</span>:<span class="number">03</span> rpc.Register: method <span class="string">"Lock"</span> has <span class="number">1</span> input parameters; needs exactly three</span><br><span class="line"><span class="number">2019</span>/<span class="number">10</span>/<span class="number">08</span> <span class="number">14</span>:<span class="number">31</span>:<span class="number">03</span> rpc.Register: method <span class="string">"Unlock"</span> has <span class="number">1</span> input parameters; needs exactly three</span><br><span class="line"><span class="number">2019</span>/<span class="number">10</span>/<span class="number">08</span> <span class="number">14</span>:<span class="number">31</span>:<span class="number">03</span> rpc.Register: method <span class="string">"Wait"</span> has <span class="number">1</span> input parameters; needs exactly three</span><br></pre></td></tr></table></figure>
+<p>原因是因为像下面这样的函数其实不应该被注册进master的rpc method里的.却被误以为是rpc method</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(mr *Master)</span> <span class="title">CleanupFiles</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">for</span> i := <span class="keyword">range</span> mr.files &#123;</span><br><span class="line">		<span class="keyword">for</span> j := <span class="number">0</span>; j &lt; mr.nReduce; j++ &#123;</span><br><span class="line">			removeFile(reduceName(mr.jobName, i, j))</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; mr.nReduce; i++ &#123;</span><br><span class="line">		removeFile(mergeName(mr.jobName, i))</span><br><span class="line">	&#125;</span><br><span class="line">	removeFile(<span class="string">"mrtmp."</span> + mr.jobName)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>怎么解决这个问题,问题的本质是对net.rpc这个go package不太熟.先放着.貌似没事…</p>
+<h4 id="Worker-DoTask-more-than-one-DoTask-sent-concurrently-to-a-single-worker"><a href="#Worker-DoTask-more-than-one-DoTask-sent-concurrently-to-a-single-worker" class="headerlink" title="Worker.DoTask: more than one DoTask sent concurrently to a single worker"></a>Worker.DoTask: more than one DoTask sent concurrently to a single worker</h4><p>估计是调用函数写的有问题吧.调度的核心逻辑写的不对.<br>改成下面这样.</p>
+<p>第二版-没法并行.</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">schedule</span><span class="params">(jobName <span class="keyword">string</span>, mapFiles []<span class="keyword">string</span>, nReduce <span class="keyword">int</span>, phase jobPhase, registerChan <span class="keyword">chan</span> <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> ntasks <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">var</span> n_other <span class="keyword">int</span> <span class="comment">// number of inputs (for reduce) or outputs (for map)</span></span><br><span class="line">	<span class="keyword">switch</span> phase &#123;</span><br><span class="line">	<span class="keyword">case</span> mapPhase:</span><br><span class="line">		ntasks = <span class="built_in">len</span>(mapFiles)</span><br><span class="line">		n_other = nReduce</span><br><span class="line">	<span class="keyword">case</span> reducePhase:</span><br><span class="line">		ntasks = nReduce</span><br><span class="line">		n_other = <span class="built_in">len</span>(mapFiles)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	fmt.Printf(<span class="string">"Schedule: %v %v tasks (%d I/Os)\n"</span>, ntasks, phase, n_other)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// All ntasks tasks have to be scheduled on workers. Once all tasks</span></span><br><span class="line">	<span class="comment">// have completed successfully, schedule() should return.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// Your code here (Part III, Part IV).</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// worker设成工作池模式?新来的worker怎么办?</span></span><br><span class="line">	<span class="comment">// 监视一个工作池?然后这个工作池随时可能会增加worker</span></span><br><span class="line">	<span class="comment">// 对工作池遍历指派任务?</span></span><br><span class="line">	<span class="comment">// 把ntasks个任务指配完</span></span><br><span class="line">	<span class="comment">// 最终目标是把ntasks个任务分配给若干个worker</span></span><br><span class="line"></span><br><span class="line">	taskPool := <span class="built_in">make</span>(<span class="keyword">chan</span> DoTaskArgs, ntasks)</span><br><span class="line">	<span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 从forwardRegistration收到一个worker的地址</span></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="comment">// 不开一个新的协程去负责接收registerChan里面的worker好像不行,因为不知道会有多少个worker会来,以及多久来.而registerChan</span></span><br><span class="line">		<span class="comment">// 又是unbuffer的,接收不到就会阻塞</span></span><br><span class="line">		worker := &lt;-registerChan <span class="comment">// 怎么设置成有元素就接收,没有元素就跳过的模式?放在某一个task进行之前检查吗?</span></span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">			<span class="keyword">for</span> taskArgs := <span class="keyword">range</span> taskPool &#123;</span><br><span class="line">				call(worker, <span class="string">"Worker.DoTask"</span>, taskArgs, <span class="literal">nil</span>)</span><br><span class="line">				wg.Done()</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;()</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// ntasks个task对应n个协程?,然后每个协程内部阻塞在向workerPool获得worker上?获取完worker之后又阻塞在rpc的同步调用上?</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; ntasks; i++ &#123; <span class="comment">// 必须等待workerPool有可用的worker,否则阻塞?</span></span><br><span class="line">		<span class="comment">// 从workerPool中获取一个可用的worker,否则阻塞在这里,阻塞的时候要保证workerPool能接收新的worker</span></span><br><span class="line">		<span class="keyword">var</span> doTaskArgs DoTaskArgs;</span><br><span class="line">		doTaskArgs.JobName = jobName</span><br><span class="line">		doTaskArgs.TaskNumber = i</span><br><span class="line">		doTaskArgs.NumOtherPhase = n_other</span><br><span class="line">		<span class="keyword">switch</span> phase &#123;</span><br><span class="line">		<span class="keyword">case</span> mapPhase:</span><br><span class="line">			doTaskArgs.Phase = mapPhase</span><br><span class="line">			doTaskArgs.File = mapFiles[i]</span><br><span class="line">		<span class="keyword">case</span> reducePhase:</span><br><span class="line">			doTaskArgs.Phase = reducePhase</span><br><span class="line">		&#125;</span><br><span class="line">		taskPool &lt;- doTaskArgs</span><br><span class="line">		wg.Add(<span class="number">1</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	wg.Wait()</span><br><span class="line">	fmt.Printf(<span class="string">"Schedule: %v done\n"</span>, phase)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>能通过TestParallelBasic().但是TestParallelCheck()失败.</p>
+<h3 id="TestParallelCheck-失败为什么"><a href="#TestParallelCheck-失败为什么" class="headerlink" title="TestParallelCheck()失败为什么???"></a>TestParallelCheck()失败为什么???</h3><p>还是核心逻辑不对…这样会导致只有一个worker在实际工作.其他worker在歇着…没干活???这是一个可能原因…<br>(还有另外一个可能原因,就是代码里面只创建了一个worker协程…应该是这个原因了.在启一个新的协程之前加一条fmt.Println(“launch a new worker 协程”, worker),然后观察输出…)</p>
+<p>解决办法:加个死循环…?</p>
+<hr>
+<p>wk.parallelism这一项和wk.concurrent的区别?</p>
+<blockquote>
+<p>  wk.concurrent用来记录当前worker在某一时刻执行的任务数量,官方的test里给的只能是1,否则会报错.而wk.parallelism是一个指针,多个worker共享一部分存储,其中wk.parallelism.max用来记录运行过程中出现过的最大worker并行数量.</p>
+</blockquote>
+<p>继续改代码.</p>
+<p>第三版-最后的提交结果</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">schedule</span><span class="params">(jobName <span class="keyword">string</span>, mapFiles []<span class="keyword">string</span>, nReduce <span class="keyword">int</span>, phase jobPhase, registerChan <span class="keyword">chan</span> <span class="keyword">string</span>)</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> ntasks <span class="keyword">int</span></span><br><span class="line">	<span class="keyword">var</span> n_other <span class="keyword">int</span> <span class="comment">// number of inputs (for reduce) or outputs (for map)</span></span><br><span class="line">	<span class="keyword">switch</span> phase &#123;</span><br><span class="line">	<span class="keyword">case</span> mapPhase:</span><br><span class="line">		ntasks = <span class="built_in">len</span>(mapFiles)</span><br><span class="line">		n_other = nReduce</span><br><span class="line">	<span class="keyword">case</span> reducePhase:</span><br><span class="line">		ntasks = nReduce</span><br><span class="line">		n_other = <span class="built_in">len</span>(mapFiles)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	fmt.Printf(<span class="string">"Schedule: %v %v tasks (%d I/Os)\n"</span>, ntasks, phase, n_other)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// All ntasks tasks have to be scheduled on workers. Once all tasks</span></span><br><span class="line">	<span class="comment">// have completed successfully, schedule() should return.</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// Your code here (Part III, Part IV).</span></span><br><span class="line">	<span class="comment">//</span></span><br><span class="line">	<span class="comment">// worker设成工作池模式.模仿Go-by-example的worker-pools例子[https://gobyexample.com/worker-pools]</span></span><br><span class="line">	<span class="comment">// 新来的worker怎么办? 使用另外一个协程阻塞在registerChan这个channel上面,一旦有新来的worker,再启动一个新的协程来进行同步rpc调用</span></span><br><span class="line">	<span class="comment">// 最终目标是把ntasks个任务分配给若干个worker,在schedule()的尾部,需要等待所有任务处理完.</span></span><br><span class="line"></span><br><span class="line">	taskPool := <span class="built_in">make</span>(<span class="keyword">chan</span> DoTaskArgs, ntasks)</span><br><span class="line">	<span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 不开一个新的协程去负责接收registerChan里面的worker好像不行,因为不知道会有多少个worker会来,以及多久来.而registerChan</span></span><br><span class="line">	<span class="comment">// 又是unbuffer的,接收不到就会阻塞</span></span><br><span class="line">	<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">		<span class="comment">// 这个for循环一定要有,否则!!!后面的代码执行一次之后就退出了,也就是会导致只会创建出一个worker协程,这不是我们想要的结果.</span></span><br><span class="line">		<span class="keyword">for</span> &#123;</span><br><span class="line">			<span class="comment">// 从forwardRegistration收到一个worker的地址</span></span><br><span class="line">			worker := &lt;-registerChan</span><br><span class="line">			<span class="comment">//fmt.Println("launch a new worker goroutine", worker)</span></span><br><span class="line">			<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">				<span class="keyword">for</span> taskArgs := <span class="keyword">range</span> taskPool &#123; <span class="comment">// 参考Go-by-example的worker-pools例子[https://gobyexample.com/worker-pools]</span></span><br><span class="line">					call(worker, <span class="string">"Worker.DoTask"</span>, taskArgs, <span class="literal">nil</span>)</span><br><span class="line">					wg.Done()</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;()</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 创建每个任务对应的DoTaskArgs结构体,然后放入taskPool</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; ntasks; i++ &#123;</span><br><span class="line">		<span class="keyword">var</span> doTaskArgs DoTaskArgs;</span><br><span class="line">		doTaskArgs.JobName = jobName</span><br><span class="line">		doTaskArgs.TaskNumber = i</span><br><span class="line">		doTaskArgs.NumOtherPhase = n_other</span><br><span class="line">		<span class="keyword">switch</span> phase &#123;</span><br><span class="line">		<span class="keyword">case</span> mapPhase:</span><br><span class="line">			doTaskArgs.Phase = mapPhase</span><br><span class="line">			doTaskArgs.File = mapFiles[i]</span><br><span class="line">		<span class="keyword">case</span> reducePhase:</span><br><span class="line">			doTaskArgs.Phase = reducePhase</span><br><span class="line">		&#125;</span><br><span class="line">		taskPool &lt;- doTaskArgs</span><br><span class="line">		wg.Add(<span class="number">1</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	wg.Wait()</span><br><span class="line"></span><br><span class="line">	fmt.Printf(<span class="string">"Schedule: %v done\n"</span>, phase)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://mojiajun.github.io/post/bbc35084.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1950,7 +2136,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-count">20</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1961,7 +2147,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -1972,7 +2158,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-count">10</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
